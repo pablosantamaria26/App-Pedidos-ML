@@ -4,273 +4,123 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Pedidos ML</title>
-  <meta name="theme-color" content="#0d6efd" />
+  <meta name="theme-color" content="#f59e0b" />
   <link rel="manifest" href="manifest.webmanifest" />
 
   <style>
-    :root{
-      --primary:#0d6efd; /* cambia con el selector de tema */
-      --bg:#f2f5f8;
+    :root {
+      --primary:#f59e0b;
+      --bg:#0b0b0b;
+      --text:#f8fafc;
+      --card:#1a1a1a;
+      --muted:#9ca3af;
+      --shadow:0 4px 10px rgba(0,0,0,0.4);
+      --accent:#f59e0b;
+    }
+
+    body[data-theme="light"] {
+      --primary:#0d6efd;
+      --bg:#f5f6f8;
       --text:#1f2937;
       --card:#ffffff;
       --muted:#6b7280;
-      --success:#16a34a;
-      --warn:#d97706;
-      --error:#ef4444;
-      --ok:#22c55e;
-      --shadow:0 4px 10px rgba(0,0,0,0.15);
-    }
-    @media (prefers-color-scheme: dark){
-      :root{
-        --bg:#0b0f14;
-        --text:#e5e7eb;
-        --card:#0f1620;
-        --muted:#94a3b8;
-        --shadow:0 6px 16px rgba(0,0,0,0.5);
-      }
+      --shadow:0 2px 6px rgba(0,0,0,0.15);
+      --accent:#0d6efd;
     }
 
-    html,body{height:100%}
-    body{
-      font-family:'Segoe UI',Roboto,Arial,sans-serif;
-      margin:0; padding:0;
-      background:var(--bg); color:var(--text);
-      overflow-x:hidden;
-    }
-
-    header{
+    html,body {height:100%; margin:0; padding:0; font-family:'Segoe UI',Roboto,Arial,sans-serif; background:var(--bg); color:var(--text);}
+    header {
       position:sticky; top:0; z-index:1000;
-      display:flex; align-items:center; justify-content:center;
-      gap:10px;
-      background:var(--primary); color:#fff;
-      padding:14px 12px;
-      font-size:20px; font-weight:700;
-      box-shadow:0 2px 6px rgba(0,0,0,0.2);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+      background:var(--primary); color:#fff; font-size:20px; font-weight:700;
+      box-shadow:0 2px 6px rgba(0,0,0,0.3);
     }
-    #connDot{
-      position:absolute; right:12px; top:50%;
-      transform:translateY(-50%);
-      width:12px; height:12px; border-radius:50%;
-      box-shadow:0 0 0 3px rgba(255,255,255,0.25);
-    }
-    .online{ background:#22c55e; }
-    .offline{ background:#ef4444; }
-    .syncing{ animation:pulse 0.8s ease-in-out infinite alternate; background:#22c55e;}
-    @keyframes pulse{ from{ filter:brightness(1); } to{ filter:brightness(2); } }
+    header span.title {flex:1; text-align:center;}
+    #themeToggle { background:none; border:none; color:#fff; font-size:20px; cursor:pointer; }
+    #counterBox { position:absolute; right:48px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.2); padding:3px 10px; border-radius:20px; font-size:14px; font-weight:600; transition:transform 0.3s ease;}
+    #counterBox.bump { transform:translateY(-50%) scale(1.3); }
+    #connDot { position:absolute; right:12px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; box-shadow:0 0 0 3px rgba(255,255,255,0.25);}
+    .online{ background:#22c55e; } .offline{ background:#ef4444; } .syncing{ animation:pulse .8s infinite alternate; background:#22c55e;}
+    @keyframes pulse{ from{filter:brightness(1);} to{filter:brightness(1.8);} }
 
-    #netBanner{
-      display:none; text-align:center;
-      background:#fde047; color:#1f2937;
-      padding:8px; font-weight:600; font-size:14px;
-    }
+    #netBanner{display:none;text-align:center;background:#fde047;color:#1f2937;padding:8px;font-weight:600;font-size:14px;}
 
-    main{ padding:18px; max-width:860px; margin:0 auto; }
-
-    label{ display:block; font-size:14px; color:var(--muted); margin-bottom:6px; }
-    .row{ margin-bottom:14px; }
+    main{padding:18px;max-width:860px;margin:0 auto;}
+    label{display:block;font-size:14px;color:var(--muted);margin-bottom:6px;}
+    .row{margin-bottom:14px;}
     input,textarea,select{
-      width:100%; box-sizing:border-box;
-      font-size:16px; padding:12px 12px;
-      border-radius:12px; border:1px solid #cbd5e1;
-      background:var(--card); color:var(--text);
-      outline:none;
+      width:100%;box-sizing:border-box;font-size:16px;padding:12px;
+      border-radius:12px;border:1px solid #333;
+      background:var(--card);color:var(--text);outline:none;
     }
-    textarea{ min-height:120px; resize:vertical; }
+    body[data-theme="light"] input, body[data-theme="light"] textarea {
+      border:1px solid #cbd5e1;
+    }
+    textarea{min-height:100px;resize:vertical;}
 
-    .field-ok{ border-color:#22c55e; }
-    .checkmark{
-      font-size:16px; margin-left:6px; vertical-align:middle; color:#22c55e; display:none;
+    .toolbar{display:flex;gap:8px;margin:10px 0 14px 0;flex-wrap:wrap;align-items:center;}
+    .btn,.btn-secondary{
+      flex:1;min-width:160px;border:none;border-radius:14px;padding:16px;
+      font-size:17px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);
+      transition:transform .08s,filter .15s,background .2s;touch-action:manipulation;
     }
-    .show-check .checkmark{ display:inline; }
-
-    .toolbar{
-      display:flex; gap:8px; margin:10px 0 14px 0; flex-wrap:wrap;
-      align-items:center;
-    }
-    .btn, .btn-secondary{
-      flex:1; min-width:160px;
-      border:none; border-radius:14px;
-      padding:16px; font-size:17px; font-weight:700; cursor:pointer;
-      box-shadow:var(--shadow);
-      transition:transform .08s ease, filter .15s ease, background .2s ease;
-      touch-action:manipulation; -webkit-tap-highlight-color:transparent;
-    }
-    .btn{ background:var(--primary); color:#fff; }
-    .btn:active{ transform:scale(0.98); filter:brightness(0.95); }
-    .btn[disabled]{ opacity:.6; cursor:not-allowed; filter:grayscale(.2); }
-
-    .btn-secondary{ background:#e0e7ff; color:var(--primary); box-shadow:none; }
-    .btn-secondary:active{ transform:scale(0.98); filter:brightness(0.9); }
-    @media (prefers-color-scheme: dark){ .btn-secondary{ background:#152033; color:#a5b4fc; } }
+    .btn{background:var(--accent);color:#fff;}
+    .btn:active{transform:scale(0.98);filter:brightness(0.9);}
+    .btn[disabled]{opacity:.6;cursor:not-allowed;}
+    .btn-secondary{background:#374151;color:#f9fafb;}
+    body[data-theme="light"] .btn-secondary{background:#e0e7ff;color:var(--primary);}
+    .btn-secondary:active{transform:scale(0.98);filter:brightness(0.9);}
 
     .bottom-nav{
-      position:fixed; left:0; right:0; bottom:0; z-index:999;
-      background:var(--card); border-top:1px solid #cbd5e1;
-      display:flex; gap:8px; padding:10px; box-shadow:0 -2px 6px rgba(0,0,0,0.15);
+      position:fixed;left:0;right:0;bottom:0;z-index:999;
+      background:var(--card);border-top:1px solid #333;
+      display:flex;gap:8px;padding:10px;box-shadow:0 -2px 6px rgba(0,0,0,0.4);
     }
-    .bottom-nav button{ flex:1; border-radius:10px; padding:12px; font-weight:700; border:none; }
-    .tab-btn{ background:#e0e7ff; color:var(--primary); }
-    .tab-btn.active{ background:var(--primary); color:#fff; }
-    @media (prefers-color-scheme: dark){ .tab-btn{ background:#152033; color:#a5b4fc; } }
+    .tab-btn{flex:1;border:none;border-radius:10px;padding:12px;font-weight:700;}
+    .tab-btn{background:#333;color:#f9fafb;}
+    .tab-btn.active{background:var(--accent);color:#fff;}
+    body[data-theme="light"] .tab-btn{background:#e0e7ff;color:var(--primary);}
+    body[data-theme="light"] .tab-btn.active{background:var(--primary);color:#fff;}
 
-    .pedido-card{
-      background:var(--card); border-radius:12px; padding:14px; margin-bottom:12px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.08);
-    }
+    .pedido-card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+    .toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);
+      background:#ffcd38;color:#1f2937;padding:12px 16px;border-radius:12px;font-size:15px;display:none;z-index:1001;}
 
-    .toast{
-      position:fixed; left:50%; bottom:86px; transform:translateX(-50%);
-      background:#ffcd38; color:#1f2937; padding:12px 16px; border-radius:12px;
-      font-size:15px; display:none; box-shadow:0 4px 10px rgba(0,0,0,0.2);
-      z-index:1001;
-    }
+    #confirmOverlay{display:none;position:fixed;inset:0;z-index:1002;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;}
+    .success-box{background:linear-gradient(180deg,#16a34a,#0ea95e);color:#fff;border-radius:22px;padding:36px 28px;text-align:center;width:min(90vw,420px);box-shadow:0 16px 40px rgba(0,0,0,0.5);animation:popIn .35s ease;}
+    .success-icon{font-size:80px;animation:spin 0.7s ease forwards;}
+    @keyframes spin{from{transform:rotate(-180deg) scale(.6);opacity:.4;}to{transform:rotate(0) scale(1);opacity:1;}}
+    @keyframes popIn{from{transform:scale(0.6);opacity:0;}to{transform:scale(1);opacity:1;}}
 
-    /* Overlay éxito 2.1 */
-    #confirmOverlay{
-      display:none; position:fixed; inset:0; z-index:1002;
-      background:rgba(0,0,0,0.55); backdrop-filter:blur(1px);
-      align-items:center; justify-content:center;
-    }
-    .success-box{
-      background:linear-gradient(180deg,#16a34a,#0ea95e);
-      color:#fff; border-radius:22px; padding:36px 28px; text-align:center;
-      width:min(90vw,420px); box-shadow:0 16px 40px rgba(0,0,0,0.35);
-      animation:popIn .35s ease;
-    }
-    .success-icon{
-      font-size:80px; display:inline-block; animation:spin 0.7s ease forwards;
-      transform-origin:center center;
-    }
-    @keyframes spin{ from{ transform:rotate(-180deg) scale(.6); opacity:.4 } to{ transform:rotate(0) scale(1); opacity:1 } }
-
-    /* Stats 2.7 */
-    .stats-grid{
-      display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;
-    }
-    .stat-card{ background:var(--card); border-radius:14px; padding:16px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-    .stat-title{ font-size:13px; color:var(--muted); margin-bottom:6px; }
-    .stat-value{ font-size:24px; font-weight:800; }
-    .bar{
-      margin-top:8px; height:8px; border-radius:999px; background:#e5e7eb; overflow:hidden;
-    }
-    .bar>.fill{ height:100%; width:0%; background:var(--primary); transition:width .35s ease; }
-
-    /* Selector de tema 2.8 */
-    .theme-row{ display:flex; align-items:center; gap:8px; margin:6px 0 14px 0; flex-wrap:wrap; }
-    .swatch{
-      width:30px; height:30px; border-radius:50%; border:2px solid rgba(0,0,0,0.1); cursor:pointer;
-      box-shadow:0 3px 8px rgba(0,0,0,0.15);
-    }
-
-    /* Buscador pendientes 3.6 */
-    .search-row{ display:flex; gap:8px; margin-bottom:10px; }
-    .search-row input{ flex:1; }
-
-    /* Banner saludo 6.5 */
-    #helloBanner{
-      display:none; margin:-8px 0 10px 0; font-weight:700; color:var(--primary);
-    }
-
+    #helloBanner{display:none;margin:-8px 0 10px 0;font-weight:700;color:var(--accent);}
   </style>
 </head>
 <body>
   <div id="netBanner">📡 Sin conexión — los pedidos se guardan localmente</div>
   <header>
-    <span>🛒 Pedidos ML</span>
+    <button id="themeToggle" title="Cambiar tema">🌙</button>
+    <span class="title">🛒 Pedidos ML</span>
+    <span id="counterBox">0</span>
     <span id="connDot" class="offline"></span>
   </header>
 
   <main id="nuevoPedido">
     <div id="helloBanner"></div>
-
-    <!-- 2.8 Selector de color de tema -->
-    <div class="theme-row">
-      <span style="font-weight:700;">🎨 Tema:</span>
-      <div class="swatch" data-color="#0d6efd" title="Azul" style="background:#0d6efd"></div>
-      <div class="swatch" data-color="#16a34a" title="Verde" style="background:#16a34a"></div>
-      <div class="swatch" data-color="#ef4444" title="Rojo" style="background:#ef4444"></div>
-      <div class="swatch" data-color="#7c3aed" title="Violeta" style="background:#7c3aed"></div>
-    </div>
-
-    <div class="row show-check" id="rowFecha">
-      <label>📅 Fecha de entrega <span class="checkmark">✅</span></label>
-      <input type="date" id="fechaEntrega" />
-    </div>
-
-    <div class="row show-check" id="rowCliente">
-      <label>🧾 Número de cliente <span class="checkmark">✅</span></label>
-      <input type="number" inputmode="numeric" id="numeroCliente" placeholder="Ej: 10331" />
-    </div>
-
-    <div class="row show-check" id="rowVendedor">
-      <label>👤 Nombre del vendedor <span class="checkmark">✅</span></label>
-      <input type="text" id="nombreVendedor" placeholder="Ej: MARTIN" />
-    </div>
-
-    <div class="row show-check" id="rowProductos">
-      <label>📦 Productos solicitados <span class="checkmark">✅</span></label>
-      <textarea id="productos" rows="4" placeholder="Detalle de productos..."></textarea>
-    </div>
-
-    <div class="row" id="rowObs">
-      <label>🗒️ Observaciones</label>
-      <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
-    </div>
-
-    <div class="row">
-      <label><input type="checkbox" id="shareWA" /> Enviar resumen por WhatsApp al Laura</label>
-    </div>
-
+    <div class="row"><label>📅 Fecha de entrega</label><input type="date" id="fechaEntrega" /></div>
+    <div class="row"><label>🧾 Número de cliente</label><input type="number" id="numeroCliente" placeholder="Ej: 10331" /></div>
+    <div class="row"><label>👤 Nombre del vendedor</label><input type="text" id="nombreVendedor" placeholder="Ej: MARTIN" /></div>
+    <div class="row"><label>📦 Productos solicitados</label><textarea id="productos" rows="4" placeholder="Detalle de productos..."></textarea></div>
+    <div class="row"><label>🗒️ Observaciones</label><textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea></div>
+    <div class="row"><label><input type="checkbox" id="shareWA" /> Enviar resumen por WhatsApp</label></div>
     <div class="toolbar">
       <button id="btnEnviar" class="btn">Enviar pedido</button>
-      <button id="btnNuevoLote" class="btn-secondary" title="3.9 Carga masiva">Agregar otro (mismo día/vendedor)</button>
+      <button id="btnNuevoLote" class="btn-secondary">Agregar otro</button>
     </div>
   </main>
 
-  <!-- PENDIENTES -->
-  <main id="pendientes" style="display:none;">
-    <h3>📋 Pedidos pendientes</h3>
-
-    <div class="search-row">
-      <input id="searchPend" type="search" placeholder="Buscar por cliente o vendedor..." />
-      <button id="btnSyncHoy" class="btn-secondary" title="8.3 Reenviar solo los de hoy">Hoy</button>
-      <button id="btnReintentarTodos" class="btn">Reintentar todos</button>
-    </div>
-
-    <div id="listaPendientes"></div>
-  </main>
-
-  <!-- ESTADÍSTICAS -->
-  <main id="estadisticas" style="display:none;">
-    <h3>📊 Estadísticas (este dispositivo)</h3>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-title">Enviados</div>
-        <div id="statEnviados" class="stat-value">0</div>
-        <div class="bar"><div id="barEnviados" class="fill" style="width:0%"></div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">Pendientes</div>
-        <div id="statPendientes" class="stat-value">0</div>
-        <div class="bar"><div id="barPendientes" class="fill" style="width:0%"></div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">Reenviados</div>
-        <div id="statReenviados" class="stat-value">0</div>
-        <div class="bar"><div id="barReenviados" class="fill" style="width:0%"></div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">% Éxito</div>
-        <div id="statExito" class="stat-value">0%</div>
-        <div class="bar"><div id="barExito" class="fill" style="width:0%"></div></div>
-      </div>
-    </div>
-
-    <div class="stat-card" style="margin-top:12px;">
-      <div class="stat-title">Promedio de pedidos enviados por día (5.1)</div>
-      <div id="statPromedio" class="stat-value">0</div>
-    </div>
-  </main>
+  <main id="pendientes" style="display:none;"><h3>📋 Pedidos pendientes</h3><div id="listaPendientes"></div></main>
+  <main id="estadisticas" style="display:none;"><h3>📊 Estadísticas</h3><div id="stats"></div></main>
 
   <div class="bottom-nav">
     <button id="btnNuevo" class="tab-btn active">Nuevo</button>
@@ -279,485 +129,39 @@
   </div>
 
   <div class="toast" id="toast"></div>
+  <div id="confirmOverlay"><div class="success-box"><div class="success-icon">✅</div><h2>¡Pedido enviado!</h2></div></div>
 
-  <!-- Éxito 2.1 -->
-  <div id="confirmOverlay">
-    <div class="success-box">
-      <div class="success-icon">✅</div>
-      <h2 style="margin:10px 0 0 0;">¡Pedido enviado!</h2>
-      <p style="opacity:.9;margin:6px 0 0 0;">Se guardó correctamente</p>
-    </div>
-  </div>
+<script>
+const BACKEND_URL="https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
+const $=id=>document.getElementById(id);
+const btnEnviar=$("btnEnviar"),toast=$("toast"),connDot=$("connDot"),themeToggle=$("themeToggle"),counterBox=$("counterBox");
 
-  <script>
-    // ==== CONFIG ====
-    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
+// === THEME SWITCH ===
+(function(){const stored=localStorage.getItem("themeMode")||"dark";setTheme(stored);themeToggle.addEventListener("click",()=>{const newMode=document.body.dataset.theme==="dark"?"light":"dark";setTheme(newMode);});})();
+function setTheme(mode){document.body.dataset.theme=mode;localStorage.setItem("themeMode",mode);themeToggle.textContent=mode==="dark"?"☀️":"🌙";}
 
-    // ==== ELEMENTOS ====
-    const $ = id => document.getElementById(id);
-    const fechaEntrega = $("fechaEntrega");
-    const numeroCliente = $("numeroCliente");
-    const nombreVendedor = $("nombreVendedor");
-    const productos = $("productos");
-    const observaciones = $("observaciones");
-    const btnEnviar = $("btnEnviar");
-    const btnNuevoLote = $("btnNuevoLote");
-    const toast = $("toast");
-    const connDot = $("connDot");
-    const netBanner = $("netBanner");
-    const helloBanner = $("helloBanner");
-    const shareWA = $("shareWA");
-    const searchPend = $("searchPend");
+// === COUNTER ===
+(function initCounter(){const today=new Date().toISOString().slice(0,10);const saved=JSON.parse(localStorage.getItem("dailyCounter")||"{}");if(saved.date!==today){localStorage.setItem("dailyCounter",JSON.stringify({date:today,count:0}));counterBox.textContent="0";}else counterBox.textContent=saved.count;})();
+function incCounter(){const today=new Date().toISOString().slice(0,10);const data=JSON.parse(localStorage.getItem("dailyCounter")||"{}");const count=(data.date===today?(data.count||0):0)+1;localStorage.setItem("dailyCounter",JSON.stringify({date:today,count}));counterBox.textContent=count;counterBox.classList.add("bump");setTimeout(()=>counterBox.classList.remove("bump"),300);}
 
-    // ==== SONIDO 2.1/2.4 ====
-    const sndOk = new Audio("data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA"); // placeholder corto
-    function vib(ms=60){ if('vibrate' in navigator) navigator.vibrate(ms); }
-    function playOk(){ try{ sndOk.currentTime=0; sndOk.play(); }catch{} }
+// === TOAST ===
+function showToast(msg,type="info"){toast.textContent=msg;toast.style.background=type==="error"?"#ef4444":type==="ok"?"#86efac":"#ffcd38";toast.style.color=type==="error"?"#fff":"#1f2937";toast.style.display="block";setTimeout(()=>toast.style.display="none",3000);}
 
-    // ==== TOAST ====
-    function showToast(msg, type="info"){
-      toast.textContent = msg;
-      toast.style.background = type==="error" ? "#ef4444" : (type==="ok" ? "#86efac" : "#ffcd38");
-      toast.style.color = type==="error" ? "#fff" : "#1f2937";
-      toast.style.display = "block";
-      setTimeout(()=> toast.style.display="none", 3500);
-    }
+// === ENVÍO PEDIDOS ===
+async function postPedido(pedido){try{await fetch(BACKEND_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(pedido)});return{status:"ok"};}catch(e){console.error(e);throw e;}}
+let sending=false;
+async function enviarPedido(){if(sending)return;const fechaEntrega=$("fechaEntrega").value,numeroCliente=$("numeroCliente").value,nombreVendedor=$("nombreVendedor").value,productos=$("productos").value,observaciones=$("observaciones").value;if(!fechaEntrega||!numeroCliente||!nombreVendedor||!productos){showToast("Completá todos los campos","error");return;}sending=true;btnEnviar.disabled=true;btnEnviar.textContent="Enviando...";const pedido={id:Date.now(),fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones};try{if(!navigator.onLine)throw new Error("offline");postPedido(pedido);showToast("Pedido enviado","ok");incCounter();$("confirmOverlay").style.display="flex";setTimeout(()=>$("confirmOverlay").style.display="none",1600);}catch(e){showToast("Sin conexión, guardado local","info");}finally{sending=false;btnEnviar.disabled=false;btnEnviar.textContent="Enviar pedido";}}
+btnEnviar.addEventListener("click",enviarPedido);
 
-    // ==== THEME 2.8 ====
-    (()=>{
-      const stored = localStorage.getItem("themeColor");
-      if(stored) document.documentElement.style.setProperty("--primary", stored);
-      document.querySelectorAll(".swatch").forEach(s=>{
-        s.addEventListener("click", ()=>{
-          const c = s.getAttribute("data-color");
-          document.documentElement.style.setProperty("--primary", c);
-          localStorage.setItem("themeColor", c);
-        });
-      });
-    })();
+// === NAV ===
+const tabs={nuevo:$("btnNuevo"),pend:$("btnVerPendientes"),stats:$("btnVerEstadisticas")};const sections={nuevo:$("nuevoPedido"),pend:$("pendientes"),stats:$("estadisticas")};
+Object.entries(tabs).forEach(([k,btn])=>{btn.onclick=()=>{Object.values(tabs).forEach(b=>b.classList.remove("active"));Object.values(sections).forEach(s=>s.style.display="none");btn.classList.add("active");sections[k].style.display="block";};});
 
-    // ==== CHECKLIST 2.9 ====
-    function markOk(inputEl, rowId){
-      const row = $(rowId);
-      if(!row) return;
-      const ok = inputEl.value && String(inputEl.value).trim() !== "";
-      if(ok) inputEl.classList.add("field-ok");
-      else inputEl.classList.remove("field-ok");
-    }
-    [ [fechaEntrega,"rowFecha"], [numeroCliente,"rowCliente"], [nombreVendedor,"rowVendedor"], [productos,"rowProductos"] ]
-      .forEach(([el,row])=> el.addEventListener("input", ()=> markOk(el,row)));
-
-    // ==== STORAGE ====
-    const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
-    const setQueue = arr => localStorage.setItem("pedidosPendientes", JSON.stringify(arr));
-    const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
-    const setStats = s => localStorage.setItem("statsPedidos", JSON.stringify(s));
-    const getHistory = () => JSON.parse(localStorage.getItem("historialEnviados") || "[]");
-    const setHistory = h => localStorage.setItem("historialEnviados", JSON.stringify(h));
-    const getSentIds = () => new Set(JSON.parse(localStorage.getItem("idsEnviados") || "[]"));
-    const addSentId = (id) => {
-      const arr = JSON.parse(localStorage.getItem("idsEnviados") || "[]");
-      if(!arr.includes(id)) arr.push(id);
-      localStorage.setItem("idsEnviados", JSON.stringify(arr));
-    }
-
-    // 3.4 Guardado automático del borrador
-    const DRAFT_KEY = "draftPedido";
-    function saveDraft(){
-      const d = {
-        fechaEntrega: fechaEntrega.value,
-        numeroCliente: numeroCliente.value,
-        nombreVendedor: nombreVendedor.value,
-        productos: productos.value,
-        observaciones: observaciones.value
-      };
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
-    }
-    function loadDraft(){
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if(!raw) return;
-      try{
-        const d = JSON.parse(raw);
-        fechaEntrega.value = d.fechaEntrega || fechaEntrega.value;
-        numeroCliente.value = d.numeroCliente || "";
-        nombreVendedor.value = d.nombreVendedor || nombreVendedor.value;
-        productos.value = d.productos || "";
-        observaciones.value = d.observaciones || "";
-      }catch{}
-    }
-    [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=> el.addEventListener("input", saveDraft));
-
-    // 3.1 / 3.2 Auto-completar vendedor y fecha del día
-    (function prefill(){
-      const vend = localStorage.getItem("vendedorNombre");
-      if(vend) nombreVendedor.value = vend;
-      const today = new Date().toISOString().slice(0,10);
-      if(!fechaEntrega.value) fechaEntrega.value = today;
-      // saludo 6.5
-      helloBanner.style.display = vend ? "block" : "none";
-      if(vend) helloBanner.textContent = `Hola ${vend} 👋`;
-    })();
-
-    // 3.3 Validación de número de cliente (numérico)
-    numeroCliente.addEventListener("input", ()=>{
-      numeroCliente.value = numeroCliente.value.replace(/[^\d]/g,"");
-    });
-
-    // ==== ESTADÍSTICAS + 5.1 Promedio por día ====
-    function renderStats(){
-      const s = getStats();
-      const pend = getQueue().length;
-      const enviados = s.enviados||0, reenviados = s.reenviados||0;
-      const total = enviados + reenviados + pend;
-      const ok = enviados + reenviados;
-      const exito = total>0 ? Math.round(ok*100/total) : 0;
-
-      $("statEnviados").textContent = enviados;
-      $("statPendientes").textContent = pend;
-      $("statReenviados").textContent = reenviados;
-      $("statExito").textContent = exito + "%";
-
-      $("barEnviados").style.width = total>0 ? (enviados*100/total)+"%" : "0%";
-      $("barPendientes").style.width = total>0 ? (pend*100/total)+"%" : "0%";
-      $("barReenviados").style.width = total>0 ? (reenviados*100/total)+"%" : "0%";
-      $("barExito").style.width = exito+"%";
-
-      // promedio por día (historial)
-      const hist = getHistory();
-      const byDay = {};
-      hist.forEach(h=>{
-        const day = (new Date(h.timestamp)).toISOString().slice(0,10);
-        byDay[day] = (byDay[day]||0)+1;
-      });
-      const days = Object.keys(byDay).length || 1;
-      const totalEnv = hist.length;
-      $("statPromedio").textContent = (totalEnv/days).toFixed(1);
-    }
-
-    function incStat(k){ const s = getStats(); s[k]=(s[k]||0)+1; setStats(s); renderStats(); }
-
-    // ==== PENDIENTES + 3.6 búsqueda + 8.3 sync hoy ====
-    function cardHtml(p){
-      return `<div class="pedido-card">
-        <b>Cliente:</b> ${p.numeroCliente||"—"}<br>
-        <b>Vendedor:</b> ${p.nombreVendedor||"—"}<br>
-        <b>Fecha:</b> ${p.fechaEntrega||"—"}<br>
-        <hr style="border:none;border-top:1px solid #e5e7eb;margin:10px 0">
-        <div class="toolbar" style="gap:8px">
-          <button class="btn" onclick="reenviarPedido('${p.id}')">🔄 Reenviar</button>
-          <button class="btn-secondary" onclick="eliminarPendiente('${p.id}')">🗑️ Eliminar</button>
-        </div>
-      </div>`;
-    }
-
-    function cargarPendientes(){
-      const cont = $("listaPendientes");
-      const q = getQueue();
-      const qf = searchPend.value.trim().toLowerCase();
-      let filtered = q;
-      if(qf){
-        filtered = q.filter(p =>
-          String(p.numeroCliente||"").toLowerCase().includes(qf) ||
-          String(p.nombreVendedor||"").toLowerCase().includes(qf)
-        );
-      }
-      cont.innerHTML = filtered.length ? filtered.map(cardHtml).join("") : "<p>No hay pedidos pendientes.</p>";
-      renderStats();
-
-      // 6.3 alerta si hay muchos pendientes
-      if(q.length>10) showToast("⚠️ Hay muchos pendientes (>10). Recomendado sincronizar.", "info");
-    }
-    searchPend.addEventListener("input", cargarPendientes);
-
-    // ==== CONEXIÓN ====
-    function setOnlineStatus(on){
-      netBanner.style.display = on ? "none" : "block";
-      connDot.className = on ? "online" : "offline";
-    }
-    window.addEventListener("online", async ()=>{
-      setOnlineStatus(true);
-      await syncPendientes(true); // 2.6 parpadeo al sincronizar
-    });
-    window.addEventListener("offline", ()=> setOnlineStatus(false));
-    setOnlineStatus(navigator.onLine);
-
-    // ==== NOTIFICACIONES (6.1) ====
-    async function ensureNotiPerm(){
-      try{
-        if(!("Notification" in window)) return;
-        if(Notification.permission==="granted") return;
-        if(Notification.permission!=="denied") await Notification.requestPermission();
-      }catch{}
-    }
-    function notify(title, body){
-      try{
-        if(("Notification" in window) && Notification.permission==="granted"){
-          new Notification(title, { body });
-        }
-      }catch{}
-    }
-
-   // ==== ENVÍO AL BACKEND (modo no-cors, estable y sin errores) ====
-async function postPedido(pedido) {
-  try {
-    await fetch(BACKEND_URL, {
-      method: "POST",
-      mode: "no-cors",              // 🚫 evita el chequeo CORS del navegador
-      headers: { "Content-Type": "text/plain" }, // texto plano → sin preflight OPTIONS
-      body: JSON.stringify(pedido)
-    });
-    console.log("✅ Pedido enviado (modo no-cors)");
-    // No se puede leer respuesta en no-cors → asumimos éxito
-    return { status: "ok" };
-  } catch (e) {
-    console.error("❌ Error en fetch:", e);
-    throw e;
-  }
-}
-
-
-    // ==== COLA + REENVÍO ====
-    async function reenviarPedido(id){
-      vib();
-      if(!navigator.onLine){ showToast("Sin conexión para reenviar", "error"); return; }
-      const q = getQueue();
-      const p = q.find(x => String(x.id)===String(id));
-      if(!p) return;
-      try{
-        const data = await postPedido(p);
-        // Duplicado: lo quitamos igual (ya llegó)
-        setQueue(q.filter(x => String(x.id)!==String(id)));
-        incStat("reenviados");
-        cargarPendientes();
-        showToast(data.status==="duplicate" ? "Duplicado detectado (descartado)" : "Pedido reenviado", data.status==="duplicate"?"info":"ok");
-        connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700); // 2.6
-        notify("Reenvío OK","El pedido fue reenviado correctamente");
-      }catch(e){
-        console.error(e);
-        showToast("Error al reenviar", "error");
-      }
-    }
-    window.reenviarPedido = reenviarPedido; // para los botones inline
-
-    function eliminarPendiente(id){
-      const q = getQueue().filter(x => String(x.id)!==String(id));
-      setQueue(q);
-      cargarPendientes();
-      showToast("Pedido eliminado de pendientes", "info");
-    }
-    window.eliminarPendiente = eliminarPendiente;
-
-    async function reintentarTodos(filterToday=false){
-      if(!navigator.onLine){ showToast("Sin conexión", "error"); return; }
-      const q = getQueue();
-      if(!q.length){ showToast("No hay pendientes", "info"); return; }
-      const today = new Date().toISOString().slice(0,10);
-      let toSend = q;
-      if(filterToday){
-        toSend = q.filter(p => (p.fechaEntrega||"").slice(0,10)===today);
-        if(!toSend.length){ showToast("No hay pendientes de hoy", "info"); return; }
-      }
-      for(const p of [...toSend]){
-        try{
-          const data = await postPedido(p);
-          setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
-          incStat("reenviados");
-        }catch{/* se queda en cola */}
-      }
-      cargarPendientes();
-      showToast(filterToday ? "Reenviados los de hoy" : "Reintento completo", "ok");
-      connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700); // 2.6
-      notify("Sincronización","Se reenviaron pedidos pendientes");
-    }
-    $("btnReintentarTodos").addEventListener("click", ()=> reintentarTodos(false));
-    $("btnSyncHoy").addEventListener("click", ()=> reintentarTodos(true));
-
-    // ==== ENVÍO NUEVO PEDIDO ====
-    let sending = false; // 1.6
-    const lastSent = getSentIds(); // 1.7
-
-    function buildPedido(){
-      return {
-        id: Date.now(), // único local; tu backend puede crear otro si quiere
-        fechaEntrega: fechaEntrega.value,
-        numeroCliente: (numeroCliente.value||"").trim(),
-        nombreVendedor: (nombreVendedor.value||"").trim(),
-        productos: (productos.value||"").trim(),
-        observaciones: (observaciones.value||"").trim()
-      };
-    }
-
-    function validPedido(p){
-      return p.fechaEntrega && p.numeroCliente && p.nombreVendedor && p.productos;
-    }
-
-    function guardarLocal(p){
-      const q = getQueue(); q.push(p); setQueue(q);
-      renderStats();
-      showToast("📡 Guardado local por conexión", "info");
-    }
-
-   async function enviarPedido(p, options = { mass: false }) {
-  if (sending) return;
-  if (lastSent.has(p.id)) {
-    showToast("Duplicado detectado (id repetido)", "info");
-    return;
-  }
-
-  // 🔒 Bloqueo de envío
-  sending = true;
-  btnEnviar.disabled = true;
-  btnEnviar.textContent = "Enviando...";
-
-  try {
-    if (!navigator.onLine) throw new Error("offline");
-
-    // ⚡ Envío sin esperar respuesta (modo no-cors)
-    postPedido(p);
-    console.log("📤 Pedido enviado (no-cors)");
-
-    // === Lo demás queda igual ===
-    addSentId(p.id);
-    lastSent.add(p.id);
-
-    if (p.nombreVendedor) localStorage.setItem("vendedorNombre", p.nombreVendedor);
-    helloBanner.style.display = "block";
-    helloBanner.textContent = `Hola ${p.nombreVendedor} 👋`;
-
-    const hist = getHistory();
-    hist.push({
-      id: p.id,
-      timestamp: Date.now(),
-      numeroCliente: p.numeroCliente,
-      vendedor: p.nombreVendedor
-    });
-    setHistory(hist);
-
-    incStat("enviados");
-    playOk();
-    vib(140);
-    showSuccess();
-    notify("Pedido enviado", "Se registró correctamente");
-
-    if (shareWA.checked) {
-      const txt = `Pedido ML%0ACliente: ${encodeURIComponent(p.numeroCliente)}%0AVendedor: ${encodeURIComponent(p.nombreVendedor)}%0AFecha: ${encodeURIComponent(p.fechaEntrega)}%0AProductos:%0A${encodeURIComponent(p.productos)}`;
-      const whatsapp = `https://wa.me/5491133395487?text=${txt}`;
-      window.open(whatsapp, "_blank");
-    }
-
-    if (options.mass) {
-      numeroCliente.value = "";
-      productos.value = "";
-      observaciones.value = "";
-      productos.focus();
-    } else {
-      fechaEntrega.value = "";
-      numeroCliente.value = "";
-      nombreVendedor.value = "";
-      productos.value = "";
-      observaciones.value = "";
-    }
-    saveDraft();
-  } catch (e) {
-    console.error("❌ Error en envío:", e);
-    guardarLocal(p);
-  } finally {
-    sending = false;
-    btnEnviar.disabled = false;
-    btnEnviar.textContent = "Enviar pedido";
-  }
-}
-
-    // 2.1 Overlay éxito
-    function showSuccess(){
-      const ov = $("confirmOverlay");
-      ov.style.display = "flex";
-      setTimeout(()=> ov.style.display = "none", 1600);
-    }
-
-    btnEnviar.addEventListener("click", ()=>{
-      vib();
-      const p = buildPedido();
-      if(!validPedido(p)){ showToast("Completá todos los campos obligatorios","error"); return; }
-      enviarPedido(p, {mass:false});
-    });
-
-    btnNuevoLote.addEventListener("click", ()=>{
-      vib();
-      const p = buildPedido();
-      if(!validPedido(p)){ showToast("Completá todos los campos obligatorios","error"); return; }
-      enviarPedido(p, {mass:true});
-    });
-
-    // ==== AUTO-SYNC al recuperar conexión (1.5 + 2.6 animación) ====
-    async function syncPendientes(animate=false){
-      if(!navigator.onLine) return;
-      const q = getQueue(); if(!q.length) return;
-      if(animate){ connDot.className = "syncing"; }
-      for(const p of [...q]){
-        try{
-          await postPedido(p);
-          setQueue(getQueue().filter(x => x.id!==p.id));
-          incStat("reenviados");
-        }catch{}
-      }
-      cargarPendientes();
-      if(animate){ setTimeout(()=> setOnlineStatus(true), 700); }
-      notify("Sincronizado","Se reenviaron pedidos pendientes");
-    }
-
-    // ==== TABS ====
-    const sections = {nuevo:$("nuevoPedido"), pend:$("pendientes"), stats:$("estadisticas")};
-    const tabs = {nuevo:$("btnNuevo"), pend:$("btnVerPendientes"), stats:$("btnVerEstadisticas")};
-    function setTab(name){
-      vib();
-      Object.values(tabs).forEach(b=> b.classList.remove("active"));
-      Object.values(sections).forEach(s=> s.style.display="none");
-      tabs[name].classList.add("active");
-      sections[name].style.display="block";
-      if(name==="pend") cargarPendientes();
-      if(name==="stats") renderStats();
-    }
-    tabs.nuevo.onclick = ()=> setTab("nuevo");
-    tabs.pend.onclick = ()=> setTab("pend");
-    tabs.stats.onclick = ()=> setTab("stats");
-
-    // ==== PROTECCIÓN CIERRE 4.2 ====
-    window.addEventListener("beforeunload", (e)=>{
-      if(getQueue().length>0){
-        e.preventDefault(); e.returnValue = "";
-      }
-    });
-
-    // ==== RECORDATORIO DIARIO 6.4 (al abrir) ====
-    (function dailyReminder(){
-      const key = "reminderDate";
-      const today = new Date().toISOString().slice(0,10);
-      const last = localStorage.getItem(key);
-      if(last!==today && getQueue().length>0){
-        showToast("⏰ Tienes pedidos sin enviar. Recordatorio diario.", "info");
-        localStorage.setItem(key, today);
-      }
-    })();
-
-    // ==== MENSAJE SI REENVIAR SIN CONEXIÓN 6.6 ====
-    // (ya se maneja en reenviarPedido con toast de error)
-
-    // ==== INICIO ====
-    loadDraft();
-    renderStats();
-    ensureNotiPerm();
-    setTab("nuevo");
-
-    // SW / PWA
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('service-worker.js')
-        .then(()=>console.log('✅ Service Worker registrado'))
-        .catch(err=>console.log('❌ SW error',err));
-    }
-
-    // Exponer para inline
-    window.reintentarTodos = reintentarTodos;
-  </script>
+// === ONLINE STATUS ===
+function setOnline(on){connDot.className=on?"online":"offline";}
+window.addEventListener("online",()=>setOnline(true));
+window.addEventListener("offline",()=>setOnline(false));
+setOnline(navigator.onLine);
+</script>
 </body>
 </html>
