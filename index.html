@@ -6,7 +6,6 @@
   <title>Pedidos ML</title>
   <meta name="theme-color" content="#0d6efd">
   <link rel="manifest" href="manifest.webmanifest">
-
   <style>
     body {
       font-family: 'Segoe UI', Roboto, Arial, sans-serif;
@@ -17,7 +16,6 @@
       color: #1f2937;
     }
 
-    /* 🔸 Banner conexión */
     #netBanner {
       display:none;
       background:#fde047;
@@ -26,17 +24,6 @@
       padding:8px;
       font-weight:600;
       font-size:14px;
-      animation: fadeIn 0.4s ease, fadeOut 0.4s ease forwards;
-    }
-
-    @keyframes fadeIn {
-      from { opacity:0; transform:translateY(-10px); }
-      to { opacity:1; transform:translateY(0); }
-    }
-
-    @keyframes fadeOut {
-      from { opacity:1; }
-      to { opacity:0; }
     }
 
     header {
@@ -46,7 +33,6 @@
       padding: 15px;
       font-size: 20px;
       font-weight: 600;
-      letter-spacing: 0.5px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
@@ -79,9 +65,7 @@
     }
     button:active { transform: scale(0.97); background: #0b5ed7; }
 
-    .btn-secondary {
-      background:#e0e7ff; color:#0d6efd; box-shadow:none;
-    }
+    .btn-secondary { background:#e0e7ff; color:#0d6efd; box-shadow:none; }
     .btn-secondary:active { background:#c7d2fe; }
 
     .toast {
@@ -98,12 +82,9 @@
       z-index: 9998;
     }
 
-    /* 📱 Menú inferior */
     .bottom-nav {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       background: #fff;
       border-top: 1px solid #ccc;
       display: flex;
@@ -131,7 +112,6 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    /* ✅ Animación confirmación */
     #confirmOverlay {
       display:none;
       position:fixed;
@@ -154,7 +134,6 @@
       100% { transform:scale(1); opacity:1; }
     }
 
-    /* 📊 Estadísticas */
     .stats-grid {
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -181,27 +160,20 @@
   <div id="netBanner">📡 Sin conexión — los pedidos se guardan localmente</div>
   <header>🛒 Pedidos ML</header>
 
-  <!-- NUEVO PEDIDO -->
   <main id="nuevoPedido">
     <label>📅 Fecha de entrega</label>
     <input type="date" id="fechaEntrega">
-
     <label>🧾 Número de cliente</label>
-    <input type="number" inputmode="numeric" id="numeroCliente" placeholder="Ej: 10331">
-
+    <input type="text" id="numeroCliente" placeholder="Ej: 10331">
     <label>👤 Nombre del vendedor</label>
     <input type="text" id="nombreVendedor" placeholder="Ej: MARTIN">
-
     <label>📦 Productos solicitados</label>
     <textarea id="productos" rows="4" placeholder="Detalle de productos..."></textarea>
-
     <label>🗒️ Observaciones</label>
     <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
-
     <button id="btnEnviar">Enviar pedido</button>
   </main>
 
-  <!-- PENDIENTES -->
   <main id="pendientes" style="display:none;">
     <h3>📋 Pedidos pendientes</h3>
     <div style="margin-bottom:12px;">
@@ -210,30 +182,15 @@
     <div id="listaPendientes"></div>
   </main>
 
-  <!-- ESTADÍSTICAS -->
   <main id="estadisticas" style="display:none;">
     <h3>📊 Estadísticas (este dispositivo)</h3>
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-title">Enviados</div>
-        <div class="stat-value stat-ok" id="statEnviados">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">Pendientes</div>
-        <div class="stat-value stat-warn" id="statPendientes">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">Reenviados</div>
-        <div class="stat-value stat-info" id="statReenviados">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">% Éxito</div>
-        <div class="stat-value stat-gray" id="statExito">0%</div>
-      </div>
+      <div class="stat-card"><div class="stat-title">Enviados</div><div class="stat-value stat-ok" id="statEnviados">0</div></div>
+      <div class="stat-card"><div class="stat-title">Pendientes</div><div class="stat-value stat-warn" id="statPendientes">0</div></div>
+      <div class="stat-card"><div class="stat-title">Reenviados</div><div class="stat-value stat-info" id="statReenviados">0</div></div>
+      <div class="stat-card"><div class="stat-title">% Éxito</div><div class="stat-value stat-gray" id="statExito">0%</div></div>
     </div>
-    <p style="margin-top:10px;color:#6b7280;font-size:13px;">
-      * Estas métricas son locales a este equipo. Las globales se calcularán en el backend.
-    </p>
+    <p style="margin-top:10px;color:#6b7280;font-size:13px;">* Estas métricas son locales a este equipo.</p>
   </main>
 
   <div class="bottom-nav">
@@ -254,55 +211,86 @@
   <script>
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzpgGmnzY8dOEjKbNztmWpabZHnY74uGUDffy4fc5LD_r0AWebTYcykBHIcTHBQXWpQjQ/exec";
 
-    // Vibración y sonido
-    function vibrar(ms=60){ if('vibrate' in navigator) navigator.vibrate(ms); }
-    const sonidoOK = new Audio("data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAA..."); // puedes dejarlo así
-
+    // === FUNCIONES DE UTILIDAD ===
+    function vibrar(ms=50){ if('vibrate' in navigator) navigator.vibrate(ms); }
+    const sonidoOK = new Audio("data:audio/mp3;base64,//uQxA...");
     function playSound(){ try{ sonidoOK.currentTime=0; sonidoOK.play(); }catch{} }
+    function mostrarToast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.style.display="block"; setTimeout(()=>t.style.display="none",4000); }
+    function mostrarConfirmacion(){ const o=document.getElementById("confirmOverlay"); o.style.display="flex"; vibrar(150); playSound(); setTimeout(()=>o.style.display="none",1800); }
 
-    function mostrarToast(msg){
-      const toast=document.getElementById("toast");
-      toast.textContent=msg;
-      toast.style.display="block";
-      setTimeout(()=>toast.style.display="none",4000);
+    // === LOCAL STORAGE ===
+    const getQueue = ()=>JSON.parse(localStorage.getItem("pedidosPendientes")||"[]");
+    const setQueue = arr=>localStorage.setItem("pedidosPendientes",JSON.stringify(arr));
+    const getStats=()=>JSON.parse(localStorage.getItem("statsPedidos")||'{"enviados":0,"reenviados":0}');
+    const setStats=s=>localStorage.setItem("statsPedidos",JSON.stringify(s));
+
+    function incStat(k){const s=getStats();s[k]=(s[k]||0)+1;setStats(s);renderStats();}
+    function renderStats(){
+      const s=getStats(),pend=getQueue().length;
+      const tot=(s.enviados||0)+(s.reenviados||0)+pend;
+      const exito=tot>0?Math.round(((s.enviados||0)+(s.reenviados||0))*100/tot):0;
+      document.getElementById("statEnviados").textContent=s.enviados||0;
+      document.getElementById("statPendientes").textContent=pend;
+      document.getElementById("statReenviados").textContent=s.reenviados||0;
+      document.getElementById("statExito").textContent=exito+"%";
     }
 
-    function mostrarConfirmacion(){
-      const overlay=document.getElementById("confirmOverlay");
-      overlay.style.display="flex";
-      vibrar(120);
-      playSound();
-      setTimeout(()=>overlay.style.display="none",1800);
+    // === ENVÍO ===
+    async function postPedido(p){
+      const r=await fetch(BACKEND_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)});
+      const d=await r.json().catch(()=>({status:"error"}));
+      if(!d||d.status!=="ok") throw new Error("Error backend");
     }
 
-// ===== Conexión real =====
-// 🔍 Verificación real de conexión cada 15 segundos (versión final sin CORS)
-async function checkConexionReal() {
-  try {
-    await fetch('https://www.gstatic.com/generate_204', { mode: 'no-cors', cache: 'no-store' });
-    setOnlineStatus(true);
-  } catch {
-    setOnlineStatus(false);
-  }
-}
+    async function enviarPedidoOnline(p){ await postPedido(p); incStat("enviados"); mostrarToast("✅ Pedido enviado"); mostrarConfirmacion(); }
 
-function setOnlineStatus(online) {
-  const banner = document.getElementById("netBanner");
-  if (!banner) return;
-  banner.style.display = online ? "none" : "block";
-}
+    async function reenviarPedido(id){
+      vibrar();const q=getQueue(),p=q.find(x=>String(x.id)===String(id));if(!p)return;
+      try{await postPedido(p);setQueue(q.filter(x=>String(x.id)!==String(id)));incStat("reenviados");cargarPendientes();mostrarToast("✅ Pedido reenviado");mostrarConfirmacion();}
+      catch{mostrarToast("⚠️ Error al reenviar");}
+    }
 
-// Ejecutar chequeo inicial y luego cada 15 segundos
-setInterval(checkConexionReal, 15000);
-checkConexionReal();
+    function cargarPendientes(){
+      const c=document.getElementById("listaPendientes");c.innerHTML="";
+      const q=getQueue();
+      if(!q.length){c.innerHTML="<p>No hay pedidos pendientes.</p>";renderStats();return;}
+      q.forEach(p=>{
+        const d=document.createElement("div");
+        d.className="pedido-card";
+        d.innerHTML=`<b>Cliente:</b> ${p.numeroCliente}<br><b>Vendedor:</b> ${p.nombreVendedor}<br><b>Fecha:</b> ${p.fechaEntrega}<br><b>Productos:</b><br>${(p.productos||"").replace(/\n/g,"<br>")}<hr><button onclick="reenviarPedido('${p.id}')">Reenviar</button>`;
+        c.appendChild(d);
+      });
+      renderStats();
+    }
 
-// Registrar service worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js')
-    .then(() => console.log('✅ Service Worker registrado'))
-    .catch(err => console.log('❌ SW error', err));
-}
+    // === BOTONES PRINCIPALES ===
+    document.getElementById("btnEnviar").addEventListener("click",async()=>{
+      vibrar();
+      const pedido={id:Date.now(),fechaEntrega:fechaEntrega.value,numeroCliente:numeroCliente.value.trim(),nombreVendedor:nombreVendedor.value.trim(),productos:productos.value.trim(),observaciones:observaciones.value.trim()};
+      if(!pedido.fechaEntrega||!pedido.numeroCliente||!pedido.nombreVendedor||!pedido.productos){mostrarToast("⚠️ Completá todos los campos");return;}
+      if(navigator.onLine){try{await enviarPedidoOnline(pedido);}catch{const q=getQueue();q.push(pedido);setQueue(q);mostrarToast("📡 Sin conexión, guardado local");}}
+      else{const q=getQueue();q.push(pedido);setQueue(q);mostrarToast("📡 Sin conexión, guardado local");}
+    });
 
+    // === MENÚ INFERIOR ===
+    const secciones={nuevo:document.getElementById("nuevoPedido"),pend:document.getElementById("pendientes"),stats:document.getElementById("estadisticas")};
+    const botones={nuevo:btnNuevo,pend:btnVerPendientes,stats:btnVerEstadisticas};
+
+    botones.nuevo.onclick=()=>{vibrar();Object.values(botones).forEach(b=>b.classList.remove("active"));botones.nuevo.classList.add("active");Object.values(secciones).forEach(s=>s.style.display="none");secciones.nuevo.style.display="block";}
+    botones.pend.onclick=()=>{vibrar();Object.values(botones).forEach(b=>b.classList.remove("active"));botones.pend.classList.add("active");Object.values(secciones).forEach(s=>s.style.display="none");secciones.pend.style.display="block";cargarPendientes();}
+    botones.stats.onclick=()=>{vibrar();Object.values(botones).forEach(b=>b.classList.remove("active"));botones.stats.classList.add("active");Object.values(secciones).forEach(s=>s.style.display="none");secciones.stats.style.display="block";renderStats();}
+
+    // === CONEXIÓN ===
+    async function checkConexionReal(){
+      try{await fetch("https://www.gstatic.com/generate_204",{mode:"no-cors"});setOnlineStatus(true);}
+      catch{setOnlineStatus(false);}
+    }
+    function setOnlineStatus(ok){document.getElementById("netBanner").style.display=ok?"none":"block";}
+    setInterval(checkConexionReal,15000);checkConexionReal();
+
+    // === SERVICE WORKER ===
+    if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').then(()=>console.log('✅ SW registrado')).catch(e=>console.log('❌ SW error',e));}
+    renderStats();
   </script>
 </body>
 </html>
