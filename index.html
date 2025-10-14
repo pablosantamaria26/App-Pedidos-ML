@@ -6,14 +6,39 @@
   <title>Pedidos ML</title>
   <meta name="theme-color" content="#0d6efd">
   <link rel="manifest" href="manifest.webmanifest">
+
   <style>
-    body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#f2f5f8;margin:0;padding:0;overflow-x:hidden;color:#1f2937}#netBanner{display:none;background:#fde047;color:#1f2937;text-align:center;padding:8px;font-weight:600;font-size:14px}header{background:#0d6efd;color:white;text-align:center;padding:15px;font-size:20px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,0.2)}main{padding:20px}label{font-size:14px;color:#374151}input,textarea{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px solid #ccc;margin-bottom:15px;box-sizing:border-box}button{background:#0d6efd;color:white;border:none;border-radius:12px;padding:16px;width:100%;font-size:18px;font-weight:600;cursor:pointer;transition:transform 0.1s ease,background 0.2s ease;box-shadow:0 4px 10px rgba(0,0,0,0.15)}button:active{transform:scale(0.97);background:#0b5ed7}.btn-secondary{background:#e0e7ff;color:#0d6efd;box-shadow:none}.btn-secondary:active{background:#c7d2fe}.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#ffcd38;padding:12px 18px;border-radius:10px;font-size:15px;display:none;box-shadow:0 4px 10px rgba(0,0,0,0.2);z-index:9998}.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ccc;display:flex;justify-content:space-around;padding:10px 0;box-shadow:0 -2px 6px rgba(0,0,0,0.15);z-index:9999}.bottom-nav button{flex:1;margin:0 6px;border-radius:8px;background:#e0e7ff;color:#0d6efd;font-weight:600;font-size:16px}.bottom-nav button.active{background:#0d6efd;color:white}.pedido-card{background:white;border-radius:12px;padding:15px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}#confirmOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:9999}#confirmOverlay div{background:white;border-radius:20px;padding:40px;text-align:center;animation:popIn 0.4s ease}@keyframes popIn{0%{transform:scale(0.7);opacity:0}70%{transform:scale(1.05);opacity:1}100%{transform:scale(1);opacity:1}}.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}.stat-card{background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center}.stat-title{font-size:13px;color:#6b7280;margin-bottom:6px}.stat-value{font-size:24px;font-weight:700}.stat-ok{color:#16a34a}.stat-warn{color:#d97706}.stat-info{color:#0ea5e9}.stat-gray{color:#6b7280}
+    body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#f2f5f8;margin:0;padding:0;overflow-x:hidden;color:#1f2937}
+    #netBanner{display:none;background:#fde047;color:#1f2937;text-align:center;padding:8px;font-weight:600;font-size:14px}
+    header{background:#0d6efd;color:white;text-align:center;padding:15px;font-size:20px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+    main{padding:20px}
+    label{font-size:14px;color:#374151}
+    input,textarea{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px solid #ccc;margin-bottom:15px;box-sizing:border-box}
+    button{background:#0d6efd;color:white;border:none;border-radius:12px;padding:16px;width:100%;font-size:18px;font-weight:600;cursor:pointer;transition:transform .1s ease,background .2s ease;box-shadow:0 4px 10px rgba(0,0,0,0.15)}
+    button:active{transform:scale(0.97);background:#0b5ed7}
+    .btn-secondary{background:#e0e7ff;color:#0d6efd;box-shadow:none}
+    .btn-secondary:active{background:#c7d2fe}
+    .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#ffcd38;padding:12px 18px;border-radius:10px;font-size:15px;display:none;box-shadow:0 4px 10px rgba(0,0,0,0.2);z-index:9998}
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ccc;display:flex;justify-content:space-around;padding:10px 0;box-shadow:0 -2px 6px rgba(0,0,0,0.15);z-index:9999}
+    .bottom-nav button{flex:1;margin:0 6px;border-radius:8px;background:#e0e7ff;color:#0d6efd;font-weight:600;font-size:16px}
+    .bottom-nav button.active{background:#0d6efd;color:white}
+    .pedido-card{background:white;border-radius:12px;padding:15px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+    #confirmOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:9999}
+    #confirmOverlay div{background:white;border-radius:20px;padding:40px;text-align:center;animation:popIn .4s ease}
+    @keyframes popIn{0%{transform:scale(.7);opacity:0}70%{transform:scale(1.05);opacity:1}100%{transform:scale(1);opacity:1}}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+    .stat-card{background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center}
+    .stat-title{font-size:13px;color:#6b7280;margin-bottom:6px}
+    .stat-value{font-size:24px;font-weight:700}
+    .stat-ok{color:#16a34a}.stat-warn{color:#d97706}.stat-info{color:#0ea5e9}.stat-gray{color:#6b7280}
   </style>
 </head>
+
 <body>
   <div id="netBanner">📡 Sin conexión — los pedidos se guardan localmente</div>
   <header>🛒 Pedidos ML</header>
 
+  <!-- NUEVO PEDIDO -->
   <main id="nuevoPedido">
     <label>📅 Fecha de entrega</label>
     <input type="date" id="fechaEntrega">
@@ -28,11 +53,13 @@
     <button id="btnEnviar">Enviar pedido</button>
   </main>
 
+  <!-- PENDIENTES -->
   <main id="pendientes" style="display:none;">
     <h3>📋 Pedidos pendientes</h3>
     <div id="listaPendientes"></div>
   </main>
 
+  <!-- ESTADÍSTICAS -->
   <main id="estadisticas" style="display:none;">
     <h3>📊 Estadísticas (este dispositivo)</h3>
     <div class="stats-grid">
@@ -59,203 +86,138 @@
   </div>
 
   <script>
-    // ❗ PEGA AQUÍ LA NUEVA URL QUE TE DIO GOOGLE EN EL PASO 2 ❗
+    // ✅ BACKEND URL (la tuya actual)
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
 
-    // === ELEMENTOS DEL DOM ===
-    const fechaEntrega = document.getElementById("fechaEntrega");
-    const numeroCliente = document.getElementById("numeroCliente");
-    const nombreVendedor = document.getElementById("nombreVendedor");
-    const productos = document.getElementById("productos");
-    const observaciones = document.getElementById("observaciones");
-    
-    // === FUNCIONES DE UTILIDAD ===
-    function vibrar(ms = 50) { if ('vibrate' in navigator) navigator.vibrate(ms); }
-    function mostrarToast(msg, error = false) {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.style.background = error ? "#f87171" : "#ffcd38";
-      t.style.display = "block";
-      setTimeout(() => t.style.display = "none", 4000);
+    // === UTILIDADES ===
+    function vibrar(ms=50){if('vibrate' in navigator)navigator.vibrate(ms);}
+    function mostrarToast(msg,error=false){
+      const t=document.getElementById("toast");
+      t.textContent=msg;
+      t.style.background=error?"#f87171":"#ffcd38";
+      t.style.display="block";
+      setTimeout(()=>t.style.display="none",4000);
     }
-    function mostrarConfirmacion() {
-      const o = document.getElementById("confirmOverlay");
-      o.style.display = "flex";
+    function mostrarConfirmacion(){
+      const o=document.getElementById("confirmOverlay");
+      o.style.display="flex";
       vibrar(150);
-      setTimeout(() => o.style.display = "none", 1800);
+      setTimeout(()=>o.style.display="none",1800);
     }
 
-    // === LOCAL STORAGE (COLA DE PENDIENTES Y ESTADÍSTICAS) ===
-    const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
-    const setQueue = (arr) => localStorage.setItem("pedidosPendientes", JSON.stringify(arr));
-    const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
-    const setStats = (s) => localStorage.setItem("statsPedidos", JSON.stringify(s));
+    // === LOCALSTORAGE ===
+    const getQueue=()=>JSON.parse(localStorage.getItem("pedidosPendientes")||"[]");
+    const setQueue=a=>localStorage.setItem("pedidosPendientes",JSON.stringify(a));
+    const getStats=()=>JSON.parse(localStorage.getItem("statsPedidos")||'{"enviados":0,"reenviados":0}');
+    const setStats=s=>localStorage.setItem("statsPedidos",JSON.stringify(s));
 
-    function incStat(key) {
-      const stats = getStats();
-      stats[key] = (stats[key] || 0) + 1;
-      setStats(stats);
-      renderStats();
-    }
-    function renderStats() {
-      const s = getStats(), pend = getQueue().length;
-      const totalExitosos = (s.enviados || 0) + (s.reenviados || 0);
-      const totalIntentos = totalExitosos + pend;
-      const exito = totalIntentos > 0 ? Math.round((totalExitosos * 100) / totalIntentos) : 0;
-      document.getElementById("statEnviados").textContent = s.enviados || 0;
-      document.getElementById("statPendientes").textContent = pend;
-      document.getElementById("statReenviados").textContent = s.reenviados || 0;
-      document.getElementById("statExito").textContent = exito + "%";
+    function incStat(k){const s=getStats();s[k]=(s[k]||0)+1;setStats(s);renderStats();}
+    function renderStats(){
+      const s=getStats(),pend=getQueue().length;
+      const total=(s.enviados||0)+(s.reenviados||0)+pend;
+      const exito=total>0?Math.round(((s.enviados||0)+(s.reenviados||0))*100/total):0;
+      document.getElementById("statEnviados").textContent=s.enviados||0;
+      document.getElementById("statPendientes").textContent=pend;
+      document.getElementById("statReenviados").textContent=s.reenviados||0;
+      document.getElementById("statExito").textContent=exito+"%";
     }
 
-    // === LÓGICA DE ENVÍO ===
-    async function postPedido(pedido) {
-      const response = await fetch(BACKEND_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pedido),
-        mode: 'cors' // explícito para asegurar la intención
+    // === ENVÍO AL BACKEND ===
+    async function postPedido(pedido){
+      await fetch(BACKEND_URL,{
+        method:"POST",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify(pedido),
+        mode:"no-cors" // 🔥 clave para evitar CORS
       });
-
-      if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (data.status !== "ok") {
-        throw new Error(data.message || "El backend devolvió un error");
-      }
     }
 
-    function guardarLocalmente(pedido) {
-      const queue = getQueue();
-      queue.push(pedido);
-      setQueue(queue);
-      renderStats();
-      mostrarToast("📡 Conexión fallida. Pedido guardado localmente.");
+    function guardarLocal(pedido){
+      const q=getQueue();q.push(pedido);setQueue(q);renderStats();
+      mostrarToast("📡 Sin conexión. Pedido guardado localmente.");
     }
-    
-    document.getElementById("btnEnviar").addEventListener("click", async () => {
+
+    document.getElementById("btnEnviar").addEventListener("click",async()=>{
       vibrar();
-      const pedido = {
-        id: Date.now(),
-        fechaEntrega: fechaEntrega.value,
-        numeroCliente: numeroCliente.value.trim(),
-        nombreVendedor: nombreVendedor.value.trim(),
-        productos: productos.value.trim(),
-        observaciones: observaciones.value.trim()
+      const pedido={
+        id:Date.now(),
+        fechaEntrega:fechaEntrega.value,
+        numeroCliente:numeroCliente.value.trim(),
+        nombreVendedor:nombreVendedor.value.trim(),
+        productos:productos.value.trim(),
+        observaciones:observaciones.value.trim()
       };
-
-      if (!pedido.fechaEntrega || !pedido.numeroCliente || !pedido.nombreVendedor || !pedido.productos) {
-        mostrarToast("⚠️ Completá todos los campos obligatorios", true);
-        return;
+      if(!pedido.fechaEntrega||!pedido.numeroCliente||!pedido.nombreVendedor||!pedido.productos){
+        mostrarToast("⚠️ Completá todos los campos obligatorios",true);return;
       }
-      
-      // MEJORA: Lógica de conexión más robusta
-      if (!navigator.onLine) {
-        guardarLocalmente(pedido);
-        return;
-      }
-
-      try {
+      if(!navigator.onLine){guardarLocal(pedido);return;}
+      try{
         await postPedido(pedido);
         incStat("enviados");
         mostrarConfirmacion();
-        // Limpiar formulario tras éxito
-        fechaEntrega.value = "";
-        numeroCliente.value = "";
-        nombreVendedor.value = "";
-        productos.value = "";
-        observaciones.value = "";
-
-      } catch (error) {
-        console.error("Falló el envío del pedido:", error); // Muestra el error real en la consola
-        guardarLocalmente(pedido);
-      }
+        fechaEntrega.value=numeroCliente.value=nombreVendedor.value=productos.value=observaciones.value="";
+      }catch(e){console.error(e);guardarLocal(pedido);}
     });
-    
-    // === LÓGICA DE PENDIENTES ===
-    async function reenviarPedido(id) {
-        vibrar();
-        let queue = getQueue();
-        const pedido = queue.find(p => String(p.id) === String(id));
-        if (!pedido) return;
 
-        if (!navigator.onLine) {
-            mostrarToast("⚠️ Sin conexión para reenviar", true);
-            return;
-        }
-
-        try {
-            await postPedido(pedido);
-            // Si tiene éxito, lo sacamos de la cola
-            setQueue(queue.filter(p => String(p.id) !== String(id)));
-            incStat("reenviados");
-            cargarPendientes();
-            mostrarToast("✅ Pedido reenviado con éxito");
-        } catch (error) {
-            console.error("Falló el reenvío:", error);
-            mostrarToast("❌ El reenvío falló. Revisa la conexión o el servidor.", true);
-        }
+    // === PENDIENTES ===
+    async function reenviarPedido(id){
+      vibrar();
+      const queue=getQueue();
+      const pedido=queue.find(p=>String(p.id)===String(id));
+      if(!pedido)return;
+      if(!navigator.onLine){mostrarToast("⚠️ Sin conexión",true);return;}
+      try{
+        await postPedido(pedido);
+        setQueue(queue.filter(p=>String(p.id)!==String(id)));
+        incStat("reenviados");
+        cargarPendientes();
+        mostrarToast("✅ Pedido reenviado");
+      }catch(e){console.error(e);mostrarToast("❌ Error al reenviar",true);}
     }
 
-    function cargarPendientes() {
-      const container = document.getElementById("listaPendientes");
-      container.innerHTML = "";
-      const queue = getQueue();
-
-      if (!queue.length) {
-        container.innerHTML = "<p>No hay pedidos pendientes.</p>";
-      } else {
-        queue.forEach(p => {
-          const card = document.createElement("div");
-          card.className = "pedido-card";
-          card.innerHTML = `
-            <b>Cliente:</b> ${p.numeroCliente || 'N/A'}<br>
-            <b>Vendedor:</b> ${p.nombreVendedor || 'N/A'}<br>
-            <b>Fecha:</b> ${p.fechaEntrega || 'N/A'}<br>
-            <hr>
-            <button onclick="reenviarPedido('${p.id}')">🔄 Reenviar ahora</button>
-          `;
-          container.appendChild(card);
-        });
-      }
+    function cargarPendientes(){
+      const c=document.getElementById("listaPendientes");
+      c.innerHTML="";
+      const q=getQueue();
+      if(!q.length){c.innerHTML="<p>No hay pedidos pendientes.</p>";}
+      else q.forEach(p=>{
+        const d=document.createElement("div");
+        d.className="pedido-card";
+        d.innerHTML=`<b>Cliente:</b> ${p.numeroCliente}<br>
+        <b>Vendedor:</b> ${p.nombreVendedor}<br>
+        <b>Fecha:</b> ${p.fechaEntrega}<br><hr>
+        <button onclick="reenviarPedido('${p.id}')">🔄 Reenviar</button>`;
+        c.appendChild(d);
+      });
       renderStats();
     }
-    
-    // === MENÚ DE NAVEGACIÓN INFERIOR ===
-    const secciones = { nuevo: document.getElementById("nuevoPedido"), pend: document.getElementById("pendientes"), stats: document.getElementById("estadisticas") };
-    const botones = { nuevo: document.getElementById("btnNuevo"), pend: document.getElementById("btnVerPendientes"), stats: document.getElementById("btnVerEstadisticas") };
-    
-    function cambiarSeccion(nombre) {
+
+    // === NAVEGACIÓN ===
+    const secciones={nuevo:nuevoPedido,pend:pendientes,stats:estadisticas};
+    const botones={nuevo:btnNuevo,pend:btnVerPendientes,stats:btnVerEstadisticas};
+    function cambiarSeccion(n){
       vibrar();
-      Object.values(botones).forEach(b => b.classList.remove("active"));
-      Object.values(secciones).forEach(s => s.style.display = "none");
-      botones[nombre].classList.add("active");
-      secciones[nombre].style.display = "block";
-      if (nombre === 'pend') cargarPendientes();
-      if (nombre === 'stats') renderStats();
+      Object.values(botones).forEach(b=>b.classList.remove("active"));
+      Object.values(secciones).forEach(s=>s.style.display="none");
+      botones[n].classList.add("active");
+      secciones[n].style.display="block";
+      if(n==="pend")cargarPendientes();
+      if(n==="stats")renderStats();
     }
+    botones.nuevo.onclick=()=>cambiarSeccion("nuevo");
+    botones.pend.onclick=()=>cambiarSeccion("pend");
+    botones.stats.onclick=()=>cambiarSeccion("stats");
 
-    botones.nuevo.onclick = () => cambiarSeccion('nuevo');
-    botones.pend.onclick = () => cambiarSeccion('pend');
-    botones.stats.onclick = () => cambiarSeccion('stats');
-
-    // === VERIFICACIÓN DE CONEXIÓN Y SERVICE WORKER ===
-    function setOnlineStatus(isOnline) {
-      document.getElementById("netBanner").style.display = isOnline ? "none" : "block";
-    }
-    window.addEventListener('online', () => setOnlineStatus(true));
-    window.addEventListener('offline', () => setOnlineStatus(false));
+    // === CONEXIÓN Y SW ===
+    function setOnlineStatus(on){document.getElementById("netBanner").style.display=on?"none":"block";}
+    window.addEventListener("online",()=>setOnlineStatus(true));
+    window.addEventListener("offline",()=>setOnlineStatus(false));
     setOnlineStatus(navigator.onLine);
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').catch(e => console.error('Error en Service Worker', e));
-    }
-    
-    // Iniciar
-    renderStats();
+    if("serviceWorker" in navigator)
+      navigator.serviceWorker.register("service-worker.js").then(()=>console.log("✅ SW OK")).catch(e=>console.error("SW err",e));
 
+    renderStats();
   </script>
 </body>
 </html>
