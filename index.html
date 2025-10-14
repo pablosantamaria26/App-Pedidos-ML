@@ -1,61 +1,242 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Pedidos ML</title>
-  <meta name="theme-color" content="#0d6efd">
-  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0d6efd" />
+  <link rel="manifest" href="manifest.webmanifest" />
 
   <style>
-    body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#f2f5f8;margin:0;padding:0;overflow-x:hidden;color:#1f2937}
-    #netBanner{display:none;background:#fde047;color:#1f2937;text-align:center;padding:8px;font-weight:600;font-size:14px}
-    header{background:#0d6efd;color:white;text-align:center;padding:15px;font-size:20px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
-    main{padding:20px}
-    label{font-size:14px;color:#374151}
-    input,textarea{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px solid #ccc;margin-bottom:15px;box-sizing:border-box}
-    button{background:#0d6efd;color:white;border:none;border-radius:12px;padding:16px;width:100%;font-size:18px;font-weight:600;cursor:pointer;transition:transform .1s ease,background .2s ease;box-shadow:0 4px 10px rgba(0,0,0,0.15)}
-    button:active{transform:scale(0.97);background:#0b5ed7}
-    .btn-secondary{background:#e0e7ff;color:#0d6efd;box-shadow:none}
-    .btn-secondary:active{background:#c7d2fe}
-    .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#ffcd38;padding:12px 18px;border-radius:10px;font-size:15px;display:none;box-shadow:0 4px 10px rgba(0,0,0,0.2);z-index:9998}
-    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ccc;display:flex;justify-content:space-around;padding:10px 0;box-shadow:0 -2px 6px rgba(0,0,0,0.15);z-index:9999}
-    .bottom-nav button{flex:1;margin:0 6px;border-radius:8px;background:#e0e7ff;color:#0d6efd;font-weight:600;font-size:16px}
-    .bottom-nav button.active{background:#0d6efd;color:white}
-    .pedido-card{background:white;border-radius:12px;padding:15px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-    #confirmOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:9999}
-    #confirmOverlay div{background:white;border-radius:20px;padding:40px;text-align:center;animation:popIn .4s ease}
-    @keyframes popIn{0%{transform:scale(.7);opacity:0}70%{transform:scale(1.05);opacity:1}100%{transform:scale(1);opacity:1}}
-    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
-    .stat-card{background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center}
-    .stat-title{font-size:13px;color:#6b7280;margin-bottom:6px}
-    .stat-value{font-size:24px;font-weight:700}
-    .stat-ok{color:#16a34a}.stat-warn{color:#d97706}.stat-info{color:#0ea5e9}.stat-gray{color:#6b7280}
+    :root{
+      --primary:#0d6efd; /* cambia con el selector de tema */
+      --bg:#f2f5f8;
+      --text:#1f2937;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --success:#16a34a;
+      --warn:#d97706;
+      --error:#ef4444;
+      --ok:#22c55e;
+      --shadow:0 4px 10px rgba(0,0,0,0.15);
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0b0f14;
+        --text:#e5e7eb;
+        --card:#0f1620;
+        --muted:#94a3b8;
+        --shadow:0 6px 16px rgba(0,0,0,0.5);
+      }
+    }
+
+    html,body{height:100%}
+    body{
+      font-family:'Segoe UI',Roboto,Arial,sans-serif;
+      margin:0; padding:0;
+      background:var(--bg); color:var(--text);
+      overflow-x:hidden;
+    }
+
+    header{
+      position:sticky; top:0; z-index:1000;
+      display:flex; align-items:center; justify-content:center;
+      gap:10px;
+      background:var(--primary); color:#fff;
+      padding:14px 12px;
+      font-size:20px; font-weight:700;
+      box-shadow:0 2px 6px rgba(0,0,0,0.2);
+    }
+    #connDot{
+      position:absolute; right:12px; top:50%;
+      transform:translateY(-50%);
+      width:12px; height:12px; border-radius:50%;
+      box-shadow:0 0 0 3px rgba(255,255,255,0.25);
+    }
+    .online{ background:#22c55e; }
+    .offline{ background:#ef4444; }
+    .syncing{ animation:pulse 0.8s ease-in-out infinite alternate; background:#22c55e;}
+    @keyframes pulse{ from{ filter:brightness(1); } to{ filter:brightness(2); } }
+
+    #netBanner{
+      display:none; text-align:center;
+      background:#fde047; color:#1f2937;
+      padding:8px; font-weight:600; font-size:14px;
+    }
+
+    main{ padding:18px; max-width:860px; margin:0 auto; }
+
+    label{ display:block; font-size:14px; color:var(--muted); margin-bottom:6px; }
+    .row{ margin-bottom:14px; }
+    input,textarea,select{
+      width:100%; box-sizing:border-box;
+      font-size:16px; padding:12px 12px;
+      border-radius:12px; border:1px solid #cbd5e1;
+      background:var(--card); color:var(--text);
+      outline:none;
+    }
+    textarea{ min-height:120px; resize:vertical; }
+
+    .field-ok{ border-color:#22c55e; }
+    .checkmark{
+      font-size:16px; margin-left:6px; vertical-align:middle; color:#22c55e; display:none;
+    }
+    .show-check .checkmark{ display:inline; }
+
+    .toolbar{
+      display:flex; gap:8px; margin:10px 0 14px 0; flex-wrap:wrap;
+      align-items:center;
+    }
+    .btn, .btn-secondary{
+      flex:1; min-width:160px;
+      border:none; border-radius:14px;
+      padding:16px; font-size:17px; font-weight:700; cursor:pointer;
+      box-shadow:var(--shadow);
+      transition:transform .08s ease, filter .15s ease, background .2s ease;
+      touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+    }
+    .btn{ background:var(--primary); color:#fff; }
+    .btn:active{ transform:scale(0.98); filter:brightness(0.95); }
+    .btn[disabled]{ opacity:.6; cursor:not-allowed; filter:grayscale(.2); }
+
+    .btn-secondary{ background:#e0e7ff; color:var(--primary); box-shadow:none; }
+    .btn-secondary:active{ transform:scale(0.98); filter:brightness(0.9); }
+    @media (prefers-color-scheme: dark){ .btn-secondary{ background:#152033; color:#a5b4fc; } }
+
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0; z-index:999;
+      background:var(--card); border-top:1px solid #cbd5e1;
+      display:flex; gap:8px; padding:10px; box-shadow:0 -2px 6px rgba(0,0,0,0.15);
+    }
+    .bottom-nav button{ flex:1; border-radius:10px; padding:12px; font-weight:700; border:none; }
+    .tab-btn{ background:#e0e7ff; color:var(--primary); }
+    .tab-btn.active{ background:var(--primary); color:#fff; }
+    @media (prefers-color-scheme: dark){ .tab-btn{ background:#152033; color:#a5b4fc; } }
+
+    .pedido-card{
+      background:var(--card); border-radius:12px; padding:14px; margin-bottom:12px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .toast{
+      position:fixed; left:50%; bottom:86px; transform:translateX(-50%);
+      background:#ffcd38; color:#1f2937; padding:12px 16px; border-radius:12px;
+      font-size:15px; display:none; box-shadow:0 4px 10px rgba(0,0,0,0.2);
+      z-index:1001;
+    }
+
+    /* Overlay éxito 2.1 */
+    #confirmOverlay{
+      display:none; position:fixed; inset:0; z-index:1002;
+      background:rgba(0,0,0,0.55); backdrop-filter:blur(1px);
+      align-items:center; justify-content:center;
+    }
+    .success-box{
+      background:linear-gradient(180deg,#16a34a,#0ea95e);
+      color:#fff; border-radius:22px; padding:36px 28px; text-align:center;
+      width:min(90vw,420px); box-shadow:0 16px 40px rgba(0,0,0,0.35);
+      animation:popIn .35s ease;
+    }
+    .success-icon{
+      font-size:80px; display:inline-block; animation:spin 0.7s ease forwards;
+      transform-origin:center center;
+    }
+    @keyframes spin{ from{ transform:rotate(-180deg) scale(.6); opacity:.4 } to{ transform:rotate(0) scale(1); opacity:1 } }
+
+    /* Stats 2.7 */
+    .stats-grid{
+      display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;
+    }
+    .stat-card{ background:var(--card); border-radius:14px; padding:16px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+    .stat-title{ font-size:13px; color:var(--muted); margin-bottom:6px; }
+    .stat-value{ font-size:24px; font-weight:800; }
+    .bar{
+      margin-top:8px; height:8px; border-radius:999px; background:#e5e7eb; overflow:hidden;
+    }
+    .bar>.fill{ height:100%; width:0%; background:var(--primary); transition:width .35s ease; }
+
+    /* Selector de tema 2.8 */
+    .theme-row{ display:flex; align-items:center; gap:8px; margin:6px 0 14px 0; flex-wrap:wrap; }
+    .swatch{
+      width:30px; height:30px; border-radius:50%; border:2px solid rgba(0,0,0,0.1); cursor:pointer;
+      box-shadow:0 3px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Buscador pendientes 3.6 */
+    .search-row{ display:flex; gap:8px; margin-bottom:10px; }
+    .search-row input{ flex:1; }
+
+    /* Banner saludo 6.5 */
+    #helloBanner{
+      display:none; margin:-8px 0 10px 0; font-weight:700; color:var(--primary);
+    }
+
   </style>
 </head>
-
 <body>
   <div id="netBanner">📡 Sin conexión — los pedidos se guardan localmente</div>
-  <header>🛒 Pedidos ML</header>
+  <header>
+    <span>🛒 Pedidos ML</span>
+    <span id="connDot" class="offline"></span>
+  </header>
 
-  <!-- NUEVO PEDIDO -->
   <main id="nuevoPedido">
-    <label>📅 Fecha de entrega</label>
-    <input type="date" id="fechaEntrega">
-    <label>🧾 Número de cliente</label>
-    <input type="text" id="numeroCliente" placeholder="Ej: 10331">
-    <label>👤 Nombre del vendedor</label>
-    <input type="text" id="nombreVendedor" placeholder="Ej: MARTIN">
-    <label>📦 Productos solicitados</label>
-    <textarea id="productos" rows="4" placeholder="Detalle de productos..."></textarea>
-    <label>🗒️ Observaciones</label>
-    <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
-    <button id="btnEnviar">Enviar pedido</button>
+    <div id="helloBanner"></div>
+
+    <!-- 2.8 Selector de color de tema -->
+    <div class="theme-row">
+      <span style="font-weight:700;">🎨 Tema:</span>
+      <div class="swatch" data-color="#0d6efd" title="Azul" style="background:#0d6efd"></div>
+      <div class="swatch" data-color="#16a34a" title="Verde" style="background:#16a34a"></div>
+      <div class="swatch" data-color="#ef4444" title="Rojo" style="background:#ef4444"></div>
+      <div class="swatch" data-color="#7c3aed" title="Violeta" style="background:#7c3aed"></div>
+    </div>
+
+    <div class="row show-check" id="rowFecha">
+      <label>📅 Fecha de entrega <span class="checkmark">✅</span></label>
+      <input type="date" id="fechaEntrega" />
+    </div>
+
+    <div class="row show-check" id="rowCliente">
+      <label>🧾 Número de cliente <span class="checkmark">✅</span></label>
+      <input type="number" inputmode="numeric" id="numeroCliente" placeholder="Ej: 10331" />
+    </div>
+
+    <div class="row show-check" id="rowVendedor">
+      <label>👤 Nombre del vendedor <span class="checkmark">✅</span></label>
+      <input type="text" id="nombreVendedor" placeholder="Ej: MARTIN" />
+    </div>
+
+    <div class="row show-check" id="rowProductos">
+      <label>📦 Productos solicitados <span class="checkmark">✅</span></label>
+      <textarea id="productos" rows="4" placeholder="Detalle de productos..."></textarea>
+    </div>
+
+    <div class="row" id="rowObs">
+      <label>🗒️ Observaciones</label>
+      <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
+    </div>
+
+    <div class="row">
+      <label><input type="checkbox" id="shareWA" /> Enviar resumen por WhatsApp al supervisor</label>
+    </div>
+
+    <div class="toolbar">
+      <button id="btnEnviar" class="btn">Enviar pedido</button>
+      <button id="btnNuevoLote" class="btn-secondary" title="3.9 Carga masiva">Agregar otro (mismo día/vendedor)</button>
+    </div>
   </main>
 
   <!-- PENDIENTES -->
   <main id="pendientes" style="display:none;">
     <h3>📋 Pedidos pendientes</h3>
+
+    <div class="search-row">
+      <input id="searchPend" type="search" placeholder="Buscar por cliente o vendedor..." />
+      <button id="btnSyncHoy" class="btn-secondary" title="8.3 Reenviar solo los de hoy">Hoy</button>
+      <button id="btnReintentarTodos" class="btn">Reintentar todos</button>
+    </div>
+
     <div id="listaPendientes"></div>
   </main>
 
@@ -63,207 +244,501 @@
   <main id="estadisticas" style="display:none;">
     <h3>📊 Estadísticas (este dispositivo)</h3>
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-title">Enviados</div><div class="stat-value stat-ok" id="statEnviados">0</div></div>
-      <div class="stat-card"><div class="stat-title">Pendientes</div><div class="stat-value stat-warn" id="statPendientes">0</div></div>
-      <div class="stat-card"><div class="stat-title">Reenviados</div><div class="stat-value stat-info" id="statReenviados">0</div></div>
-      <div class="stat-card"><div class="stat-title">% Éxito</div><div class="stat-value stat-gray" id="statExito">0%</div></div>
+      <div class="stat-card">
+        <div class="stat-title">Enviados</div>
+        <div id="statEnviados" class="stat-value">0</div>
+        <div class="bar"><div id="barEnviados" class="fill" style="width:0%"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Pendientes</div>
+        <div id="statPendientes" class="stat-value">0</div>
+        <div class="bar"><div id="barPendientes" class="fill" style="width:0%"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Reenviados</div>
+        <div id="statReenviados" class="stat-value">0</div>
+        <div class="bar"><div id="barReenviados" class="fill" style="width:0%"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">% Éxito</div>
+        <div id="statExito" class="stat-value">0%</div>
+        <div class="bar"><div id="barExito" class="fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="stat-card" style="margin-top:12px;">
+      <div class="stat-title">Promedio de pedidos enviados por día (5.1)</div>
+      <div id="statPromedio" class="stat-value">0</div>
     </div>
   </main>
 
   <div class="bottom-nav">
-    <button id="btnNuevo" class="active">Nuevo</button>
-    <button id="btnVerPendientes">Pendientes</button>
-    <button id="btnVerEstadisticas">Estadísticas</button>
+    <button id="btnNuevo" class="tab-btn active">Nuevo</button>
+    <button id="btnVerPendientes" class="tab-btn">Pendientes</button>
+    <button id="btnVerEstadisticas" class="tab-btn">Estadísticas</button>
   </div>
 
   <div class="toast" id="toast"></div>
 
+  <!-- Éxito 2.1 -->
   <div id="confirmOverlay">
-    <div>
-      <div style="font-size:80px;color:#22c55e;">✅</div>
-      <h2 style="margin-top:10px;color:#333;">¡Pedido enviado!</h2>
+    <div class="success-box">
+      <div class="success-icon">✅</div>
+      <h2 style="margin:10px 0 0 0;">¡Pedido enviado!</h2>
+      <p style="opacity:.9;margin:6px 0 0 0;">Se guardó correctamente</p>
     </div>
   </div>
 
   <script>
+    // ==== CONFIG ====
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
 
-    // === UTILIDADES ===
-    function vibrar(ms=50){if('vibrate' in navigator)navigator.vibrate(ms);}
-    function mostrarToast(msg,error=false){
-      const t=document.getElementById("toast");
-      t.textContent=msg;
-      t.style.background=error?"#f87171":"#ffcd38";
-      t.style.display="block";
-      setTimeout(()=>t.style.display="none",4000);
-    }
-    function mostrarConfirmacion(){
-      const o=document.getElementById("confirmOverlay");
-      o.style.display="flex"; vibrar(150);
-      setTimeout(()=>o.style.display="none",1800);
-    }
+    // ==== ELEMENTOS ====
+    const $ = id => document.getElementById(id);
+    const fechaEntrega = $("fechaEntrega");
+    const numeroCliente = $("numeroCliente");
+    const nombreVendedor = $("nombreVendedor");
+    const productos = $("productos");
+    const observaciones = $("observaciones");
+    const btnEnviar = $("btnEnviar");
+    const btnNuevoLote = $("btnNuevoLote");
+    const toast = $("toast");
+    const connDot = $("connDot");
+    const netBanner = $("netBanner");
+    const helloBanner = $("helloBanner");
+    const shareWA = $("shareWA");
+    const searchPend = $("searchPend");
 
-    // === LOCAL STORAGE ===
-    const getQueue=()=>JSON.parse(localStorage.getItem("pedidosPendientes")||"[]");
-    const setQueue=a=>localStorage.setItem("pedidosPendientes",JSON.stringify(a));
-    const getStats=()=>JSON.parse(localStorage.getItem("statsPedidos")||'{"enviados":0,"reenviados":0}');
-    const setStats=s=>localStorage.setItem("statsPedidos",JSON.stringify(s));
-    const getEnviados=()=>JSON.parse(localStorage.getItem("pedidosEnviados")||"[]");
-    const setEnviados=a=>localStorage.setItem("pedidosEnviados",JSON.stringify(a));
+    // ==== SONIDO 2.1/2.4 ====
+    const sndOk = new Audio("data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA"); // placeholder corto
+    function vib(ms=60){ if('vibrate' in navigator) navigator.vibrate(ms); }
+    function playOk(){ try{ sndOk.currentTime=0; sndOk.play(); }catch{} }
 
-    function incStat(k){const s=getStats();s[k]=(s[k]||0)+1;setStats(s);renderStats();}
-    function renderStats(){
-      const s=getStats(),pend=getQueue().length;
-      const total=(s.enviados||0)+(s.reenviados||0)+pend;
-      const exito=total>0?Math.round(((s.enviados||0)+(s.reenviados||0))*100/total):0;
-      document.getElementById("statEnviados").textContent=s.enviados||0;
-      document.getElementById("statPendientes").textContent=pend;
-      document.getElementById("statReenviados").textContent=s.reenviados||0;
-      document.getElementById("statExito").textContent=exito+"%";
+    // ==== TOAST ====
+    function showToast(msg, type="info"){
+      toast.textContent = msg;
+      toast.style.background = type==="error" ? "#ef4444" : (type==="ok" ? "#86efac" : "#ffcd38");
+      toast.style.color = type==="error" ? "#fff" : "#1f2937";
+      toast.style.display = "block";
+      setTimeout(()=> toast.style.display="none", 3500);
     }
 
-    // === ENVÍO AL BACKEND ===
-    async function postPedido(pedido){
-      await fetch(BACKEND_URL,{
-        method:"POST", mode:"no-cors",
-        headers:{"Content-Type":"text/plain"},
-        body:JSON.stringify(pedido)
+    // ==== THEME 2.8 ====
+    (()=>{
+      const stored = localStorage.getItem("themeColor");
+      if(stored) document.documentElement.style.setProperty("--primary", stored);
+      document.querySelectorAll(".swatch").forEach(s=>{
+        s.addEventListener("click", ()=>{
+          const c = s.getAttribute("data-color");
+          document.documentElement.style.setProperty("--primary", c);
+          localStorage.setItem("themeColor", c);
+        });
       });
+    })();
+
+    // ==== CHECKLIST 2.9 ====
+    function markOk(inputEl, rowId){
+      const row = $(rowId);
+      if(!row) return;
+      const ok = inputEl.value && String(inputEl.value).trim() !== "";
+      if(ok) inputEl.classList.add("field-ok");
+      else inputEl.classList.remove("field-ok");
+    }
+    [ [fechaEntrega,"rowFecha"], [numeroCliente,"rowCliente"], [nombreVendedor,"rowVendedor"], [productos,"rowProductos"] ]
+      .forEach(([el,row])=> el.addEventListener("input", ()=> markOk(el,row)));
+
+    // ==== STORAGE ====
+    const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+    const setQueue = arr => localStorage.setItem("pedidosPendientes", JSON.stringify(arr));
+    const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
+    const setStats = s => localStorage.setItem("statsPedidos", JSON.stringify(s));
+    const getHistory = () => JSON.parse(localStorage.getItem("historialEnviados") || "[]");
+    const setHistory = h => localStorage.setItem("historialEnviados", JSON.stringify(h));
+    const getSentIds = () => new Set(JSON.parse(localStorage.getItem("idsEnviados") || "[]"));
+    const addSentId = (id) => {
+      const arr = JSON.parse(localStorage.getItem("idsEnviados") || "[]");
+      if(!arr.includes(id)) arr.push(id);
+      localStorage.setItem("idsEnviados", JSON.stringify(arr));
     }
 
-    // === GUARDAR LOCAL Y DESCARTAR DUPLICADOS ===
-    function guardarLocal(pedido){
-      const q=getQueue();
-      if(q.some(p=>p.id===pedido.id)){ // ya existe
-        console.warn("Pedido duplicado no guardado localmente:",pedido.id);
-        return;
-      }
-      q.push(pedido);
-      setQueue(q); renderStats();
-      mostrarToast("📡 Sin conexión. Pedido guardado localmente.");
-    }
-
-    // === ENVÍO PRINCIPAL CON BLOQUEO ===
-    const btnEnviar=document.getElementById("btnEnviar");
-    let enviando=false;
-
-    btnEnviar.addEventListener("click",async()=>{
-      if(enviando) return;
-      enviando=true; btnEnviar.disabled=true; btnEnviar.textContent="Enviando...";
-      vibrar();
-
-      const pedido={
-        id:Date.now(),
-        fechaEntrega:fechaEntrega.value,
-        numeroCliente:numeroCliente.value.trim(),
-        nombreVendedor:nombreVendedor.value.trim(),
-        productos:productos.value.trim(),
-        observaciones:observaciones.value.trim()
+    // 3.4 Guardado automático del borrador
+    const DRAFT_KEY = "draftPedido";
+    function saveDraft(){
+      const d = {
+        fechaEntrega: fechaEntrega.value,
+        numeroCliente: numeroCliente.value,
+        nombreVendedor: nombreVendedor.value,
+        productos: productos.value,
+        observaciones: observaciones.value
       };
-      if(!pedido.fechaEntrega||!pedido.numeroCliente||!pedido.nombreVendedor||!pedido.productos){
-        mostrarToast("⚠️ Completá todos los campos obligatorios",true);
-        enviando=false; btnEnviar.disabled=false; btnEnviar.textContent="Enviar pedido";
-        return;
-      }
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    }
+    function loadDraft(){
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if(!raw) return;
+      try{
+        const d = JSON.parse(raw);
+        fechaEntrega.value = d.fechaEntrega || fechaEntrega.value;
+        numeroCliente.value = d.numeroCliente || "";
+        nombreVendedor.value = d.nombreVendedor || nombreVendedor.value;
+        productos.value = d.productos || "";
+        observaciones.value = d.observaciones || "";
+      }catch{}
+    }
+    [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=> el.addEventListener("input", saveDraft));
 
-      // evitar reenvío del mismo ID
-      const enviados=getEnviados();
-      if(enviados.includes(pedido.id)){
-        mostrarToast("⚠️ Pedido ya enviado. Evitado duplicado.",true);
-        enviando=false; btnEnviar.disabled=false; btnEnviar.textContent="Enviar pedido";
-        return;
-      }
+    // 3.1 / 3.2 Auto-completar vendedor y fecha del día
+    (function prefill(){
+      const vend = localStorage.getItem("vendedorNombre");
+      if(vend) nombreVendedor.value = vend;
+      const today = new Date().toISOString().slice(0,10);
+      if(!fechaEntrega.value) fechaEntrega.value = today;
+      // saludo 6.5
+      helloBanner.style.display = vend ? "block" : "none";
+      if(vend) helloBanner.textContent = `Hola ${vend} 👋`;
+    })();
 
-      if(!navigator.onLine){guardarLocal(pedido);}
-      else{
-        try{
-          await postPedido(pedido);
-          incStat("enviados"); mostrarConfirmacion();
-          enviados.push(pedido.id); setEnviados(enviados);
-          fechaEntrega.value=numeroCliente.value=nombreVendedor.value=productos.value=observaciones.value="";
-        }catch(e){console.error(e); guardarLocal(pedido);}
-      }
-
-      enviando=false; btnEnviar.disabled=false; btnEnviar.textContent="Enviar pedido";
+    // 3.3 Validación de número de cliente (numérico)
+    numeroCliente.addEventListener("input", ()=>{
+      numeroCliente.value = numeroCliente.value.replace(/[^\d]/g,"");
     });
 
-    // === AUTO-SYNC AUTOMÁTICO AL VOLVER CONEXIÓN ===
-    async function syncPendientes(){
-      const q=[...getQueue()];
-      if(!q.length||!navigator.onLine) return;
-      for(const p of q){
-        try{
-          await postPedido(p);
-          const enviados=getEnviados(); if(!enviados.includes(p.id)) enviados.push(p.id);
-          setEnviados(enviados);
-          setQueue(getQueue().filter(x=>x.id!==p.id));
-          incStat("reenviados");
-        }catch(e){console.error("❌ Falla al reenviar",e);}
-      }
-      cargarPendientes();
-      mostrarToast("🔄 Pendientes sincronizados");
-    }
-    window.addEventListener("online",syncPendientes);
+    // ==== ESTADÍSTICAS + 5.1 Promedio por día ====
+    function renderStats(){
+      const s = getStats();
+      const pend = getQueue().length;
+      const enviados = s.enviados||0, reenviados = s.reenviados||0;
+      const total = enviados + reenviados + pend;
+      const ok = enviados + reenviados;
+      const exito = total>0 ? Math.round(ok*100/total) : 0;
 
-    // === PENDIENTES ===
-    async function reenviarPedido(id){
-      vibrar();
-      const q=getQueue();
-      const pedido=q.find(p=>String(p.id)===String(id));
-      if(!pedido)return;
-      if(!navigator.onLine){mostrarToast("⚠️ Sin conexión",true);return;}
-      try{
-        await postPedido(pedido);
-        setQueue(q.filter(p=>p.id!==pedido.id));
-        const enviados=getEnviados(); enviados.push(pedido.id); setEnviados(enviados);
-        incStat("reenviados"); cargarPendientes();
-        mostrarToast("✅ Pedido reenviado");
-      }catch(e){console.error(e);mostrarToast("❌ Error al reenviar",true);}
+      $("statEnviados").textContent = enviados;
+      $("statPendientes").textContent = pend;
+      $("statReenviados").textContent = reenviados;
+      $("statExito").textContent = exito + "%";
+
+      $("barEnviados").style.width = total>0 ? (enviados*100/total)+"%" : "0%";
+      $("barPendientes").style.width = total>0 ? (pend*100/total)+"%" : "0%";
+      $("barReenviados").style.width = total>0 ? (reenviados*100/total)+"%" : "0%";
+      $("barExito").style.width = exito+"%";
+
+      // promedio por día (historial)
+      const hist = getHistory();
+      const byDay = {};
+      hist.forEach(h=>{
+        const day = (new Date(h.timestamp)).toISOString().slice(0,10);
+        byDay[day] = (byDay[day]||0)+1;
+      });
+      const days = Object.keys(byDay).length || 1;
+      const totalEnv = hist.length;
+      $("statPromedio").textContent = (totalEnv/days).toFixed(1);
+    }
+
+    function incStat(k){ const s = getStats(); s[k]=(s[k]||0)+1; setStats(s); renderStats(); }
+
+    // ==== PENDIENTES + 3.6 búsqueda + 8.3 sync hoy ====
+    function cardHtml(p){
+      return `<div class="pedido-card">
+        <b>Cliente:</b> ${p.numeroCliente||"—"}<br>
+        <b>Vendedor:</b> ${p.nombreVendedor||"—"}<br>
+        <b>Fecha:</b> ${p.fechaEntrega||"—"}<br>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:10px 0">
+        <div class="toolbar" style="gap:8px">
+          <button class="btn" onclick="reenviarPedido('${p.id}')">🔄 Reenviar</button>
+          <button class="btn-secondary" onclick="eliminarPendiente('${p.id}')">🗑️ Eliminar</button>
+        </div>
+      </div>`;
     }
 
     function cargarPendientes(){
-      const c=document.getElementById("listaPendientes");
-      c.innerHTML="";
-      const q=getQueue();
-      if(!q.length){c.innerHTML="<p>No hay pedidos pendientes.</p>";}
-      else q.forEach(p=>{
-        const d=document.createElement("div");
-        d.className="pedido-card";
-        d.innerHTML=`<b>Cliente:</b> ${p.numeroCliente}<br>
-        <b>Vendedor:</b> ${p.nombreVendedor}<br>
-        <b>Fecha:</b> ${p.fechaEntrega}<br><hr>
-        <button onclick="reenviarPedido('${p.id}')">🔄 Reenviar</button>`;
-        c.appendChild(d);
-      });
+      const cont = $("listaPendientes");
+      const q = getQueue();
+      const qf = searchPend.value.trim().toLowerCase();
+      let filtered = q;
+      if(qf){
+        filtered = q.filter(p =>
+          String(p.numeroCliente||"").toLowerCase().includes(qf) ||
+          String(p.nombreVendedor||"").toLowerCase().includes(qf)
+        );
+      }
+      cont.innerHTML = filtered.length ? filtered.map(cardHtml).join("") : "<p>No hay pedidos pendientes.</p>";
       renderStats();
-    }
 
-    // === NAVEGACIÓN ===
-    const secciones={nuevo:nuevoPedido,pend:pendientes,stats:estadisticas};
-    const botones={nuevo:btnNuevo,pend:btnVerPendientes,stats:btnVerEstadisticas};
-    function cambiarSeccion(n){
-      vibrar();
-      Object.values(botones).forEach(b=>b.classList.remove("active"));
-      Object.values(secciones).forEach(s=>s.style.display="none");
-      botones[n].classList.add("active");
-      secciones[n].style.display="block";
-      if(n==="pend")cargarPendientes();
-      if(n==="stats")renderStats();
+      // 6.3 alerta si hay muchos pendientes
+      if(q.length>10) showToast("⚠️ Hay muchos pendientes (>10). Recomendado sincronizar.", "info");
     }
-    botones.nuevo.onclick=()=>cambiarSeccion("nuevo");
-    botones.pend.onclick=()=>cambiarSeccion("pend");
-    botones.stats.onclick=()=>cambiarSeccion("stats");
+    searchPend.addEventListener("input", cargarPendientes);
 
-    // === CONEXIÓN Y SW ===
-    function setOnlineStatus(on){document.getElementById("netBanner").style.display=on?"none":"block";}
-    window.addEventListener("online",()=>setOnlineStatus(true));
-    window.addEventListener("offline",()=>setOnlineStatus(false));
+    // ==== CONEXIÓN ====
+    function setOnlineStatus(on){
+      netBanner.style.display = on ? "none" : "block";
+      connDot.className = on ? "online" : "offline";
+    }
+    window.addEventListener("online", async ()=>{
+      setOnlineStatus(true);
+      await syncPendientes(true); // 2.6 parpadeo al sincronizar
+    });
+    window.addEventListener("offline", ()=> setOnlineStatus(false));
     setOnlineStatus(navigator.onLine);
 
-    if("serviceWorker" in navigator)
-      navigator.serviceWorker.register("service-worker.js").then(()=>console.log("✅ SW OK")).catch(e=>console.error("SW err",e));
+    // ==== NOTIFICACIONES (6.1) ====
+    async function ensureNotiPerm(){
+      try{
+        if(!("Notification" in window)) return;
+        if(Notification.permission==="granted") return;
+        if(Notification.permission!=="denied") await Notification.requestPermission();
+      }catch{}
+    }
+    function notify(title, body){
+      try{
+        if(("Notification" in window) && Notification.permission==="granted"){
+          new Notification(title, { body });
+        }
+      }catch{}
+    }
 
+    // ==== ENVÍO AL BACKEND (JSON, con detección de duplicados 3.8) ====
+    async function postPedido(pedido){
+      const res = await fetch(BACKEND_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify(pedido),
+        mode:"cors",
+        cache:"no-store"
+      });
+      // Se espera JSON: {status:"ok"|"duplicate", message?:string}
+      // Si tu backend usa no-cors, cambiar por la versión no-cors que ya tenías.
+      if(!res.ok) throw new Error("Servidor respondió "+res.status);
+      let data = {};
+      try{ data = await res.json(); }catch{ /* si no hay JSON, tomamos ok genérico */ data={status:"ok"}; }
+      return data;
+    }
+
+    // ==== COLA + REENVÍO ====
+    async function reenviarPedido(id){
+      vib();
+      if(!navigator.onLine){ showToast("Sin conexión para reenviar", "error"); return; }
+      const q = getQueue();
+      const p = q.find(x => String(x.id)===String(id));
+      if(!p) return;
+      try{
+        const data = await postPedido(p);
+        // Duplicado: lo quitamos igual (ya llegó)
+        setQueue(q.filter(x => String(x.id)!==String(id)));
+        incStat("reenviados");
+        cargarPendientes();
+        showToast(data.status==="duplicate" ? "Duplicado detectado (descartado)" : "Pedido reenviado", data.status==="duplicate"?"info":"ok");
+        connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700); // 2.6
+        notify("Reenvío OK","El pedido fue reenviado correctamente");
+      }catch(e){
+        console.error(e);
+        showToast("Error al reenviar", "error");
+      }
+    }
+    window.reenviarPedido = reenviarPedido; // para los botones inline
+
+    function eliminarPendiente(id){
+      const q = getQueue().filter(x => String(x.id)!==String(id));
+      setQueue(q);
+      cargarPendientes();
+      showToast("Pedido eliminado de pendientes", "info");
+    }
+    window.eliminarPendiente = eliminarPendiente;
+
+    async function reintentarTodos(filterToday=false){
+      if(!navigator.onLine){ showToast("Sin conexión", "error"); return; }
+      const q = getQueue();
+      if(!q.length){ showToast("No hay pendientes", "info"); return; }
+      const today = new Date().toISOString().slice(0,10);
+      let toSend = q;
+      if(filterToday){
+        toSend = q.filter(p => (p.fechaEntrega||"").slice(0,10)===today);
+        if(!toSend.length){ showToast("No hay pendientes de hoy", "info"); return; }
+      }
+      for(const p of [...toSend]){
+        try{
+          const data = await postPedido(p);
+          setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
+          incStat("reenviados");
+        }catch{/* se queda en cola */}
+      }
+      cargarPendientes();
+      showToast(filterToday ? "Reenviados los de hoy" : "Reintento completo", "ok");
+      connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700); // 2.6
+      notify("Sincronización","Se reenviaron pedidos pendientes");
+    }
+    $("btnReintentarTodos").addEventListener("click", ()=> reintentarTodos(false));
+    $("btnSyncHoy").addEventListener("click", ()=> reintentarTodos(true));
+
+    // ==== ENVÍO NUEVO PEDIDO ====
+    let sending = false; // 1.6
+    const lastSent = getSentIds(); // 1.7
+
+    function buildPedido(){
+      return {
+        id: Date.now(), // único local; tu backend puede crear otro si quiere
+        fechaEntrega: fechaEntrega.value,
+        numeroCliente: (numeroCliente.value||"").trim(),
+        nombreVendedor: (nombreVendedor.value||"").trim(),
+        productos: (productos.value||"").trim(),
+        observaciones: (observaciones.value||"").trim()
+      };
+    }
+
+    function validPedido(p){
+      return p.fechaEntrega && p.numeroCliente && p.nombreVendedor && p.productos;
+    }
+
+    function guardarLocal(p){
+      const q = getQueue(); q.push(p); setQueue(q);
+      renderStats();
+      showToast("📡 Guardado local por conexión", "info");
+    }
+
+    async function enviarPedido(p, options={mass:false}){
+      if(sending) return;
+      // Duplicado local
+      if(lastSent.has(p.id)){ showToast("Duplicado detectado (id repetido)", "info"); return; }
+
+      // lock 1.6
+      sending = true; btnEnviar.disabled = true; btnEnviar.textContent = "Enviando...";
+
+      try{
+        if(!navigator.onLine) throw new Error("offline");
+        const data = await postPedido(p);
+        // 3.8 si backend responde duplicate => OK sin registrar doble
+        addSentId(p.id);
+        lastSent.add(p.id);
+
+        // 3.1 persistir nombre vendedor
+        if(p.nombreVendedor) localStorage.setItem("vendedorNombre", p.nombreVendedor);
+        helloBanner.style.display = "block";
+        helloBanner.textContent = `Hola ${p.nombreVendedor} 👋`;
+
+        // 3.5 historial
+        const hist = getHistory();
+        hist.push({ id:p.id, timestamp:Date.now(), numeroCliente:p.numeroCliente, vendedor:p.nombreVendedor });
+        setHistory(hist);
+
+        incStat("enviados");
+        playOk(); vib(140);
+        showSuccess();
+        notify("Pedido enviado","Se registró correctamente");
+
+        // WhatsApp 6.2
+        if(shareWA.checked){
+          const txt = `Pedido ML%0ACliente: ${encodeURIComponent(p.numeroCliente)}%0AVendedor: ${encodeURIComponent(p.nombreVendedor)}%0AFecha: ${encodeURIComponent(p.fechaEntrega)}%0AProductos:%0A${encodeURIComponent(p.productos)}`;
+          // reemplazá el teléfono por el de tu supervisor (formato internacional sin +)
+          const whatsapp = `https://wa.me/5491112345678?text=${txt}`;
+          window.open(whatsapp, "_blank");
+        }
+
+        // 3.9 carga masiva: si options.mass => mantiene fecha/vendedor; limpia resto
+        if(options.mass){
+          numeroCliente.value = ""; productos.value = ""; observaciones.value = "";
+          productos.focus();
+        }else{
+          fechaEntrega.value=""; numeroCliente.value=""; nombreVendedor.value=""; productos.value=""; observaciones.value="";
+        }
+        saveDraft(); // actualiza borrador
+      }catch(e){
+        // offline o error => 1.2
+        guardarLocal(p);
+      }finally{
+        sending = false; btnEnviar.disabled = false; btnEnviar.textContent = "Enviar pedido";
+      }
+    }
+
+    // 2.1 Overlay éxito
+    function showSuccess(){
+      const ov = $("confirmOverlay");
+      ov.style.display = "flex";
+      setTimeout(()=> ov.style.display = "none", 1600);
+    }
+
+    btnEnviar.addEventListener("click", ()=>{
+      vib();
+      const p = buildPedido();
+      if(!validPedido(p)){ showToast("Completá todos los campos obligatorios","error"); return; }
+      enviarPedido(p, {mass:false});
+    });
+
+    btnNuevoLote.addEventListener("click", ()=>{
+      vib();
+      const p = buildPedido();
+      if(!validPedido(p)){ showToast("Completá todos los campos obligatorios","error"); return; }
+      enviarPedido(p, {mass:true});
+    });
+
+    // ==== AUTO-SYNC al recuperar conexión (1.5 + 2.6 animación) ====
+    async function syncPendientes(animate=false){
+      if(!navigator.onLine) return;
+      const q = getQueue(); if(!q.length) return;
+      if(animate){ connDot.className = "syncing"; }
+      for(const p of [...q]){
+        try{
+          await postPedido(p);
+          setQueue(getQueue().filter(x => x.id!==p.id));
+          incStat("reenviados");
+        }catch{}
+      }
+      cargarPendientes();
+      if(animate){ setTimeout(()=> setOnlineStatus(true), 700); }
+      notify("Sincronizado","Se reenviaron pedidos pendientes");
+    }
+
+    // ==== TABS ====
+    const sections = {nuevo:$("nuevoPedido"), pend:$("pendientes"), stats:$("estadisticas")};
+    const tabs = {nuevo:$("btnNuevo"), pend:$("btnVerPendientes"), stats:$("btnVerEstadisticas")};
+    function setTab(name){
+      vib();
+      Object.values(tabs).forEach(b=> b.classList.remove("active"));
+      Object.values(sections).forEach(s=> s.style.display="none");
+      tabs[name].classList.add("active");
+      sections[name].style.display="block";
+      if(name==="pend") cargarPendientes();
+      if(name==="stats") renderStats();
+    }
+    tabs.nuevo.onclick = ()=> setTab("nuevo");
+    tabs.pend.onclick = ()=> setTab("pend");
+    tabs.stats.onclick = ()=> setTab("stats");
+
+    // ==== PROTECCIÓN CIERRE 4.2 ====
+    window.addEventListener("beforeunload", (e)=>{
+      if(getQueue().length>0){
+        e.preventDefault(); e.returnValue = "";
+      }
+    });
+
+    // ==== RECORDATORIO DIARIO 6.4 (al abrir) ====
+    (function dailyReminder(){
+      const key = "reminderDate";
+      const today = new Date().toISOString().slice(0,10);
+      const last = localStorage.getItem(key);
+      if(last!==today && getQueue().length>0){
+        showToast("⏰ Tienes pedidos sin enviar. Recordatorio diario.", "info");
+        localStorage.setItem(key, today);
+      }
+    })();
+
+    // ==== MENSAJE SI REENVIAR SIN CONEXIÓN 6.6 ====
+    // (ya se maneja en reenviarPedido con toast de error)
+
+    // ==== INICIO ====
+    loadDraft();
     renderStats();
+    ensureNotiPerm();
+    setTab("nuevo");
+
+    // SW / PWA
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('service-worker.js')
+        .then(()=>console.log('✅ Service Worker registrado'))
+        .catch(err=>console.log('❌ SW error',err));
+    }
+
+    // Exponer para inline
+    window.reintentarTodos = reintentarTodos;
   </script>
 </body>
 </html>
