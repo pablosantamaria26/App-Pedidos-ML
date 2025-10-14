@@ -17,17 +17,27 @@
       color: #1f2937;
     }
 
-   <div id="netBanner" style="
-  display:none;
-  background:#fde047;
-  color:#1f2937;
-  text-align:center;
-  padding:8px;
-  font-weight:600;
-  font-size:14px;
-">📡 Sin conexión — los pedidos se guardan localmente</div>
+    /* 🔸 Banner conexión */
+    #netBanner {
+      display:none;
+      background:#fde047;
+      color:#1f2937;
+      text-align:center;
+      padding:8px;
+      font-weight:600;
+      font-size:14px;
+      animation: fadeIn 0.4s ease, fadeOut 0.4s ease forwards;
+    }
 
-    
+    @keyframes fadeIn {
+      from { opacity:0; transform:translateY(-10px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    @keyframes fadeOut {
+      from { opacity:1; }
+      to { opacity:0; }
+    }
 
     header {
       background: #0d6efd;
@@ -85,14 +95,7 @@
       font-size: 15px;
       display: none;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      animation: fadeInOut 5s ease forwards;
       z-index: 9998;
-    }
-
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
-      100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
     }
 
     /* 📱 Menú inferior */
@@ -128,7 +131,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    /* ✅ Animación de confirmación */
+    /* ✅ Animación confirmación */
     #confirmOverlay {
       display:none;
       position:fixed;
@@ -151,7 +154,7 @@
       100% { transform:scale(1); opacity:1; }
     }
 
-    /* 📊 Tarjetas de estadísticas */
+    /* 📊 Estadísticas */
     .stats-grid {
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -171,11 +174,11 @@
     .stat-warn { color:#d97706; }
     .stat-info { color:#0ea5e9; }
     .stat-gray { color:#6b7280; }
-
   </style>
 </head>
 
 <body>
+  <div id="netBanner">📡 Sin conexión — los pedidos se guardan localmente</div>
   <header>🛒 Pedidos ML</header>
 
   <!-- NUEVO PEDIDO -->
@@ -184,7 +187,7 @@
     <input type="date" id="fechaEntrega">
 
     <label>🧾 Número de cliente</label>
-    <input type="text" id="numeroCliente" placeholder="Ej: 10331">
+    <input type="number" inputmode="numeric" id="numeroCliente" placeholder="Ej: 10331">
 
     <label>👤 Nombre del vendedor</label>
     <input type="text" id="nombreVendedor" placeholder="Ej: MARTIN">
@@ -207,7 +210,7 @@
     <div id="listaPendientes"></div>
   </main>
 
-  <!-- ESTADÍSTICAS LOCALES -->
+  <!-- ESTADÍSTICAS -->
   <main id="estadisticas" style="display:none;">
     <h3>📊 Estadísticas (este dispositivo)</h3>
     <div class="stats-grid">
@@ -241,7 +244,6 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- ✅ Pantalla de confirmación -->
   <div id="confirmOverlay">
     <div>
       <div style="font-size:80px;color:#22c55e;">✅</div>
@@ -252,298 +254,51 @@
   <script>
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzpgGmnzY8dOEjKbNztmWpabZHnY74uGUDffy4fc5LD_r0AWebTYcykBHIcTHBQXWpQjQ/exec";
 
-    // ===== Utilidades =====
-    function vibrar(ms = 50) { if ('vibrate' in navigator) navigator.vibrate(ms); }
+    // Vibración y sonido
+    function vibrar(ms=60){ if('vibrate' in navigator) navigator.vibrate(ms); }
+    const sonidoOK = new Audio("data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAA..."); // puedes dejarlo así
 
-    // 🔊 Sonido embebido (funciona offline)
-    const sonidoOK = new Audio("data:audio/mp3;base64,//uQxA..."); // (placeholder)
+    function playSound(){ try{ sonidoOK.currentTime=0; sonidoOK.play(); }catch{} }
 
-    function mostrarToast(msg) {
-      const toast = document.getElementById("toast");
-      toast.textContent = msg;
-      toast.style.display = "block";
-      setTimeout(() => toast.style.display = "none", 4000);
+    function mostrarToast(msg){
+      const toast=document.getElementById("toast");
+      toast.textContent=msg;
+      toast.style.display="block";
+      setTimeout(()=>toast.style.display="none",4000);
     }
 
-    function mostrarConfirmacion() {
-      const overlay = document.getElementById("confirmOverlay");
-      overlay.style.display = "flex";
-      vibrar(150);
-      try { sonidoOK.play(); } catch(e){}
-      setTimeout(() => overlay.style.display = "none", 1800);
+    function mostrarConfirmacion(){
+      const overlay=document.getElementById("confirmOverlay");
+      overlay.style.display="flex";
+      vibrar(120);
+      playSound();
+      setTimeout(()=>overlay.style.display="none",1800);
     }
 
-    // ===== Storage =====
-    function getQueue(){ return JSON.parse(localStorage.getItem("pedidosPendientes") || "[]"); }
-    function setQueue(arr){ localStorage.setItem("pedidosPendientes", JSON.stringify(arr)); }
-
-    function getStats(){
-      return JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
-    }
-    function setStats(s){ localStorage.setItem("statsPedidos", JSON.stringify(s)); }
-
-    function incStat(key){
-      const s = getStats();
-      s[key] = (s[key]||0) + 1;
-      setStats(s);
-      renderStats();
+    // ===== Conexión real =====
+    async function checkConexionReal(){
+      try{
+        const resp=await fetch(BACKEND_URL+"?ping="+Date.now(),{method:'GET',cache:'no-store'});
+        setOnlineStatus(resp.ok||resp.type==="opaque");
+      }catch{ setOnlineStatus(false); }
     }
 
-    function rememberVendedor(nombre){
-      if(nombre) localStorage.setItem("vendedorNombre", nombre);
-    }
-    function loadVendedor(){ return localStorage.getItem("vendedorNombre") || ""; }
-
-    // ===== UI: Pendientes & Stats =====
-    function cargarPendientes() {
-      const cont = document.getElementById("listaPendientes");
-      cont.innerHTML = "";
-      const pedidos = getQueue();
-      if (pedidos.length === 0) {
-        cont.innerHTML = "<p>No hay pedidos pendientes.</p>";
-        renderStats();
-        return;
-      }
-      pedidos.forEach(p => {
-        const div = document.createElement("div");
-        div.className = "pedido-card";
-        div.innerHTML = `
-          <b>Cliente:</b> ${p.numeroCliente}<br>
-          <b>Vendedor:</b> ${p.nombreVendedor}<br>
-          <b>Fecha:</b> ${p.fechaEntrega}<br>
-          <b>Productos:</b><br>${(p.productos||"").replace(/\n/g,"<br>")}
-          <hr>
-          <div style="display:flex; gap:8px;">
-            <button onclick="reenviarPedido('${p.id}')">Reenviar</button>
-            <button class="btn-secondary" onclick="eliminarPendiente('${p.id}')">Eliminar</button>
-          </div>
-        `;
-        cont.appendChild(div);
-      });
-      renderStats();
+    function setOnlineStatus(online){
+      const banner=document.getElementById("netBanner");
+      if(!banner)return;
+      banner.style.display=online?"none":"block";
     }
 
-    function eliminarPendiente(id){
-      const cola = getQueue().filter(p => String(p.id)!==String(id));
-      setQueue(cola);
-      cargarPendientes();
-      mostrarToast("🗑️ Pedido eliminado de pendientes");
-    }
+    setInterval(checkConexionReal,15000);
+    checkConexionReal();
 
-    function renderStats(){
-      const s = getStats();
-      const pendientes = getQueue().length;
-      const enviados = s.enviados || 0;
-      const reenviados = s.reenviados || 0;
-      const totalIntentos = enviados + reenviados + pendientes;
-      const exito = totalIntentos>0 ? Math.round((enviados + reenviados) * 100 / totalIntentos) : 0;
-
-      document.getElementById("statEnviados").textContent = enviados;
-      document.getElementById("statPendientes").textContent = pendientes;
-      document.getElementById("statReenviados").textContent = reenviados;
-      document.getElementById("statExito").textContent = exito + "%";
-    }
-
-    // ===== Envío =====
-    async function postPedido(pedido){
-      // no-cors con content-type simple evita preflight y CORS
-      await fetch(BACKEND_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(pedido)
-      });
-    }
-
-    async function enviarPedidoOnline(pedido){
-      await postPedido(pedido);
-      incStat("enviados");
-      mostrarToast("✅ Pedido enviado correctamente");
-      mostrarConfirmacion();
-    }
-
-    async function reenviarPedido(id) {
-      vibrar();
-      const pedidos = getQueue();
-      const pedido = pedidos.find(p => String(p.id) === String(id));
-      if (!pedido) return;
-      try {
-        await postPedido(pedido);
-        // lo sacamos de la cola local; el backend tiene deduplicación por ID
-        const nuevos = pedidos.filter(p => String(p.id) !== String(id));
-        setQueue(nuevos);
-        incStat("reenviados");
-        cargarPendientes();
-        mostrarToast("✅ Pedido reenviado");
-        mostrarConfirmacion();
-      } catch {
-        mostrarToast("⚠️ Error al reenviar pedido");
-      }
-    }
-
-    async function reintentarTodos(){
-      const pendientes = getQueue();
-      if (pendientes.length===0) { mostrarToast("No hay pendientes"); return; }
-      for(const p of [...pendientes]){ // clonar por si se modifica
-        try {
-          await postPedido(p);
-          // quitar de la cola y contar como reenviado
-          const rest = getQueue().filter(x => String(x.id)!==String(p.id));
-          setQueue(rest);
-          incStat("reenviados");
-        } catch { /* si falla, se queda en cola */ }
-      }
-      cargarPendientes();
-      mostrarToast("🔄 Reintento completo");
-    }
-
-    // ===== Formulario =====
-    document.getElementById("btnEnviar").addEventListener("click", async () => {
-      vibrar();
-      const pedido = {
-        id: Date.now(),
-        fechaEntrega: document.getElementById("fechaEntrega").value,
-        numeroCliente: document.getElementById("numeroCliente").value.trim(),
-        nombreVendedor: document.getElementById("nombreVendedor").value.trim(),
-        productos: document.getElementById("productos").value.trim(),
-        observaciones: document.getElementById("observaciones").value.trim()
-      };
-
-      if (!pedido.fechaEntrega || !pedido.numeroCliente || !pedido.nombreVendedor || !pedido.productos) {
-        mostrarToast("⚠️ Completá todos los campos obligatorios");
-        return;
-      }
-
-      rememberVendedor(pedido.nombreVendedor);
-
-      if (navigator.onLine) {
-        try {
-          await enviarPedidoOnline(pedido);
-          document.getElementById("fechaEntrega").value = "";
-          document.getElementById("numeroCliente").value = "";
-          document.getElementById("productos").value = "";
-          document.getElementById("observaciones").value = "";
-          // mantenemos el nombre del vendedor cargado
-        } catch {
-          const cola = getQueue(); cola.push(pedido); setQueue(cola);
-          mostrarToast("📡 Sin conexión, pedido guardado localmente");
-          renderStats();
-        }
-      } else {
-        const cola = getQueue(); cola.push(pedido); setQueue(cola);
-        mostrarToast("📡 Sin conexión, pedido guardado localmente");
-        renderStats();
-      }
-    });
-
-    // ===== Auto-sync al volver la conexión =====
-    async function syncPendientes(){
-      if (!navigator.onLine) return;
-      const pendientes = getQueue();
-      if (pendientes.length===0) return;
-      for(const p of [...pendientes]){
-        try{
-          await postPedido(p);
-          const rest = getQueue().filter(x => String(x.id)!==String(p.id));
-          setQueue(rest);
-          incStat("reenviados");
-        }catch{/* se mantiene en cola */}
-      }
-      cargarPendientes();
-      mostrarToast("🔄 Pendientes sincronizados");
-    }
-    window.addEventListener("online", syncPendientes);
-
-    // ===== Menú inferior =====
-    const btnNuevo = document.getElementById("btnNuevo");
-    const btnVerPendientes = document.getElementById("btnVerPendientes");
-    const btnVerEstadisticas = document.getElementById("btnVerEstadisticas");
-    const seccionNuevo = document.getElementById("nuevoPedido");
-    const seccionPendientes = document.getElementById("pendientes");
-    const seccionEstadisticas = document.getElementById("estadisticas");
-
-    btnNuevo.addEventListener("click", () => {
-      vibrar();
-      btnNuevo.classList.add("active");
-      btnVerPendientes.classList.remove("active");
-      btnVerEstadisticas.classList.remove("active");
-      seccionNuevo.style.display = "block";
-      seccionPendientes.style.display = "none";
-      seccionEstadisticas.style.display = "none";
-    });
-
-    btnVerPendientes.addEventListener("click", () => {
-      vibrar();
-      btnVerPendientes.classList.add("active");
-      btnNuevo.classList.remove("active");
-      btnVerEstadisticas.classList.remove("active");
-      seccionNuevo.style.display = "none";
-      seccionPendientes.style.display = "block";
-      seccionEstadisticas.style.display = "none";
-      cargarPendientes();
-    });
-
-    btnVerEstadisticas.addEventListener("click", () => {
-      vibrar();
-      btnVerEstadisticas.classList.add("active");
-      btnNuevo.classList.remove("active");
-      btnVerPendientes.classList.remove("active");
-      seccionNuevo.style.display = "none";
-      seccionPendientes.style.display = "none";
-      seccionEstadisticas.style.display = "block";
-      renderStats();
-    });
-
-    // ===== Inicialización =====
-    // Prefill vendedor recordado
-    const remembered = loadVendedor();
-    if (remembered) document.getElementById("nombreVendedor").value = remembered;
-
-    // Registrar SW PWA
-    if ('serviceWorker' in navigator) {
+    // Registrar service worker
+    if('serviceWorker' in navigator){
       navigator.serviceWorker.register('service-worker.js')
-      .then(() => console.log('✅ Service Worker registrado'))
-      .catch(err => console.log('❌ SW error', err));
+      .then(()=>console.log('✅ Service Worker registrado'))
+      .catch(err=>console.log('❌ SW error',err));
     }
-
-    // Al cargar: render inicial
-    renderStats();
-
-    // 🔍 Verificación real de conexión cada 15 segundos
-async function checkConexionReal() {
-  try {
-    const resp = await fetch(BACKEND_URL, { method: 'HEAD', mode: 'no-cors' });
-    setOnlineStatus(true);
-  } catch {
-    setOnlineStatus(false);
-  }
-}
-
-function setOnlineStatus(estado) {
-  const msg = document.getElementById("toast");
-  if (!estado) {
-    msg.textContent = "📡 Sin conexión — los pedidos se guardan localmente";
-    msg.style.background = "#facc15";
-    msg.style.display = "block";
-  } else {
-    msg.style.display = "none";
-  }
-}
-
-// Ejecutar chequeo inicial y luego cada 15 segundos
-setInterval(checkConexionReal, 15000);
-checkConexionReal();
-
-
-    function setOnlineStatus(estado) {
-  const banner = document.getElementById("netBanner");
-  if (estado) {
-    banner.style.display = "none";
-  } else {
-    banner.style.display = "block";
-  }
-}
-
-
   </script>
 </body>
 </html>
+
