@@ -60,51 +60,102 @@
   <div class="toast" id="toast">📡 Sin conexión, pedido guardado localmente</div>
 
   <script>
-    // === Vibración corta (si el dispositivo lo permite) ===
-    function vibrar(ms = 50) {
-      if ('vibrate' in navigator) navigator.vibrate(ms);
-    }
+  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFp4xCZq61Vu5V4A4gFgeFp-0dG9t_PsnToy6GlvLIKr75gkXYwNdmnQyAZEfRhshqbw/exec";
 
-    // === Verificar conexión ===
-    function actualizarEstadoConexion() {
-      const netSpan = document.getElementById("netStatus");
-      netSpan.textContent = navigator.onLine ? "Online" : "Offline";
-      netSpan.style.color = navigator.onLine ? "green" : "red";
-    }
-    window.addEventListener('online', actualizarEstadoConexion);
-    window.addEventListener('offline', actualizarEstadoConexion);
-    actualizarEstadoConexion();
+  // === Vibración corta ===
+  function vibrar(ms = 50) {
+    if ('vibrate' in navigator) navigator.vibrate(ms);
+  }
 
-    // === Guardar pedidos localmente (localStorage) ===
-    function guardarPedidoLocal(pedido) {
-      const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
-      pedidos.push(pedido);
-      localStorage.setItem("pedidosPendientes", JSON.stringify(pedidos));
-    }
+  // === Estado de conexión ===
+  function actualizarEstadoConexion() {
+    const netSpan = document.getElementById("netStatus");
+    const online = navigator.onLine;
+    netSpan.textContent = online ? "Online" : "Offline";
+    netSpan.style.color = online ? "green" : "red";
+    if (online) reenviarPedidosPendientes();
+  }
+  window.addEventListener("online", actualizarEstadoConexion);
+  window.addEventListener("offline", actualizarEstadoConexion);
+  actualizarEstadoConexion();
 
-    // === Mostrar Toast persistente ===
-    function mostrarToast(msg) {
-      const toast = document.getElementById("toast");
-      toast.textContent = msg;
-      toast.style.display = "block";
-      setTimeout(() => { toast.style.display = "none"; }, 5000);
-    }
+  // === Guardar pedidos localmente ===
+  function guardarPedidoLocal(pedido) {
+    const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+    pedidos.push(pedido);
+    localStorage.setItem("pedidosPendientes", JSON.stringify(pedidos));
+  }
 
-    // === Simular creación de pedido ===
-    document.getElementById("btnNuevoPedido").addEventListener("click", () => {
-      vibrar();
-      const pedido = {
-        id: Date.now(),
-        producto: "Producto de prueba",
-        fecha: new Date().toLocaleString()
-      };
-      if (navigator.onLine) {
-        alert("Pedido enviado correctamente ✅");
+  function obtenerPedidosPendientes() {
+    return JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+  }
+
+  function limpiarPedidosEnviados(id) {
+    const pedidos = obtenerPedidosPendientes().filter(p => p.id !== id);
+    localStorage.setItem("pedidosPendientes", JSON.stringify(pedidos));
+  }
+
+  // === Enviar pedido al backend ===
+  async function enviarPedido(pedido) {
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pedido)
+      });
+
+      if (res.ok) {
+        limpiarPedidosEnviados(pedido.id);
+        mostrarToast("✅ Pedido enviado correctamente");
       } else {
-        guardarPedidoLocal(pedido);
-        mostrarToast("📡 Sin conexión, pedido guardado localmente");
+        throw new Error("Error en el envío");
       }
-    });
-  </script>
+    } catch (err) {
+      guardarPedidoLocal(pedido);
+      mostrarToast("⚠️ Sin conexión, pedido guardado localmente");
+    }
+  }
+
+  // === Reenviar automáticamente los pendientes ===
+  async function reenviarPedidosPendientes() {
+    const pendientes = obtenerPedidosPendientes();
+    if (pendientes.length > 0) {
+      mostrarToast(`🔄 Reintentando ${pendientes.length} pedido(s)...`);
+      for (const pedido of pendientes) {
+        await enviarPedido(pedido);
+      }
+    }
+  }
+
+  // === Mostrar toast ===
+  function mostrarToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.style.display = "block";
+    setTimeout(() => { toast.style.display = "none"; }, 5000);
+  }
+
+  // === Botón: crear pedido ===
+  document.getElementById("btnNuevoPedido").addEventListener("click", () => {
+    vibrar();
+
+    const pedido = {
+      id: Date.now().toString(),
+      fechaEntrega: "martes 14/10/2025", // después lo haremos dinámico
+      numeroCliente: "10331",
+      nombreVendedor: "MARTIN",
+      productos: "12 ESPONJA DORADA X13G ROMYL, 12 ESPONJA ACERO X13 G ROMYL",
+      observaciones: "Pedido de prueba desde la app"
+    };
+
+    if (navigator.onLine) {
+      enviarPedido(pedido);
+    } else {
+      guardarPedidoLocal(pedido);
+      mostrarToast("📡 Sin conexión, pedido guardado localmente");
+    }
+  });
+</script>
+
 </body>
 </html>
