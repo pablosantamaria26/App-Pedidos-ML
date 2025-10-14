@@ -387,17 +387,82 @@
    // === GOOGLE FORM (envío directo) ===
 const GF_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfgUbkynVRveiW547pgX0AgvVDGnCd1GUoXooMTDXkiCWgdKA/formResponse";
 
-// Mapeo de campos del Form
 const GF = {
   vendedor: "entry.1003904475",
-  fecha_text: "entry.171879298",        // si el campo fuera de texto (backup)
-  fecha_day: "entry.171879298_day",     // si el campo es de tipo Fecha (día)
-  fecha_month: "entry.171879298_month", // mes
-  fecha_year: "entry.171879298_year",   // año
-  cliente: "entry.1103049985",
-  productos: "entry.1828255967",
+  fecha:    "entry.171879298",       // si el campo fuera texto o acepta ISO directo
+  fecha_day:   "entry.171879298_day",   // <-- añadir
+  fecha_month: "entry.171879298_month", // <-- añadir
+  fecha_year:  "entry.171879298_year",  // <-- añadir
+  cliente:  "entry.1103049985",
+  productos:"entry.1828255967",
   observaciones: "entry.897131524"
 };
+
+
+ function sendToGoogleForm(p){
+  return new Promise((resolve)=>{
+    // Iframe oculto para evitar CORS / redirecciones
+    const iframeName = "gform_iframe_" + Date.now();
+    const iframe = document.createElement("iframe");
+    iframe.name = iframeName;
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+
+    // Form oculto con los entry.*
+    const form = document.createElement("form");
+    form.action = GF_ACTION;
+    form.method = "POST";
+    form.target = iframeName;
+    form.acceptCharset = "UTF-8";
+    form.style.display = "none";
+
+    const add = (name, val)=>{
+      if(!name) return; // por si alguna clave no existe
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = val == null ? "" : String(val);
+      form.appendChild(input);
+    };
+
+    // Campos básicos
+    add(GF.vendedor,     p.nombreVendedor);
+    add(GF.cliente,      p.numeroCliente);
+    add(GF.productos,    p.productos);
+    add(GF.observaciones,p.observaciones || "");
+
+    // Fecha (YYYY-MM-DD). Carga el entry simple y, si existen, los subcampos day/month/year
+    const fecha = (p.fechaEntrega || "").trim();
+    if (fecha) {
+      add(GF.fecha, fecha);
+      const [yyyy, mm, dd] = fecha.split("-");
+      if (GF.fecha_day && GF.fecha_month && GF.fecha_year && dd && mm && yyyy) {
+        add(GF.fecha_day,   dd);
+        add(GF.fecha_month, mm);
+        add(GF.fecha_year,  yyyy);
+      }
+    }
+
+    document.body.appendChild(form);
+
+    const cleanup = () => { try { form.remove(); iframe.remove(); } catch {} };
+
+    // Fallback por si 'load' no dispara (p.ej. Safari)
+    const timeout = setTimeout(() => {
+      cleanup();
+      resolve({ status: "ok", via: "timeout" });
+    }, 5000);
+
+    iframe.addEventListener("load", ()=>{
+      clearTimeout(timeout);
+      cleanup();
+      resolve({ status: "ok" });
+    });
+
+    form.submit();
+  });
+}
+
 
 
   
@@ -700,7 +765,7 @@ const GF = {
 
         try {
             if (!navigator.onLine) throw new Error("offline");
-            postPedido(p);
+            await postPedido(p);
 
             addSentId(p.id);
             lastSent.add(p.id);
@@ -827,61 +892,6 @@ const GF = {
         .then(()=>console.log('✅ Service Worker registrado'))
         .catch(err=>console.log('❌ SW error',err));
     }
-
-
-   function sendToGoogleForm(p) {
-  // Asegura iframe oculto (evita redirecciones y CORS)
-  let iframe = document.getElementById("hidden_iframe_form");
-  if (!iframe) {
-    iframe = document.createElement("iframe");
-    iframe.id = "hidden_iframe_form";
-    iframe.name = "hidden_iframe_form";
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
-  }
-
-  // Crea un form oculto con los entry.*
-  const form = document.createElement("form");
-  form.action = GF_ACTION;
-  form.method = "POST";
-  form.target = "hidden_iframe_form";
-  form.style.display = "none";
-
-  const add = (name, val) => {
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = name;
-    input.value = val == null ? "" : String(val);
-    form.appendChild(input);
-  };
-
-  // Fecha desde <input type="date" />: "YYYY-MM-DD"
-  const [yyyy, mm, dd] = (p.fechaEntrega || "").split("-");
-  const ddmmyyyy = dd && mm && yyyy ? `${dd}/${mm}/${yyyy}` : "";
-
-  add(GF.vendedor, p.nombreVendedor);
-  add(GF.cliente, p.numeroCliente);
-  add(GF.productos, p.productos);
-  add(GF.observaciones, p.observaciones || "");
-
-  // Cargamos ambos formatos por robustez (texto y campos de fecha)
-  if (ddmmyyyy) add(GF.fecha_text, ddmmyyyy);
-  if (dd && mm && yyyy) {
-    add(GF.fecha_day, dd);
-    add(GF.fecha_month, mm);
-    add(GF.fecha_year, yyyy);
-  }
-
-  document.body.appendChild(form);
-  form.submit();
-
-  // Limpieza
-  setTimeout(() => form.remove(), 1000);
-
-  // Devolvemos una promesa "ok" para que tu flujo siga igual
-  return Promise.resolve({ status: "ok" });
-}
-
 
   
 </script>
