@@ -497,22 +497,24 @@
       }catch{}
     }
 
-    // ==== ENVÍO AL BACKEND (JSON, con detección de duplicados 3.8) ====
-    async function postPedido(pedido){
-      const res = await fetch(BACKEND_URL, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify(pedido),
-        mode:"cors",
-        cache:"no-store"
-      });
-      // Se espera JSON: {status:"ok"|"duplicate", message?:string}
-      // Si tu backend usa no-cors, cambiar por la versión no-cors que ya tenías.
-      if(!res.ok) throw new Error("Servidor respondió "+res.status);
-      let data = {};
-      try{ data = await res.json(); }catch{ /* si no hay JSON, tomamos ok genérico */ data={status:"ok"}; }
-      return data;
-    }
+   // ==== ENVÍO AL BACKEND (modo no-cors, estable y sin errores) ====
+async function postPedido(pedido) {
+  try {
+    await fetch(BACKEND_URL, {
+      method: "POST",
+      mode: "no-cors",              // 🚫 evita el chequeo CORS del navegador
+      headers: { "Content-Type": "text/plain" }, // texto plano → sin preflight OPTIONS
+      body: JSON.stringify(pedido)
+    });
+    console.log("✅ Pedido enviado (modo no-cors)");
+    // No se puede leer respuesta en no-cors → asumimos éxito
+    return { status: "ok" };
+  } catch (e) {
+    console.error("❌ Error en fetch:", e);
+    throw e;
+  }
+}
+
 
     // ==== COLA + REENVÍO ====
     async function reenviarPedido(id){
