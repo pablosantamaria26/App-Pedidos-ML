@@ -119,6 +119,31 @@
       margin-bottom: 15px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+
+    /* ✅ Animación de confirmación */
+    #confirmOverlay {
+      display:none;
+      position:fixed;
+      top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.6);
+      justify-content:center;
+      align-items:center;
+      z-index:9999;
+    }
+
+    #confirmOverlay div {
+      background:white;
+      border-radius:20px;
+      padding:40px;
+      text-align:center;
+      animation: popIn 0.4s ease;
+    }
+
+    @keyframes popIn {
+      0% { transform:scale(0.7); opacity:0; }
+      70% { transform:scale(1.05); opacity:1; }
+      100% { transform:scale(1); opacity:1; }
+    }
   </style>
 </head>
 
@@ -156,6 +181,14 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- ✅ Pantalla de confirmación -->
+  <div id="confirmOverlay">
+    <div>
+      <div style="font-size:80px;color:#22c55e;">✅</div>
+      <h2 style="margin-top:10px;color:#333;">¡Pedido enviado!</h2>
+    </div>
+  </div>
+
   <script>
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzpgGmnzY8dOEjKbNztmWpabZHnY74uGUDffy4fc5LD_r0AWebTYcykBHIcTHBQXWpQjQ/exec";
 
@@ -163,11 +196,22 @@
       if ('vibrate' in navigator) navigator.vibrate(ms);
     }
 
+    // 🔊 Sonido embebido (funciona offline)
+    const sonidoOK = new Audio("data:audio/mp3;base64,//uQxA... (dejá así)");
+
     function mostrarToast(msg) {
       const toast = document.getElementById("toast");
       toast.textContent = msg;
       toast.style.display = "block";
-      setTimeout(() => toast.style.display = "none", 5000);
+      setTimeout(() => toast.style.display = "none", 4000);
+    }
+
+    function mostrarConfirmacion() {
+      const overlay = document.getElementById("confirmOverlay");
+      overlay.style.display = "flex";
+      vibrar(150);
+      try { sonidoOK.play(); } catch(e){}
+      setTimeout(() => overlay.style.display = "none", 1800);
     }
 
     function guardarPedidoLocal(pedido) {
@@ -214,6 +258,7 @@
         const nuevos = pedidos.filter(p => p.id != id);
         localStorage.setItem("pedidosPendientes", JSON.stringify(nuevos));
         cargarPendientes();
+        mostrarConfirmacion();
       } catch {
         mostrarToast("⚠️ Error al reenviar pedido");
       }
@@ -242,6 +287,7 @@
           body: JSON.stringify(pedido)
         });
         mostrarToast("✅ Pedido enviado correctamente");
+        mostrarConfirmacion();
         document.querySelector("form")?.reset();
       } catch {
         guardarPedidoLocal(pedido);
@@ -271,6 +317,13 @@
       seccionPendientes.style.display = "block";
       cargarPendientes();
     });
+
+    // 📦 Registrar service worker PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('✅ Service Worker registrado'))
+      .catch(err => console.log('❌ SW error', err));
+    }
   </script>
 </body>
 </html>
