@@ -597,59 +597,76 @@ async function postPedido(pedido) {
       showToast("📡 Guardado local por conexión", "info");
     }
 
-    async function enviarPedido(p, options={mass:false}){
-      if(sending) return;
-      // Duplicado local
-      if(lastSent.has(p.id)){ showToast("Duplicado detectado (id repetido)", "info"); return; }
+   async function enviarPedido(p, options = { mass: false }) {
+  if (sending) return;
+  if (lastSent.has(p.id)) {
+    showToast("Duplicado detectado (id repetido)", "info");
+    return;
+  }
 
-      // lock 1.6
-      sending = true; btnEnviar.disabled = true; btnEnviar.textContent = "Enviando...";
+  // 🔒 Bloqueo de envío
+  sending = true;
+  btnEnviar.disabled = true;
+  btnEnviar.textContent = "Enviando...";
 
-      try{
-        if(!navigator.onLine) throw new Error("offline");
-        const data = await postPedido(p);
-        // 3.8 si backend responde duplicate => OK sin registrar doble
-        addSentId(p.id);
-        lastSent.add(p.id);
+  try {
+    if (!navigator.onLine) throw new Error("offline");
 
-        // 3.1 persistir nombre vendedor
-        if(p.nombreVendedor) localStorage.setItem("vendedorNombre", p.nombreVendedor);
-        helloBanner.style.display = "block";
-        helloBanner.textContent = `Hola ${p.nombreVendedor} 👋`;
+    // ⚡ Envío sin esperar respuesta (modo no-cors)
+    postPedido(p);
+    console.log("📤 Pedido enviado (no-cors)");
 
-        // 3.5 historial
-        const hist = getHistory();
-        hist.push({ id:p.id, timestamp:Date.now(), numeroCliente:p.numeroCliente, vendedor:p.nombreVendedor });
-        setHistory(hist);
+    // === Lo demás queda igual ===
+    addSentId(p.id);
+    lastSent.add(p.id);
 
-        incStat("enviados");
-        playOk(); vib(140);
-        showSuccess();
-        notify("Pedido enviado","Se registró correctamente");
+    if (p.nombreVendedor) localStorage.setItem("vendedorNombre", p.nombreVendedor);
+    helloBanner.style.display = "block";
+    helloBanner.textContent = `Hola ${p.nombreVendedor} 👋`;
 
-        // WhatsApp 6.2
-        if(shareWA.checked){
-          const txt = `Pedido ML%0ACliente: ${encodeURIComponent(p.numeroCliente)}%0AVendedor: ${encodeURIComponent(p.nombreVendedor)}%0AFecha: ${encodeURIComponent(p.fechaEntrega)}%0AProductos:%0A${encodeURIComponent(p.productos)}`;
-          // reemplazá el teléfono por el de tu supervisor (formato internacional sin +)
-          const whatsapp = `https://wa.me/5491133395487?text=${txt}`;
-          window.open(whatsapp, "_blank");
-        }
+    const hist = getHistory();
+    hist.push({
+      id: p.id,
+      timestamp: Date.now(),
+      numeroCliente: p.numeroCliente,
+      vendedor: p.nombreVendedor
+    });
+    setHistory(hist);
 
-        // 3.9 carga masiva: si options.mass => mantiene fecha/vendedor; limpia resto
-        if(options.mass){
-          numeroCliente.value = ""; productos.value = ""; observaciones.value = "";
-          productos.focus();
-        }else{
-          fechaEntrega.value=""; numeroCliente.value=""; nombreVendedor.value=""; productos.value=""; observaciones.value="";
-        }
-        saveDraft(); // actualiza borrador
-      }catch(e){
-        // offline o error => 1.2
-        guardarLocal(p);
-      }finally{
-        sending = false; btnEnviar.disabled = false; btnEnviar.textContent = "Enviar pedido";
-      }
+    incStat("enviados");
+    playOk();
+    vib(140);
+    showSuccess();
+    notify("Pedido enviado", "Se registró correctamente");
+
+    if (shareWA.checked) {
+      const txt = `Pedido ML%0ACliente: ${encodeURIComponent(p.numeroCliente)}%0AVendedor: ${encodeURIComponent(p.nombreVendedor)}%0AFecha: ${encodeURIComponent(p.fechaEntrega)}%0AProductos:%0A${encodeURIComponent(p.productos)}`;
+      const whatsapp = `https://wa.me/5491133395487?text=${txt}`;
+      window.open(whatsapp, "_blank");
     }
+
+    if (options.mass) {
+      numeroCliente.value = "";
+      productos.value = "";
+      observaciones.value = "";
+      productos.focus();
+    } else {
+      fechaEntrega.value = "";
+      numeroCliente.value = "";
+      nombreVendedor.value = "";
+      productos.value = "";
+      observaciones.value = "";
+    }
+    saveDraft();
+  } catch (e) {
+    console.error("❌ Error en envío:", e);
+    guardarLocal(p);
+  } finally {
+    sending = false;
+    btnEnviar.disabled = false;
+    btnEnviar.textContent = "Enviar pedido";
+  }
+}
 
     // 2.1 Overlay éxito
     function showSuccess(){
