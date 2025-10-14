@@ -495,6 +495,32 @@
 
     // Al cargar: render inicial
     renderStats();
+
+    // 🔍 Verificación real de conexión cada 15 segundos
+async function checkConexionReal() {
+  try {
+    const resp = await fetch(BACKEND_URL, { method: 'HEAD', mode: 'no-cors' });
+    setOnlineStatus(true);
+  } catch {
+    setOnlineStatus(false);
+  }
+}
+
+function setOnlineStatus(estado) {
+  const msg = document.getElementById("toast");
+  if (!estado) {
+    msg.textContent = "📡 Sin conexión — los pedidos se guardan localmente";
+    msg.style.background = "#facc15";
+    msg.style.display = "block";
+  } else {
+    msg.style.display = "none";
+  }
+}
+
+// Ejecutar chequeo inicial y luego cada 15 segundos
+setInterval(checkConexionReal, 15000);
+checkConexionReal();
+
   </script>
 </body>
 </html>
