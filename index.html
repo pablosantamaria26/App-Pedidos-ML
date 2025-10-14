@@ -39,7 +39,9 @@
     html,body{ height: 100%; }
     body{
       font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
-      margin: 0; padding: 0 0 100px 0;
+      margin: 0;
+      /* Ajuste clave: Añade padding inferior para que el contenido no quede oculto por el botón fijo y la barra de nav */
+      padding: 0 0 180px 0;
       background: var(--bg); color: var(--text);
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
@@ -116,31 +118,52 @@
     }
     textarea { min-height: 120px; resize: vertical; }
 
-    .checkmark { display: none; margin-left: 8px; color: var(--success); font-weight: 700; }
-    .field-ok + .checkmark { display: inline; }
+    /* === NUEVOS CAMBIOS: Ocultar elementos visualmente === */
+    .row:has(#shareWA) {
+        display: none;
+    }
+    #btnNuevoLote {
+        display: none;
+    }
 
-    /* --- Buttons & Toolbar --- */
-    .toolbar{
-      display: flex; flex-direction: column; gap: 12px; margin: 24px 0 14px 0;
+    /* === NUEVOS CAMBIOS: Botón de Enviar Flotante === */
+    #btnEnviar {
+        position: fixed;
+        bottom: 90px; /* Altura para quedar justo sobre la barra de navegación */
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 998;
+
+        width: 90%;
+        max-width: 420px; /* Un máximo para pantallas más grandes */
+        
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 16px;
+        padding: 18px;
+        font-size: 17px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+        transition: transform .1s ease, filter .15s ease, background .2s ease;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+
+        background: linear-gradient(45deg, var(--primary), #6366f1);
+        color: #fff;
     }
-    .btn, .btn-secondary{
-      display: flex; align-items: center; justify-content: center;
-      width: 100%;
-      border: none; border-radius: 14px;
-      padding: 18px; font-size: 17px; font-weight: 600; cursor: pointer;
-      box-shadow: var(--shadow);
-      transition: transform .1s ease, filter .15s ease, background .2s ease;
-      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    #btnEnviar:active {
+        transform: translateX(-50%) scale(0.97);
+        filter: brightness(1.1);
     }
-    .btn:active, .btn-secondary:active{ transform: scale(0.97); }
-    .btn{
-      background: linear-gradient(45deg, var(--primary), #6366f1);
-      color: #fff;
+    #btnEnviar[disabled] {
+        opacity: .7;
+        cursor: not-allowed;
+        filter: grayscale(.2);
+        box-shadow: var(--shadow);
     }
-    .btn:active{ filter: brightness(1.1); }
-    .btn[disabled]{ opacity:.7; cursor:not-allowed; filter:grayscale(.2); }
-    .btn-secondary{ background: var(--card); color: var(--primary); box-shadow: none; border: 1px solid var(--border); }
-    .btn-secondary:active{ background: var(--border); }
 
     /* --- Spinner --- */
     .spinner {
@@ -463,7 +486,7 @@
     })();
     numeroCliente.addEventListener("input", ()=> numeroCliente.value = numeroCliente.value.replace(/[^\d]/g,""));
 
-    // ==== DAILY COUNTER (NUEVA FUNCIÓN) ====
+    // ==== DAILY COUNTER ====
     function actualizarContadorDiario(increment = false) {
         const key = 'dailyCounter';
         const today = new Date().toISOString().slice(0, 10);
@@ -755,6 +778,14 @@
       Object.values(sections).forEach(s=> s.style.display="none");
       tabs[name].classList.add("active");
       sections[name].style.display="block";
+
+      // Mostrar u ocultar el botón flotante según la pestaña
+      if (name === 'nuevo') {
+        btnEnviar.style.display = 'flex';
+      } else {
+        btnEnviar.style.display = 'none';
+      }
+
       if(name==="pend") cargarPendientes();
       if(name==="stats") renderStats();
     }
