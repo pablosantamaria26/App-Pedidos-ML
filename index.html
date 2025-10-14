@@ -3,336 +3,883 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pedidos ML</title>
-  <meta name="theme-color" content="#ff7f00" />
+  <title>Pedidos ML Pro</title>
+  <meta name="theme-color" content="#ff6600" />
   <link rel="manifest" href="manifest.webmanifest" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
 
   <style>
-    :root {
-      --primary: #ff7f00;
-      --bg: #0b0f14;
-      --text: #f5f5f5;
-      --card: #1a1a1a;
-      --muted: #a3a3a3;
-      --shadow: 0 4px 10px rgba(0,0,0,0.3);
+    /* VARIABLES DE TEMA - Configuración Inicial */
+    :root{
+      /* Claro: Azul Oscuro con Gris Clarito */
+      --primary:#0056b3; /* Azul Oscuro - Botones, Header, Acentos */
+      --secondary-text:#212529; /* Texto Principal */
+      --bg:#f5f5f5; /* Fondo General */
+      --card:#ffffff; /* Fondo de Tarjetas/Campos */
+      --text:#212529;
+      --muted:#6c757d;
+      --success:#28a745;
+      --error:#dc3545;
+      --warn:#ffc107;
+      --ok:#28a745;
+      --shadow:0 4px 12px rgba(0,0,0,0.1);
+      --counter-text:#f5f5f5; /* Blanco para contador en modo Claro */
+      --counter-number:#ffc107; /* Amarillo para el número en modo Claro */
     }
 
-    [data-theme='light'] {
-      --primary: #1e3a8a;
-      --bg: #f5f7fa;
-      --text: #1f2937;
-      --card: #ffffff;
-      --muted: #6b7280;
-      --shadow: 0 2px 6px rgba(0,0,0,0.1);
+    /* DARK MODE (Por defecto si prefiere oscuro O al cambiar a modo Oscuro) */
+    .dark-mode {
+      /* Oscuro: Negro con Naranja Vibrante */
+      --primary:#ff6600; /* Naranja Vibrante - Botones, Header, Acentos */
+      --secondary-text:#ffffff;
+      --bg:#141414; /* Fondo Negro */
+      --card:#212121; /* Fondo de Tarjetas/Campos */
+      --text:#e0e0e0;
+      --muted:#b0b0b0;
+      --shadow:0 6px 16px rgba(0,0,0,0.6);
+      --counter-text:#141414; /* Negro para contador en modo Oscuro */
+      --counter-number:#ffffff; /* Blanco para el número en modo Oscuro */
     }
 
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      transition: background 0.4s, color 0.4s;
+    html,body{height:100%}
+    body{
+      font-family:'Roboto',Arial,sans-serif;
+      margin:0; padding:0;
+      background:var(--bg); color:var(--text);
+      overflow-x:hidden;
+      transition:background 0.3s ease, color 0.3s ease;
     }
 
-    header {
-      position: sticky;
-      top: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--primary);
-      color: #fff;
-      padding: 14px 12px;
-      font-size: 20px;
-      font-weight: 700;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    header{
+      position:sticky; top:0; z-index:1000;
+      display:flex; align-items:center; justify-content:space-between; /* Ajuste */
+      background:var(--primary); color:var(--secondary-text); /* Uso de secondary-text */
+      padding:14px 18px; /* Ajuste de padding */
+      font-size:20px; font-weight:900;
+      box-shadow:var(--shadow);
+    }
+    header span:first-child { flex-grow:1; } /* Asegura que el título ocupe espacio */
+
+    /* Contador de Pedidos Estilizado */
+    #orderCounter {
+      display:flex; align-items:center;
+      background:var(--card);
+      border-radius:20px;
+      padding:4px 10px;
+      font-size:14px;
+      font-weight:700;
+      color:var(--primary); /* El color del texto del contador */
+      box-shadow:0 0 0 2px var(--primary);
+    }
+    #counterValue {
+      margin-left:5px;
+      font-size:18px;
+      font-weight:900;
+      color:var(--counter-number); /* Color específico para el número */
+      background:var(--primary);
+      padding:2px 6px;
+      border-radius:12px;
     }
 
-    #themeSwitch {
-      appearance: none;
-      width: 48px;
-      height: 26px;
-      background: #ccc;
-      border-radius: 26px;
-      position: relative;
-      outline: none;
-      cursor: pointer;
-      transition: background 0.3s;
+    /* Toogle de Tema */
+    #themeToggle {
+      background:none; border:none; color:var(--secondary-text);
+      font-size:24px; cursor:pointer; margin-left:15px;
+      padding:0;
+      line-height:1;
     }
 
-    #themeSwitch::before {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 20px;
-      height: 20px;
-      background: #fff;
-      border-radius: 50%;
-      transition: transform 0.3s;
+    #connDot{
+      width:12px; height:12px; border-radius:50%;
+      margin-left:15px;
+      box-shadow:0 0 0 3px rgba(255,255,255,0.25);
+    }
+    .online{ background:var(--success); }
+    .offline{ background:var(--error); }
+    .syncing{ animation:pulse 0.8s ease-in-out infinite alternate; background:var(--success);}
+    @keyframes pulse{ from{ filter:brightness(1); } to{ filter:brightness(2); } }
+
+    #netBanner{
+      display:none; text-align:center;
+      background:var(--warn); color:var(--secondary-text);
+      padding:8px; font-weight:600; font-size:14px;
     }
 
-    #themeSwitch:checked {
-      background: #ff7f00;
-    }
+    main{ padding:18px; max-width:860px; margin:0 auto; padding-bottom:100px; /* Espacio para botón fijo */ }
 
-    #themeSwitch:checked::before {
-      transform: translateX(22px);
-    }
-
-    #connDot {
-      width: 12px; height: 12px; border-radius: 50%;
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.25);
-    }
-    .online { background:#22c55e; }
-    .offline { background:#ef4444; }
-
-    main { padding: 18px; max-width: 860px; margin: 0 auto; }
-
-    label { display:block; font-size:14px; color:var(--muted); margin-bottom:6px; }
-    input, textarea {
+    label{ display:block; font-size:14px; color:var(--muted); margin-bottom:6px; font-weight:600; }
+    .row{ margin-bottom:18px; }
+    input,textarea,select{
       width:100%; box-sizing:border-box;
-      font-size:16px; padding:12px;
-      border-radius:12px; border:1px solid #cbd5e1;
+      font-size:17px; padding:14px 12px;
+      border-radius:12px; border:1px solid var(--muted);
       background:var(--card); color:var(--text);
       outline:none;
+      transition:border-color 0.2s ease, box-shadow 0.2s ease;
     }
-    textarea { min-height:100px; resize:vertical; }
+    input:focus, textarea:focus, select:focus {
+        border-color:var(--primary);
+        box-shadow:0 0 0 3px var(--primary);
+    }
+    textarea{ min-height:100px; resize:vertical; }
 
-    .btn {
-      display:block;
+    .field-ok{ border-color:var(--success) !important; }
+    .checkmark{
+      font-size:16px; margin-left:6px; vertical-align:middle; color:var(--success); display:none;
+    }
+    .show-check .checkmark{ display:inline; }
+
+    /* Botón de Enviar Fijo */
+    .fixed-action-bar {
+      position:fixed; left:0; right:0; bottom:56px; /* Arriba del bottom-nav */
+      z-index:998;
+      background:var(--bg);
+      padding:10px 18px;
+      box-shadow:0 -4px 10px rgba(0,0,0,0.15);
+      border-top:1px solid var(--card);
+    }
+
+    .btn{
       width:100%;
-      border:none;
-      border-radius:14px;
-      padding:16px;
-      font-size:17px;
-      font-weight:700;
-      background:var(--primary);
-      color:#fff;
+      border:none; border-radius:16px;
+      padding:18px; font-size:18px; font-weight:700; cursor:pointer;
       box-shadow:var(--shadow);
-      cursor:pointer;
-      margin-top:12px;
+      background:var(--primary); color:var(--secondary-text);
+      transition:transform .08s ease, opacity .2s ease;
+      touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .btn:active{ transform:scale(0.98); opacity:0.9; }
+    .btn[disabled]{ opacity:.5; cursor:not-allowed; }
+
+    /* Estilo del Spinner de Carga */
+    .spinner {
+      margin-left:10px;
+      border:4px solid rgba(255,255,255,0.3);
+      border-top:4px solid var(--secondary-text);
+      border-radius:50%;
+      width:18px; height:18px;
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform:rotate(0deg); }
+      100% { transform:rotate(360deg); }
     }
 
-    .btn:active { transform:scale(0.98); }
 
-    .bottom-nav {
-      position:fixed; left:0; right:0; bottom:0;
+    /* bottom-nav (Ahora solo para tabs) */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0; z-index:999;
+      background:var(--card); border-top:1px solid var(--muted);
+      display:flex; gap:0px; padding:0; box-shadow:0 -2px 6px rgba(0,0,0,0.15);
+      height:56px; /* Altura estándar de barra de navegación */
+    }
+    .bottom-nav button{
+      flex:1; border-radius:0; padding:12px; font-weight:700; border:none;
+      background:var(--card); color:var(--muted);
+      transition:color 0.2s ease, background 0.2s ease;
+    }
+    .tab-btn.active{
       background:var(--card);
-      border-top:1px solid #333;
-      display:flex; gap:8px; padding:10px;
+      color:var(--primary);
+      border-top:2px solid var(--primary);
     }
 
-    .tab-btn {
-      flex:1;
-      border:none;
-      border-radius:10px;
-      padding:12px;
-      font-weight:700;
-      background:#333;
-      color:#fff;
-    }
-
-    .tab-btn.active {
-      background:var(--primary);
-    }
-
-    .pedido-card {
-      background:var(--card);
-      border-radius:12px;
-      padding:14px;
-      margin-bottom:12px;
+    .pedido-card{
+      background:var(--card); border-radius:14px; padding:16px; margin-bottom:14px;
       box-shadow:var(--shadow);
+      border-left:5px solid var(--warn); /* Acento visual para pendientes */
+      font-size:15px;
     }
+    .pedido-card b { color:var(--primary); }
 
-    .stat-card {
-      background:var(--card);
-      border-radius:12px;
-      padding:16px;
-      text-align:center;
-      margin:8px 0;
-      box-shadow:var(--shadow);
+    /* Toast mejorado */
+    .toast{
+      position:fixed; left:50%; bottom:70px; transform:translateX(-50%);
+      background:var(--card); color:var(--text); padding:12px 16px; border-radius:12px;
+      font-size:15px; display:none; box-shadow:var(--shadow);
+      z-index:1001; font-weight:600;
+      min-width:200px; text-align:center;
     }
+    .toast.error{ background:var(--error); color:var(--secondary-text); }
+    .toast.ok{ background:var(--success); color:var(--secondary-text); }
+    .toast.info{ background:var(--primary); color:var(--secondary-text); }
 
-    #dailyCount {
-      font-size:14px;
-      background:rgba(255,255,255,0.15);
-      padding:6px 10px;
-      border-radius:12px;
+    /* Overlay éxito mejorado */
+    #confirmOverlay{
+      display:none; position:fixed; inset:0; z-index:1002;
+      background:rgba(0,0,0,0.7); backdrop-filter:blur(2px);
+      align-items:center; justify-content:center;
+    }
+    .success-box{
+      background:linear-gradient(180deg,var(--success),#1e7e34);
+      color:#fff; border-radius:24px; padding:40px 30px; text-align:center;
+      width:min(90vw,380px); box-shadow:0 18px 45px rgba(0,0,0,0.5);
+      animation:popIn .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn{ from{ transform:scale(0.7); opacity:0 } to{ transform:scale(1); opacity:1 } }
+    .success-icon{
+      font-size:80px; display:inline-block; animation:bounce .7s ease forwards;
+    }
+    @keyframes bounce{ 0%, 100%{ transform:translateY(0) } 50%{ transform:translateY(-15px) } }
+
+    /* Stats mejorado */
+    .stats-grid{
+      display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;
+    }
+    .stat-card{ background:var(--card); border-radius:16px; padding:18px; text-align:center; box-shadow:var(--shadow); }
+    .stat-title{ font-size:13px; color:var(--muted); margin-bottom:6px; font-weight:500; }
+    .stat-value{ font-size:30px; font-weight:900; color:var(--primary); }
+    .bar{
+      margin-top:10px; height:8px; border-radius:999px; background:var(--bg); overflow:hidden;
+    }
+    .bar>.fill{ height:100%; width:0%; background:var(--primary); transition:width .35s ease; }
+
+    /* Pendientes */
+    .search-row{ display:flex; gap:8px; margin-bottom:15px; }
+    .search-row input{ flex:1; }
+    .search-row button { border-radius:12px; padding:10px; font-weight:700; font-size:14px; }
+    #btnReintentarTodos { background:var(--warn); color:#fff; }
+    #btnSyncHoy { background:var(--card); color:var(--primary); border:1px solid var(--primary); }
+    
+    /* Saludo */
+    #helloBanner{
+      margin:-8px 0 16px 0; font-weight:700; color:var(--primary);
+      font-size:18px;
     }
 
   </style>
 </head>
-<body>
+<body class="dark-mode"> <div id="netBanner">📡 Sin conexión — los pedidos se guardan localmente</div>
   <header>
-    <input type="checkbox" id="themeSwitch">
-    <span>Pedidos ML</span>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <span id="dailyCount">0 hoy</span>
-      <div id="connDot" class="offline"></div>
+    <span>🛒 Pedidos ML Pro</span>
+    <div id="orderCounter">
+      HOY: <span id="counterValue">0</span>
     </div>
+    <span id="connDot" class="offline" title="Estado de conexión"></span>
+    <button id="themeToggle" title="Cambiar tema">🌙</button>
   </header>
 
   <main id="nuevoPedido">
-    <div class="row">
-      <label>📅 Fecha de entrega</label>
+    <div id="helloBanner" style="display:none;"></div>
+
+    <div class="row show-check" id="rowVendedor">
+      <label>👤 Vendedor (Se guarda) <span class="checkmark">✅</span></label>
+      <input type="text" id="nombreVendedor" placeholder="Ej: MARTIN" />
+    </div>
+
+    <div class="row show-check" id="rowFecha">
+      <label>📅 Fecha de entrega <span class="checkmark">✅</span></label>
       <input type="date" id="fechaEntrega" />
     </div>
-    <div class="row">
-      <label>🧾 Número de cliente</label>
-      <input type="number" id="numeroCliente" />
+
+    <div class="row show-check" id="rowCliente">
+      <label>🧾 Número de cliente <span class="checkmark">✅</span></label>
+      <input type="number" inputmode="numeric" id="numeroCliente" placeholder="Ej: 10331" />
     </div>
-    <div class="row">
-      <label>👤 Nombre del vendedor</label>
-      <input type="text" id="nombreVendedor" />
+
+    <div class="row show-check" id="rowProductos">
+      <label>📦 Productos solicitados <span class="checkmark">✅</span></label>
+      <textarea id="productos" rows="4" placeholder="Detalle de productos..."></textarea>
     </div>
-    <div class="row">
-      <label>📦 Productos</label>
-      <textarea id="productos"></textarea>
-    </div>
-    <div class="row">
+
+    <div class="row" id="rowObs">
       <label>🗒️ Observaciones</label>
-      <textarea id="observaciones"></textarea>
+      <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
     </div>
-    <button id="btnEnviar" class="btn">Enviar pedido</button>
-  </main>
+
+    </main>
 
   <main id="pendientes" style="display:none;">
-    <h3>📋 Pendientes</h3>
+    <h3>📋 Pedidos pendientes de envío</h3>
+
+    <div class="search-row">
+      <input id="searchPend" type="search" placeholder="Buscar por cliente o vendedor..." />
+      <button id="btnSyncHoy" class="btn-secondary" title="Reenviar solo los de hoy">Hoy</button>
+      <button id="btnReintentarTodos" class="btn">Reintentar todos</button>
+    </div>
+
     <div id="listaPendientes"></div>
   </main>
 
   <main id="estadisticas" style="display:none;">
-    <h3>📊 Estadísticas</h3>
-    <div class="stat-card"><div>Enviados</div><div id="statEnviados">0</div></div>
-    <div class="stat-card"><div>Pendientes</div><div id="statPendientes">0</div></div>
+    <h3>📊 Rendimiento (Local)</h3>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title">Enviados OK</div>
+        <div id="statEnviados" class="stat-value">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Pendientes</div>
+        <div id="statPendientes" class="stat-value">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Reenviados</div>
+        <div id="statReenviados" class="stat-value">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">% Éxito</div>
+        <div id="statExito" class="stat-value">0%</div>
+      </div>
+    </div>
+
+    <div class="stat-card" style="margin-top:12px;">
+      <div class="stat-title">Promedio de pedidos por día</div>
+      <div id="statPromedio" class="stat-value">0</div>
+    </div>
   </main>
 
+  <div class="fixed-action-bar">
+    <button id="btnEnviar" class="btn">
+      <span>Enviar Pedido</span>
+    </button>
+  </div>
+
   <div class="bottom-nav">
-    <button id="btnNuevo" class="tab-btn active">Nuevo</button>
-    <button id="btnPend" class="tab-btn">Pendientes</button>
-    <button id="btnStats" class="tab-btn">Estadísticas</button>
+    <button id="btnNuevo" class="tab-btn active">📝 Nuevo</button>
+    <button id="btnVerPendientes" class="tab-btn">⏳ Pendientes</button>
+    <button id="btnVerEstadisticas" class="tab-btn">📈 Stats</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div id="confirmOverlay">
+    <div class="success-box">
+      <div class="success-icon">🎉</div>
+      <h2 style="margin:10px 0 0 0;">¡Pedido enviado!</h2>
+      <p style="opacity:.9;margin:6px 0 0 0;">Se registró correctamente</p>
+    </div>
   </div>
 
   <script>
-    const $ = id => document.getElementById(id);
-    const themeSwitch = $("themeSwitch");
-    const root = document.documentElement;
+    // ==== CONFIG ====
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
 
+    // ==== ELEMENTOS ====
+    const $ = id => document.getElementById(id);
     const fechaEntrega = $("fechaEntrega");
     const numeroCliente = $("numeroCliente");
     const nombreVendedor = $("nombreVendedor");
     const productos = $("productos");
     const observaciones = $("observaciones");
     const btnEnviar = $("btnEnviar");
+    const toast = $("toast");
     const connDot = $("connDot");
-    const dailyCount = $("dailyCount");
+    const netBanner = $("netBanner");
+    const helloBanner = $("helloBanner");
+    const searchPend = $("searchPend");
+    const themeToggle = $("themeToggle");
+    const orderCounter = $("orderCounter");
+    const counterValue = $("counterValue");
 
-    const tabs = {
-      nuevo: $("btnNuevo"),
-      pend: $("btnPend"),
-      stats: $("btnStats")
-    };
-    const sections = {
-      nuevo: $("nuevoPedido"),
-      pend: $("pendientes"),
-      stats: $("estadisticas")
-    };
+    // Contador de pedidos (Almacenamiento Local)
+    const DAILY_COUNTER_KEY = "dailyOrderCount";
+    const LAST_COUNT_DATE_KEY = "lastCountDate";
 
-    // Tema guardado
-    const savedTheme = localStorage.getItem("theme") || "dark";
-    root.dataset.theme = savedTheme;
-    themeSwitch.checked = savedTheme === "dark" ? true : false;
-
-    themeSwitch.addEventListener("change", () => {
-      const mode = themeSwitch.checked ? "dark" : "light";
-      root.dataset.theme = mode;
-      localStorage.setItem("theme", mode);
-    });
-
-    function setTab(tab) {
-      Object.values(tabs).forEach(b => b.classList.remove("active"));
-      Object.values(sections).forEach(s => s.style.display = "none");
-      tabs[tab].classList.add("active");
-      sections[tab].style.display = "block";
+    function getToday() {
+        return new Date().toISOString().slice(0, 10);
     }
 
-    tabs.nuevo.onclick = () => setTab("nuevo");
-    tabs.pend.onclick = () => setTab("pend");
-    tabs.stats.onclick = () => setTab("stats");
+    function loadOrderCounter() {
+        const today = getToday();
+        const lastDate = localStorage.getItem(LAST_COUNT_DATE_KEY);
+        let count = parseInt(localStorage.getItem(DAILY_COUNTER_KEY) || "0");
 
-    // online/offline
-    function setOnline(on) {
-      connDot.className = on ? "online" : "offline";
-    }
-    setOnline(navigator.onLine);
-    window.addEventListener("online", () => setOnline(true));
-    window.addEventListener("offline", () => setOnline(false));
-
-    // contador diario
-    function updateDailyCount() {
-      const today = new Date().toISOString().slice(0,10);
-      const data = JSON.parse(localStorage.getItem("countData") || "{}");
-      if (data.date !== today) {
-        data.date = today;
-        data.count = 0;
-      }
-      dailyCount.textContent = data.count + " hoy";
-      localStorage.setItem("countData", JSON.stringify(data));
-    }
-    updateDailyCount();
-
-    function incDailyCount() {
-      const data = JSON.parse(localStorage.getItem("countData") || "{}");
-      data.count = (data.count || 0) + 1;
-      data.date = new Date().toISOString().slice(0,10);
-      localStorage.setItem("countData", JSON.stringify(data));
-      updateDailyCount();
+        if (lastDate !== today) {
+            // Es un día nuevo, resetear el contador
+            count = 0;
+            localStorage.setItem(LAST_COUNT_DATE_KEY, today);
+            localStorage.setItem(DAILY_COUNTER_KEY, "0");
+        }
+        counterValue.textContent = count;
+        return count;
     }
 
-    // envio
-    async function postPedido(pedido) {
-      try {
-        await fetch(BACKEND_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify(pedido)
-        });
-        return true;
-      } catch (e) {
-        console.error(e);
-        return false;
-      }
+    function incrementOrderCounter() {
+        let count = loadOrderCounter() + 1;
+        localStorage.setItem(DAILY_COUNTER_KEY, count);
+        localStorage.setItem(LAST_COUNT_DATE_KEY, getToday()); // Asegura que la fecha esté actualizada
+        counterValue.textContent = count;
     }
 
-    btnEnviar.addEventListener("click", async () => {
-      const p = {
-        id: Date.now(),
+    // ==== SONIDO / VIBRACIÓN ====
+    const sndOk = new Audio("data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA"); 
+    function vib(ms=60){ if('vibrate' in navigator) navigator.vibrate(ms); }
+    function playOk(){ try{ sndOk.currentTime=0; sndOk.play(); }catch{} }
+
+    // ==== TOAST (Mejorado) ====
+    function showToast(msg, type="info"){
+      toast.textContent = msg;
+      toast.className = `toast ${type}`; // Usa clases para el estilo
+      toast.style.display = "block";
+      setTimeout(()=> toast.style.display="none", 3500);
+    }
+
+    // ==== TEMA (Implementación de Modo Claro/Oscuro) ====
+    const THEME_KEY = "themeMode";
+
+    function applyTheme(mode) {
+        const body = document.body;
+        if (mode === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggle.textContent = '☀️'; // Icono para cambiar a claro
+            localStorage.setItem(THEME_KEY, 'dark');
+        } else {
+            body.classList.remove('dark-mode');
+            themeToggle.textContent = '🌙'; // Icono para cambiar a oscuro
+            localStorage.setItem(THEME_KEY, 'light');
+        }
+        // Aplicar color de tema al meta-tag (opcional para Android)
+        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', primaryColor);
+    }
+
+    function toggleTheme() {
+        const currentMode = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+        applyTheme(currentMode === 'dark' ? 'light' : 'dark');
+    }
+
+    // Cargar tema guardado o por defecto (oscuro)
+    (function initTheme() {
+        const storedMode = localStorage.getItem(THEME_KEY) || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        applyTheme(storedMode);
+        themeToggle.addEventListener('click', toggleTheme);
+    })();
+
+
+    // ==== CHECKLIST ====
+    function markOk(inputEl, rowId){
+      const row = $(rowId);
+      if(!row) return;
+      const ok = inputEl.value && String(inputEl.value).trim() !== "";
+      if(ok) inputEl.classList.add("field-ok");
+      else inputEl.classList.remove("field-ok");
+    }
+    [ [fechaEntrega,"rowFecha"], [numeroCliente,"rowCliente"], [nombreVendedor,"rowVendedor"], [productos,"rowProductos"] ]
+      .forEach(([el,row])=> el.addEventListener("input", ()=> markOk(el,row)));
+
+    // ==== STORAGE (simplificado) ====
+    const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+    const setQueue = arr => localStorage.setItem("pedidosPendientes", JSON.stringify(arr));
+    const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
+    const setStats = s => localStorage.setItem("statsPedidos", JSON.stringify(s));
+    const getHistory = () => JSON.parse(localStorage.getItem("historialEnviados") || "[]");
+    const setHistory = h => localStorage.setItem("historialEnviados", JSON.stringify(h));
+    const getSentIds = () => new Set(JSON.parse(localStorage.getItem("idsEnviados") || "[]"));
+    const addSentId = (id) => {
+      const arr = JSON.parse(localStorage.getItem("idsEnviados") || "[]");
+      if(!arr.includes(id)) arr.push(id);
+      localStorage.setItem("idsEnviados", JSON.stringify(arr));
+    }
+
+    // 3.4 Guardado automático del borrador
+    const DRAFT_KEY = "draftPedido";
+    function saveDraft(){
+      const d = {
         fechaEntrega: fechaEntrega.value,
         numeroCliente: numeroCliente.value,
         nombreVendedor: nombreVendedor.value,
         productos: productos.value,
         observaciones: observaciones.value
       };
-      if (!p.fechaEntrega || !p.numeroCliente || !p.nombreVendedor || !p.productos) {
-        alert("Completá todos los campos");
-        return;
-      }
-      await postPedido(p);
-      incDailyCount();
-      const vend = p.nombreVendedor;
-      localStorage.setItem("vendedorNombre", vend);
-      numeroCliente.value = "";
-      productos.value = "";
-      observaciones.value = "";
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    }
+    function loadDraft(){
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if(!raw) return;
+      try{
+        const d = JSON.parse(raw);
+        fechaEntrega.value = d.fechaEntrega || "";
+        numeroCliente.value = d.numeroCliente || "";
+        nombreVendedor.value = d.nombreVendedor || "";
+        productos.value = d.productos || "";
+        observaciones.value = d.observaciones || "";
+      }catch{}
+    }
+    [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=> el.addEventListener("input", saveDraft));
+
+    // 3.1 / 3.2 Auto-completar vendedor y fecha del día
+    (function prefill(){
+      const vend = localStorage.getItem("vendedorNombre");
+      if(vend) nombreVendedor.value = vend;
+      const today = new Date().toISOString().slice(0,10);
+      if(!fechaEntrega.value) fechaEntreza.value = today;
+      // saludo
+      helloBanner.style.display = vend ? "block" : "none";
+      if(vend) helloBanner.textContent = `¡Hola, ${vend}! 👋 Listos para un nuevo día.`;
+    })();
+
+    // 3.3 Validación de número de cliente (numérico)
+    numeroCliente.addEventListener("input", ()=>{
+      numeroCliente.value = numeroCliente.value.replace(/[^\d]/g,"");
     });
 
-    const vend = localStorage.getItem("vendedorNombre");
-    if (vend) nombreVendedor.value = vend;
+    // ==== ESTADÍSTICAS + Promedio por día ====
+    function renderStats(){
+      const s = getStats();
+      const pend = getQueue().length;
+      const enviados = s.enviados||0, reenviados = s.reenviados||0;
+      const total = enviados + reenviados + pend;
+      const ok = enviados + reenviados;
+      const exito = total>0 ? Math.round(ok*100/total) : 0;
 
+      $("statEnviados").textContent = enviados;
+      $("statPendientes").textContent = pend;
+      $("statReenviados").textContent = reenviados;
+      $("statExito").textContent = exito + "%";
+
+      // promedio por día (historial)
+      const hist = getHistory();
+      const byDay = {};
+      hist.forEach(h=>{
+        const day = (new Date(h.timestamp)).toISOString().slice(0,10);
+        byDay[day] = (byDay[day]||0)+1;
+      });
+      const days = Object.keys(byDay).length || 1;
+      const totalEnv = hist.length;
+      $("statPromedio").textContent = (totalEnv/days).toFixed(1);
+
+      // Renderizar contador diario
+      loadOrderCounter();
+    }
+
+    function incStat(k){ const s = getStats(); s[k]=(s[k]||0)+1; setStats(s); renderStats(); }
+
+    // ==== PENDIENTES + búsqueda ====
+    function cardHtml(p){
+      const date = new Date(p.id).toLocaleString('es-AR', { dateStyle:'short', timeStyle:'short' });
+      return `<div class="pedido-card">
+        <b>ID:</b> ${date} <span style="float:right;">${p.fechaEntrega}</span><br>
+        <b>Cliente:</b> ${p.numeroCliente||"—"}<br>
+        <b>Vendedor:</b> ${p.nombreVendedor||"—"}<br>
+        <hr style="border:none;border-top:1px solid var(--muted);margin:10px 0">
+        <p style="margin:0; font-size:14px; color:var(--text); opacity:0.8;">${p.productos.substring(0, 80)}...</p>
+        <div class="toolbar" style="display:flex; gap:8px; margin-top:10px;">
+          <button class="btn" style="flex:1; padding:10px; border-radius:10px; font-size:15px; background:var(--primary); color:var(--secondary-text);" onclick="reenviarPedido('${p.id}')">🔄 Reenviar</button>
+          <button class="btn-secondary" style="flex:1; padding:10px; border-radius:10px; font-size:15px; background:var(--card); color:var(--error); border:1px solid var(--error);" onclick="eliminarPendiente('${p.id}')">🗑️ Eliminar</button>
+        </div>
+      </div>`;
+    }
+
+    function cargarPendientes(){
+      const cont = $("listaPendientes");
+      const q = getQueue();
+      const qf = searchPend.value.trim().toLowerCase();
+      let filtered = q;
+      if(qf){
+        filtered = q.filter(p =>
+          String(p.numeroCliente||"").toLowerCase().includes(qf) ||
+          String(p.nombreVendedor||"").toLowerCase().includes(qf) ||
+          String(p.productos||"").toLowerCase().includes(qf)
+        );
+      }
+      cont.innerHTML = filtered.length ? filtered.map(cardHtml).join("") : "<p style='text-align:center; padding:20px; color:var(--muted);'>No hay pedidos pendientes. ¡Todo al día! ✨</p>";
+      renderStats();
+    }
+    searchPend.addEventListener("input", cargarPendientes);
+
+    // ==== CONEXIÓN ====
+    function setOnlineStatus(on){
+      netBanner.style.display = on ? "none" : "block";
+      connDot.className = on ? "online" : "offline";
+    }
+    window.addEventListener("online", async ()=>{
+      setOnlineStatus(true);
+      await syncPendientes(true);
+    });
+    window.addEventListener("offline", ()=> setOnlineStatus(false));
+    setOnlineStatus(navigator.onLine);
+
+    // ==== NOTIFICACIONES ====
+    async function ensureNotiPerm(){
+      try{
+        if(!("Notification" in window)) return;
+        if(Notification.permission==="granted") return;
+        if(Notification.permission!=="denied") await Notification.requestPermission();
+      }catch{}
+    }
+    function notify(title, body){
+      try{
+        if(("Notification" in window) && Notification.permission==="granted"){
+          new Notification(title, { body });
+        }
+      }catch{}
+    }
+
+    // ==== ENVÍO AL BACKEND (modo no-cors) ====
+    async function postPedido(pedido) {
+      try {
+        // Simular un pequeño retardo para que se vea el spinner
+        await new Promise(r => setTimeout(r, 400)); 
+
+        await fetch(BACKEND_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(pedido)
+        });
+        console.log("✅ Pedido enviado (modo no-cors)");
+        return { status: "ok" };
+      } catch (e) {
+        console.error("❌ Error en fetch:", e);
+        throw e;
+      }
+    }
+
+
+    // ==== COLA + REENVÍO ====
+    async function reenviarPedido(id){
+      vib();
+      if(!navigator.onLine){ showToast("Sin conexión para reenviar", "error"); return; }
+      
+      // Spinner en el botón de reenvío (temporal, solo en esa tarjeta)
+      const btn = document.querySelector(`.pedido-card button[onclick="reenviarPedido('${id}')"]`);
+      const originalText = btn.innerHTML;
+      btn.innerHTML = 'Enviando... <span class="spinner"></span>';
+      btn.disabled = true;
+
+      const q = getQueue();
+      const p = q.find(x => String(x.id)===String(id));
+      if(!p) return;
+      try{
+        const data = await postPedido(p);
+        setQueue(q.filter(x => String(x.id)!==String(id)));
+        incStat("reenviados");
+        cargarPendientes();
+        showToast("Pedido reenviado exitosamente", "ok");
+        connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700);
+        notify("Reenvío OK","El pedido fue reenviado correctamente");
+      }catch(e){
+        console.error(e);
+        showToast("Error al reenviar. Revisa tu conexión.", "error");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+    window.reenviarPedido = reenviarPedido; 
+
+    function eliminarPendiente(id){
+      const q = getQueue().filter(x => String(x.id)!==String(id));
+      setQueue(q);
+      cargarPendientes();
+      showToast("Pedido eliminado de pendientes", "info");
+    }
+    window.eliminarPendiente = eliminarPendiente;
+
+    async function reintentarTodos(filterToday=false){
+      if(!navigator.onLine){ showToast("Sin conexión", "error"); return; }
+      const q = getQueue();
+      if(!q.length){ showToast("No hay pendientes para reenviar", "info"); return; }
+      
+      // Bloqueo de botones
+      const btnAll = $("btnReintentarTodos");
+      const btnToday = $("btnSyncHoy");
+      btnAll.disabled = true;
+      btnToday.disabled = true;
+      const originalTextAll = btnAll.textContent;
+      btnAll.innerHTML = 'Sincronizando... <span class="spinner"></span>';
+      
+      const today = getToday();
+      let toSend = q;
+      if(filterToday){
+        toSend = q.filter(p => (p.fechaEntrega||"").slice(0,10)===today);
+        if(!toSend.length){ showToast("No hay pendientes de hoy", "info"); btnAll.disabled = false; btnToday.disabled = false; btnAll.textContent = originalTextAll; return; }
+      }
+      
+      let count = 0;
+      for(const p of [...toSend]){
+        try{
+          await postPedido(p);
+          setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
+          incStat("reenviados");
+          count++;
+        }catch{/* se queda en cola */}
+      }
+      
+      cargarPendientes();
+      showToast(count > 0 ? `Se reenviaron ${count} pedidos.` : "No se pudo reenviar ningún pedido.", count > 0 ? "ok" : "warn");
+      connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700);
+      notify("Sincronización","Se reenviaron pedidos pendientes");
+
+      btnAll.disabled = false;
+      btnToday.disabled = false;
+      btnAll.textContent = originalTextAll;
+    }
+    $("btnReintentarTodos").addEventListener("click", ()=> reintentarTodos(false));
+    $("btnSyncHoy").addEventListener("click", ()=> reintentarTodos(true));
+
+    // ==== ENVÍO NUEVO PEDIDO ====
+    let sending = false;
+    const lastSent = getSentIds(); 
+
+    function buildPedido(){
+      return {
+        id: Date.now(),
+        fechaEntrega: fechaEntrega.value,
+        numeroCliente: (numeroCliente.value||"").trim(),
+        nombreVendedor: (nombreVendedor.value||"").trim(),
+        productos: (productos.value||"").trim(),
+        observaciones: (observaciones.value||"").trim()
+      };
+    }
+
+    function validPedido(p){
+      return p.fechaEntrega && p.numeroCliente && p.nombreVendedor && p.productos;
+    }
+
+    function guardarLocal(p){
+      const q = getQueue(); q.push(p); setQueue(q);
+      renderStats();
+      showToast("📡 Guardado local por falta de conexión", "warn");
+    }
+
+    function resetForm(vendedor) {
+      fechaEntrega.value = getToday(); // Sigue siendo la fecha de hoy por defecto
+      numeroCliente.value = "";
+      // MANTENER nombreVendedor
+      nombreVendedor.value = vendedor; 
+      productos.value = "";
+      observaciones.value = "";
+      // Limpiar el draft
+      saveDraft(); 
+      // Desmarcar checks
+      [fechaEntrega,numeroCliente,productos,observaciones].forEach(el => el.classList.remove("field-ok"));
+      nombreVendedor.classList.add("field-ok"); // Asegurar que el vendedor se mantenga marcado
+    }
+
+    async function enviarPedido() {
+      if (sending) return;
+      
+      const p = buildPedido();
+      if(!validPedido(p)){ showToast("Completá todos los campos obligatorios ❌","error"); return; }
+      if (lastSent.has(p.id)) { showToast("Duplicado detectado (id repetido)", "info"); return; }
+
+      // 🔒 Bloqueo de envío + Spinner
+      sending = true;
+      btnEnviar.disabled = true;
+      btnEnviar.innerHTML = 'Enviando... <span class="spinner"></span>';
+
+      try {
+        if (!navigator.onLine) throw new Error("offline");
+
+        // ⚡ Envío sin esperar respuesta (modo no-cors)
+        await postPedido(p);
+        
+        addSentId(p.id);
+        lastSent.add(p.id);
+
+        // Guardar nombre del vendedor (siempre se mantiene)
+        if (p.nombreVendedor) localStorage.setItem("vendedorNombre", p.nombreVendedor);
+        helloBanner.style.display = "block";
+        helloBanner.textContent = `¡Hola, ${p.nombreVendedor}! 👋 Listos para un nuevo día.`;
+
+        // Historial
+        const hist = getHistory();
+        hist.push({ id: p.id, timestamp: Date.now(), numeroCliente: p.numeroCliente, vendedor: p.nombreVendedor });
+        setHistory(hist);
+
+        incStat("enviados");
+        incrementOrderCounter(); // Incrementar el contador diario
+        playOk();
+        vib(140);
+        showSuccess();
+        notify("Pedido enviado", "Se registró correctamente");
+
+        // 🗑️ Limpiar y mantener vendedor
+        resetForm(p.nombreVendedor); 
+        numeroCliente.focus(); // Enfocar al siguiente campo relevante
+        
+      } catch (e) {
+        console.error("❌ Error en envío:", e);
+        guardarLocal(p);
+      } finally {
+        sending = false;
+        btnEnviar.disabled = false;
+        btnEnviar.innerHTML = '<span>Enviar Pedido</span>';
+      }
+    }
+
+    // 2.1 Overlay éxito
+    function showSuccess(){
+      const ov = $("confirmOverlay");
+      ov.style.display = "flex";
+      setTimeout(()=> ov.style.display = "none", 1600);
+    }
+
+    btnEnviar.addEventListener("click", enviarPedido);
+
+    // ==== AUTO-SYNC al recuperar conexión ====
+    async function syncPendientes(animate=false){
+      if(!navigator.onLine) return;
+      const q = getQueue(); if(!q.length) return;
+      if(animate){ connDot.className = "syncing"; }
+      for(const p of [...q]){
+        try{
+          await postPedido(p);
+          setQueue(getQueue().filter(x => x.id!==p.id));
+          incStat("reenviados");
+        }catch{}
+      }
+      cargarPendientes();
+      if(animate){ setTimeout(()=> setOnlineStatus(true), 700); }
+      notify("Sincronizado","Se reenviaron pedidos pendientes");
+    }
+
+    // ==== TABS ====
+    const sections = {nuevo:$("nuevoPedido"), pend:$("pendientes"), stats:$("estadisticas")};
+    const tabs = {nuevo:$("btnNuevo"), pend:$("btnVerPendientes"), stats:$("btnVerEstadisticas")};
+    function setTab(name){
+      vib();
+      Object.values(tabs).forEach(b=> b.classList.remove("active"));
+      Object.values(sections).forEach(s=> s.style.display="none");
+      tabs[name].classList.add("active");
+      sections[name].style.display="block";
+      if(name==="pend") cargarPendientes();
+      if(name==="stats") renderStats();
+    }
+    tabs.nuevo.onclick = ()=> setTab("nuevo");
+    tabs.pend.onclick = ()=> setTab("pend");
+    tabs.stats.onclick = ()=> setTab("stats");
+
+    // ==== PROTECCIÓN CIERRE ====
+    window.addEventListener("beforeunload", (e)=>{
+      if(getQueue().length>0){
+        e.preventDefault(); e.returnValue = "";
+      }
+    });
+
+    // ==== RECORDATORIO DIARIO al abrir ====
+    (function dailyReminder(){
+      const key = "reminderDate";
+      const today = getToday();
+      const last = localStorage.getItem(key);
+      if(last!==today && getQueue().length>0){
+        showToast("⏰ ¡Tienes pedidos sin enviar! Sincroniza en Pendientes.", "warn");
+        localStorage.setItem(key, today);
+      }
+    })();
+
+    // ==== INICIO ====
+    loadOrderCounter(); // Inicializa el contador y lo resetea si es un nuevo día
+    loadDraft();
+    renderStats();
+    ensureNotiPerm();
+    setTab("nuevo");
+    
+    // Marcar el vendedor como OK al inicio si tiene valor (porque se carga de localStorage)
+    if(nombreVendedor.value) nombreVendedor.classList.add("field-ok");
+
+
+    // SW / PWA
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('service-worker.js')
+        .then(()=>console.log('✅ Service Worker registrado'))
+        .catch(err=>console.log('❌ SW error',err));
+    }
+
+    // Exponer para inline
+    window.reintentarTodos = reintentarTodos;
   </script>
 </body>
 </html>
