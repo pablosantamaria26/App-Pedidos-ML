@@ -218,7 +218,7 @@
     </div>
 
     <div class="row">
-      <label><input type="checkbox" id="shareWA" /> Enviar resumen por WhatsApp al supervisor</label>
+      <label><input type="checkbox" id="shareWA" /> Enviar resumen por WhatsApp al Laura</label>
     </div>
 
     <div class="toolbar">
@@ -629,7 +629,7 @@
         if(shareWA.checked){
           const txt = `Pedido ML%0ACliente: ${encodeURIComponent(p.numeroCliente)}%0AVendedor: ${encodeURIComponent(p.nombreVendedor)}%0AFecha: ${encodeURIComponent(p.fechaEntrega)}%0AProductos:%0A${encodeURIComponent(p.productos)}`;
           // reemplazá el teléfono por el de tu supervisor (formato internacional sin +)
-          const whatsapp = `https://wa.me/5491112345678?text=${txt}`;
+          const whatsapp = `https://wa.me/5491133395487?text=${txt}`;
           window.open(whatsapp, "_blank");
         }
 
