@@ -3,162 +3,274 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>App Pedidos ML</title>
-  <link rel="manifest" href="manifest.webmanifest">
+  <title>Pedidos ML</title>
   <meta name="theme-color" content="#0d6efd">
+  <link rel="manifest" href="manifest.webmanifest">
+
   <style>
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f4f6f8;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #f2f5f8;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      overflow-x: hidden;
+      color: #1f2937;
+    }
+
+    header {
+      background: #0d6efd;
+      color: white;
       text-align: center;
+      padding: 15px;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
-    h1 {
-      color: #0d6efd;
-      margin-bottom: 10px;
+
+    main {
+      padding: 20px;
     }
-    #status {
-      color: #555;
+
+    label {
       font-size: 14px;
-      margin-bottom: 20px;
+      color: #374151;
     }
+
+    input, textarea {
+      width: 100%;
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+    }
+
     button {
       background: #0d6efd;
       color: white;
       border: none;
       border-radius: 12px;
-      padding: 18px 30px;
-      font-size: 20px;
+      padding: 16px;
+      width: 100%;
+      font-size: 18px;
+      font-weight: 600;
       cursor: pointer;
-      width: 90%;
-      max-width: 300px;
-      transition: 0.2s;
+      transition: transform 0.1s ease, background 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
     button:active {
-      background: #0b5ed7;
       transform: scale(0.97);
+      background: #0b5ed7;
     }
+
     .toast {
       position: fixed;
-      bottom: 20px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%);
-      background: #ffce00;
+      background: #ffcd38;
       padding: 12px 18px;
-      border-radius: 8px;
-      font-size: 14px;
+      border-radius: 10px;
+      font-size: 15px;
       display: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      animation: fadeInOut 5s ease forwards;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+
+    /* 📱 Menú inferior */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #ccc;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.15);
+    }
+    .bottom-nav button {
+      flex: 1;
+      margin: 0 6px;
+      border-radius: 8px;
+      background: #e0e7ff;
+      color: #0d6efd;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .bottom-nav button.active {
+      background: #0d6efd;
+      color: white;
+    }
+
+    .pedido-card {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
   </style>
 </head>
+
 <body>
-<body>
+  <header>🛒 Pedidos ML</header>
 
-  
-  <h1>🛒 App Pedidos ML</h1>
-  <div id="status">Estado: <span id="netStatus">Online</span></div>
+  <main id="nuevoPedido">
+    <label>📅 Fecha de entrega</label>
+    <input type="date" id="fechaEntrega">
 
-  <!-- FORMULARIO DE PEDIDO -->
-  <form id="pedidoForm" style="max-width:400px;margin:auto;text-align:left;">
-    <label>📅 Fecha de entrega</label><br>
-    <input type="date" id="fechaEntrega" required style="width:100%;padding:10px;margin-bottom:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;"><br>
+    <label>🧾 Número de cliente</label>
+    <input type="text" id="numeroCliente" placeholder="Ej: 10331">
 
-    <label>🧾 Número de cliente</label><br>
-    <input type="text" id="numeroCliente" placeholder="Ej: 10331" required style="width:100%;padding:10px;margin-bottom:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;"><br>
+    <label>👤 Nombre del vendedor</label>
+    <input type="text" id="nombreVendedor" placeholder="Ej: MARTIN">
 
-    <label>👤 Nombre del vendedor</label><br>
-    <input type="text" id="nombreVendedor" placeholder="Ej: MARTIN" required style="width:100%;padding:10px;margin-bottom:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;"><br>
+    <label>📦 Productos solicitados</label>
+    <textarea id="productos" rows="4" placeholder="Detalle de productos..."></textarea>
 
-    <label>📦 Productos solicitados</label><br>
-    <textarea id="productos" rows="4" placeholder="Detalle de productos..." required style="width:100%;padding:10px;margin-bottom:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;"></textarea><br>
+    <label>🗒️ Observaciones</label>
+    <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
 
-    <label>🗒️ Observaciones</label><br>
-    <textarea id="observaciones" rows="2" placeholder="Notas adicionales..." style="width:100%;padding:10px;margin-bottom:20px;font-size:16px;border-radius:8px;border:1px solid #ccc;"></textarea><br>
+    <button id="btnEnviar">Enviar pedido</button>
+  </main>
 
-    <button type="submit" id="btnEnviar" style="width:100%;padding:18px;font-size:20px;background:#0d6efd;color:white;border:none;border-radius:12px;cursor:pointer;">Enviar pedido</button>
-  </form>
+  <main id="pendientes" style="display:none;">
+    <h3>📋 Pedidos pendientes</h3>
+    <div id="listaPendientes"></div>
+  </main>
 
-  <div class="toast" id="toast">📡 Sin conexión, pedido guardado localmente</div>
+  <div class="bottom-nav">
+    <button id="btnNuevo" class="active">Nuevo</button>
+    <button id="btnVerPendientes">Pendientes</button>
+  </div>
 
+  <div class="toast" id="toast"></div>
 
-
-
-  
   <script>
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzpgGmnzY8dOEjKbNztmWpabZHnY74uGUDffy4fc5LD_r0AWebTYcykBHIcTHBQXWpQjQ/exec";
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzpgGmnzY8dOEjKbNztmWpabZHnY74uGUDffy4fc5LD_r0AWebTYcykBHIcTHBQXWpQjQ/exec";
 
-// === Vibración ===
-function vibrar(ms = 50) {
-  if ('vibrate' in navigator) navigator.vibrate(ms);
-}
+    function vibrar(ms = 50) {
+      if ('vibrate' in navigator) navigator.vibrate(ms);
+    }
 
-// === Estado de conexión ===
-function actualizarEstadoConexion() {
-  const netSpan = document.getElementById("netStatus");
-  const online = navigator.onLine;
-  netSpan.textContent = online ? "Online" : "Offline";
-  netSpan.style.color = online ? "green" : "red";
-}
-window.addEventListener("online", actualizarEstadoConexion);
-window.addEventListener("offline", actualizarEstadoConexion);
-actualizarEstadoConexion();
+    function mostrarToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 5000);
+    }
 
-// === Guardar pedidos localmente ===
-function guardarPedidoLocal(pedido) {
-  const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
-  pedidos.push(pedido);
-  localStorage.setItem("pedidosPendientes", JSON.stringify(pedidos));
-}
+    function guardarPedidoLocal(pedido) {
+      const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+      pedidos.push(pedido);
+      localStorage.setItem("pedidosPendientes", JSON.stringify(pedidos));
+    }
 
-// === Mostrar toast ===
-function mostrarToast(msg) {
-  const toast = document.getElementById("toast");
-  toast.textContent = msg;
-  toast.style.display = "block";
-  setTimeout(() => { toast.style.display = "none"; }, 5000);
-}
+    function cargarPendientes() {
+      const cont = document.getElementById("listaPendientes");
+      cont.innerHTML = "";
+      const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+      if (pedidos.length === 0) {
+        cont.innerHTML = "<p>No hay pedidos pendientes.</p>";
+        return;
+      }
+      pedidos.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "pedido-card";
+        div.innerHTML = `
+          <b>Cliente:</b> ${p.numeroCliente}<br>
+          <b>Vendedor:</b> ${p.nombreVendedor}<br>
+          <b>Fecha:</b> ${p.fechaEntrega}<br>
+          <b>Productos:</b><br>${p.productos.replace(/\n/g,"<br>")}
+          <hr>
+          <button onclick="reenviarPedido('${p.id}')">Reenviar</button>
+        `;
+        cont.appendChild(div);
+      });
+    }
 
-// === Enviar pedido ===
-async function enviarPedido(pedido) {
-  try {
-    await fetch(BACKEND_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(pedido)
+    async function reenviarPedido(id) {
+      vibrar();
+      const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+      const pedido = pedidos.find(p => p.id == id);
+      if (!pedido) return;
+      try {
+        await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(pedido)
+        });
+        mostrarToast("✅ Pedido reenviado correctamente");
+        const nuevos = pedidos.filter(p => p.id != id);
+        localStorage.setItem("pedidosPendientes", JSON.stringify(nuevos));
+        cargarPendientes();
+      } catch {
+        mostrarToast("⚠️ Error al reenviar pedido");
+      }
+    }
+
+    document.getElementById("btnEnviar").addEventListener("click", async () => {
+      vibrar();
+      const pedido = {
+        id: Date.now(),
+        fechaEntrega: document.getElementById("fechaEntrega").value,
+        numeroCliente: document.getElementById("numeroCliente").value.trim(),
+        nombreVendedor: document.getElementById("nombreVendedor").value.trim(),
+        productos: document.getElementById("productos").value.trim(),
+        observaciones: document.getElementById("observaciones").value.trim()
+      };
+
+      if (!pedido.fechaEntrega || !pedido.numeroCliente || !pedido.nombreVendedor || !pedido.productos) {
+        mostrarToast("⚠️ Completá todos los campos obligatorios");
+        return;
+      }
+
+      try {
+        await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(pedido)
+        });
+        mostrarToast("✅ Pedido enviado correctamente");
+        document.querySelector("form")?.reset();
+      } catch {
+        guardarPedidoLocal(pedido);
+        mostrarToast("📡 Sin conexión, pedido guardado localmente");
+      }
     });
-    mostrarToast("✅ Pedido enviado correctamente");
-  } catch (err) {
-    guardarPedidoLocal(pedido);
-    mostrarToast("⚠️ Sin conexión, pedido guardado localmente");
-  }
-}
 
-// === Evento al enviar formulario ===
-document.getElementById("pedidoForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  vibrar();
+    // 🔹 Menú inferior
+    const btnNuevo = document.getElementById("btnNuevo");
+    const btnVerPendientes = document.getElementById("btnVerPendientes");
+    const seccionNuevo = document.getElementById("nuevoPedido");
+    const seccionPendientes = document.getElementById("pendientes");
 
-  const pedido = {
-    id: Date.now(),
-    fechaEntrega: document.getElementById("fechaEntrega").value,
-    numeroCliente: document.getElementById("numeroCliente").value.trim(),
-    nombreVendedor: document.getElementById("nombreVendedor").value.trim(),
-    productos: document.getElementById("productos").value.trim(),
-    observaciones: document.getElementById("observaciones").value.trim()
-  };
+    btnNuevo.addEventListener("click", () => {
+      vibrar();
+      btnNuevo.classList.add("active");
+      btnVerPendientes.classList.remove("active");
+      seccionNuevo.style.display = "block";
+      seccionPendientes.style.display = "none";
+    });
 
-  if (navigator.onLine) {
-    enviarPedido(pedido);
-  } else {
-    guardarPedidoLocal(pedido);
-    mostrarToast("📡 Sin conexión, pedido guardado localmente");
-  }
-
-  e.target.reset(); // limpia el formulario
-});
-</script>
-
-
+    btnVerPendientes.addEventListener("click", () => {
+      vibrar();
+      btnVerPendientes.classList.add("active");
+      btnNuevo.classList.remove("active");
+      seccionNuevo.style.display = "none";
+      seccionPendientes.style.display = "block";
+      cargarPendientes();
+    });
+  </script>
 </body>
 </html>
