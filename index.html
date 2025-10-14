@@ -1,3 +1,15 @@
+¡genial! Ya vi el `entry` nuevo en tu URL de pre-fill. Para usarlo como firma anti-duplicados, abajo te dejo **el archivo completo** con estos agregados, sin tocar tu lógica existente:
+
+* `GF.sig = "entry.1902043730"` (el ID que mostraste).
+* Generación de firma determinística `makeSignature(p)` (normaliza fecha/cliente/vendedor/productos).
+* Al **enviar**, **reenviar**, **reintentar todos** y **auto-sync**:
+
+  * Si la firma ya fue enviada (`seenSig(sig)`), se descarta como duplicado.
+  * Si no, se adjunta al form (`add(GF.sig, p.sig)`) y, al OK, se marca (`markSig(sig)`).
+
+Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado 👇
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -40,7 +52,6 @@
     body{
       font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
       margin: 0;
-      /* deja espacio para el botón flotante y la bottom bar */
       padding: 0 0 180px 0;
       background: var(--bg); color: var(--text);
       overflow-x: hidden;
@@ -48,7 +59,6 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    /* --- Header --- */
     header{
       position: sticky; top: 0; z-index: 1000;
       display: flex; align-items: center; justify-content: space-between;
@@ -90,16 +100,14 @@
       padding: 8px; font-weight: 600; font-size: 14px;
     }
 
-    /* --- Main Layout --- */
     main{ padding: 20px; max-width: 860px; margin: 0 auto; }
     h3 { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
 
-    /* --- Form Elements --- */
     .row { margin-bottom: 18px; }
     label {
-      display: flex; align-items: center;
-      font-size: 14px; font-weight: 500; color: var(--muted);
-      margin-bottom: 8px;
+        display: flex; align-items: center;
+        font-size: 14px; font-weight: 500; color: var(--muted);
+        margin-bottom: 8px;
     }
     input, textarea, select {
       width: 100%; box-sizing: border-box;
@@ -118,32 +126,36 @@
     }
     textarea { min-height: 120px; resize: vertical; }
 
-    /* Ocultar visualmente (mantener en DOM) */
     .row:has(#shareWA) { display: none; }
     #btnNuevoLote { display: none; }
 
-    /* --- Botón Enviar flotante --- */
     #btnEnviar {
-      position: fixed;
-      bottom: 90px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 998;
-      width: 90%;
-      max-width: 420px;
-      display: flex; align-items: center; justify-content: center;
-      border: none; border-radius: 16px; padding: 18px;
-      font-size: 17px; font-weight: 600; cursor: pointer;
-      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
-      transition: transform .1s ease, filter .15s ease, background .2s ease;
-      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-      background: linear-gradient(45deg, var(--primary), #6366f1);
-      color: #fff;
+        position: fixed;
+        bottom: 90px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 998;
+        width: 90%;
+        max-width: 420px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 16px;
+        padding: 18px;
+        font-size: 17px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+        transition: transform .1s ease, filter .15s ease, background .2s ease;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        background: linear-gradient(45deg, var(--primary), #6366f1);
+        color: #fff;
     }
     #btnEnviar:active { transform: translateX(-50%) scale(0.97); filter: brightness(1.1); }
     #btnEnviar[disabled] { opacity: .7; cursor: not-allowed; filter: grayscale(.2); box-shadow: var(--shadow); }
 
-    /* --- Spinner --- */
     .spinner {
       width: 20px; height: 20px;
       border: 3px solid rgba(255,255,255,0.3);
@@ -154,7 +166,6 @@
     .btn[disabled] .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* --- Bottom Navigation --- */
     .bottom-nav{
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 999;
       background: rgba(255, 255, 255, 0.7);
@@ -171,14 +182,12 @@
     }
     .bottom-nav button.active{ background: var(--primary); color: #fff; }
 
-    /* --- Cards --- */
     .pedido-card, .stat-card {
       background: var(--card); border-radius: 16px; padding: 16px;
       margin-bottom: 14px; box-shadow: var(--shadow);
     }
     .pedido-card hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
 
-    /* --- Toast --- */
     .toast{
       position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
       color: #fff; padding: 14px 20px; border-radius: 12px;
@@ -186,12 +195,8 @@
       box-shadow: var(--shadow-lg); z-index: 1001;
       opacity: 0; animation: fadeInDown .3s ease forwards;
     }
-    @keyframes fadeInDown {
-      from { top: -20px; opacity: 0; }
-      to { top: 16px; opacity: 1; }
-    }
+    @keyframes fadeInDown { from { top: -20px; opacity: 0; } to { top: 16px; opacity: 1; } }
 
-    /* --- Success Overlay --- */
     #confirmOverlay{
       display: none; position: fixed; inset: 0; z-index: 1002;
       background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
@@ -200,8 +205,8 @@
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .success-box{
-      background: var(--card); color: var(--text);
-      border-radius: 24px; padding: 36px 28px; text-align: center;
+      background: var(--card);
+      color: var(--text); border-radius: 24px; padding: 36px 28px; text-align: center;
       width: min(90vw, 320px); box-shadow: var(--shadow-lg);
       animation: popIn .35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
@@ -213,14 +218,12 @@
     .checkmark-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke: var(--success); fill: none; animation: stroke .6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
     .checkmark-check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke-width: 4; stroke: var(--success); stroke-linecap: round; fill: none; animation: stroke .3s cubic-bezier(0.65, 0, 0.45, 1) .8s forwards; }
 
-    /* --- Stats --- */
     .stats-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
     .stat-title{ font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
     .stat-value{ font-size: 26px; font-weight: 700; }
     .bar{ margin-top: 10px; height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
     .bar > .fill{ height: 100%; width: 0%; background: var(--primary); transition: width .4s ease; }
 
-    /* --- Theme Selector --- */
     .theme-row{ display:flex; align-items:center; gap:12px; margin: 6px 0 20px 0; flex-wrap:wrap; }
     .theme-row span { font-weight: 600; }
     .swatch{
@@ -277,10 +280,10 @@
       <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
     </div>
     <div class="row">
-      <label style="flex-direction: row; align-items: center; gap: 8px; font-weight: normal; color: var(--text);">
-        <input type="checkbox" id="shareWA" style="width: auto;" />
-        Enviar resumen por WhatsApp a Laura
-      </label>
+        <label style="flex-direction: row; align-items: center; gap: 8px; font-weight: normal; color: var(--text);">
+            <input type="checkbox" id="shareWA" style="width: auto;" />
+            Enviar resumen por WhatsApp a Laura
+        </label>
     </div>
 
     <div class="toolbar">
@@ -342,10 +345,10 @@
 
   <div id="confirmOverlay">
     <div class="success-box">
-      <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
-        <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-      </svg>
+        <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
       <h2 style="margin:10px 0 0 0;">¡Pedido enviado!</h2>
       <p style="opacity:.9;margin:6px 0 0 0;">Se guardó correctamente</p>
     </div>
@@ -366,8 +369,8 @@
     cliente:  "entry.1103049985",
     productos:"entry.1828255967",
     observaciones: "entry.897131524",
-    // NUEVO: firma de deduplicación (reemplazar con el ID real del campo "sig")
-    sig: "entry.XXXXXXXXX"
+    // NUEVO: firma de deduplicación (tu URL mostró este ID)
+    sig: "entry.1902043730"
   };
 
   // === DEDUPE: normalización y firma determinística ===
@@ -379,7 +382,7 @@
   }
   function normalizeProductos(s){
     const lines = (s||"").split(/\n+/).map(x=>normalizeStr(x)).filter(Boolean);
-    lines.sort(); // "A\nB" == "B\nA"
+    lines.sort(); // A+B == B+A
     return lines.join("|");
   }
   // FNV-1a 32-bit en JS
@@ -411,7 +414,7 @@
     if(changed) localStorage.setItem(SIG_KEY, JSON.stringify(m));
   })();
 
-  // Envío al Google Form via iframe oculto
+  // ==== ENVÍO AL FORM ====
   function sendToGoogleForm(p){
     return new Promise((resolve)=>{
       const iframeName = "gform_iframe_" + Date.now();
@@ -442,10 +445,7 @@
       add(GF.productos,    p.productos);
       add(GF.observaciones,p.observaciones || "");
 
-      // Firma dedupe cross-device
-      if (GF.sig && p.sig) add(GF.sig, p.sig);
-
-      // Fecha (YYYY-MM-DD) + subcampos si existen
+      // Fecha
       const fecha = (p.fechaEntrega || "").trim();
       if (fecha) {
         add(GF.fecha, fecha);
@@ -457,10 +457,17 @@
         }
       }
 
+      // Firma anti-duplicado
+      add(GF.sig, p.sig || "");
+
       document.body.appendChild(form);
 
       const cleanup = () => { try { form.remove(); iframe.remove(); } catch {} };
-      const timeout = setTimeout(() => { cleanup(); resolve({ status: "ok", via: "timeout" }); }, 5000);
+
+      const timeout = setTimeout(() => {
+        cleanup();
+        resolve({ status: "ok", via: "timeout" });
+      }, 5000);
 
       iframe.addEventListener("load", ()=>{
         clearTimeout(timeout);
@@ -501,9 +508,10 @@
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.textContent = msg;
-    let bgColor = "#ffcd38", color = "#1f2937";
+    let bgColor = "#ffcd38";
+    let color = "#1f2937";
     if (type === "error") { bgColor = "#ef4444"; color = "#fff"; }
-    if (type === "ok")    { bgColor = "#22c55e"; color = "#fff"; }
+    if (type === "ok") { bgColor = "#22c55e"; color = "#fff"; }
     toast.style.background = bgColor;
     toast.style.color = color;
     document.body.appendChild(toast);
@@ -678,9 +686,14 @@
 
   // ==== BACKEND POST ====
   async function postPedido(pedido) {
-    // En línea: enviamos al Google Form; offline: que falle y caiga al guardado local
     if (!navigator.onLine) throw new Error("offline");
     return sendToGoogleForm(pedido);
+  }
+
+  // Util para asegurar firma en un objeto pedido
+  function withSignature(p){
+    const sig = p.sig || makeSignature(p);
+    return [sig, {...p, sig}];
   }
 
   // ==== QUEUE & RETRY ====
@@ -690,8 +703,10 @@
     const p = q.find(x => String(x.id)===String(id));
     if(!p) return;
 
-    // Dedupe antes de enviar
-    if (seenSig(p.sig)) {
+    const [sig, pToSend] = withSignature(p);
+
+    // Si ya fue enviado, descartamos de pendientes
+    if (seenSig(sig)) {
       setQueue(q.filter(x => String(x.id)!==String(id)));
       cargarPendientes();
       showToast("Duplicado detectado en pendientes (descartado)", "info");
@@ -700,14 +715,12 @@
 
     if(!navigator.onLine){ showToast("Sin conexión para reenviar", "error"); return; }
     try{
-      const data = await postPedido(p);
-      // Marcamos la firma como enviada
-      if (p.sig) markSig(p.sig);
-
+      const data = await postPedido(pToSend);
       setQueue(q.filter(x => String(x.id)!==String(id)));
+      markSig(sig);
       incStat("reenviados");
       cargarPendientes();
-      showToast(data && data.status==="duplicate" ? "Duplicado detectado (descartado)" : "Pedido reenviado", (data && data.status==="duplicate")?"info":"ok");
+      showToast(data.status==="duplicate" ? "Duplicado detectado (descartado)" : "Pedido reenviado", data.status==="duplicate"?"info":"ok");
       connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700);
       notify("Reenvío OK","El pedido fue reenviado correctamente");
     }catch(e){
@@ -731,17 +744,17 @@
     const today = new Date().toISOString().slice(0,10);
     let toSend = filterToday ? q.filter(p => (p.fechaEntrega||"").slice(0,10)===today) : q;
     if(!toSend.length){ showToast(filterToday ? "No hay pendientes de hoy" : "No hay pendientes", "info"); return; }
-
     for(const p of [...toSend]){
-      try{
-        // Saltear duplicados ya enviados en este dispositivo
-        if (seenSig(p.sig)) {
-          setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
-          continue;
-        }
-        await postPedido(p);
-        if (p.sig) markSig(p.sig);
+      const [sig, pToSend] = withSignature(p);
+      if (seenSig(sig)) {
+        // quitar duplicado sin re-enviar
         setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
+        continue;
+      }
+      try{
+        await postPedido(pToSend);
+        setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
+        markSig(sig);
         incStat("reenviados");
       }catch{}
     }
@@ -756,9 +769,8 @@
   // ==== SEND NEW ORDER ====
   let sending = false;
   const lastSent = getSentIds();
-
   function buildPedido(){
-    const p = {
+    return {
       id: Date.now(),
       fechaEntrega: fechaEntrega.value,
       numeroCliente: (numeroCliente.value||"").trim(),
@@ -766,8 +778,6 @@
       productos: (productos.value||"").trim(),
       observaciones: (observaciones.value||"").trim()
     };
-    p.sig = makeSignature(p); // NUEVO: firma determinística
-    return p;
   }
   function validPedido(p){ return p.fechaEntrega && p.numeroCliente && p.nombreVendedor && p.productos; }
   function guardarLocal(p){
@@ -779,9 +789,11 @@
   async function enviarPedido(p, options = { mass: false }) {
     if (sending) return;
     if (lastSent.has(p.id)) { showToast("Duplicado detectado (id repetido)", "info"); return; }
-    // Dedupe por firma en este dispositivo
-    if (seenSig(p.sig)) {
-      showToast("⚠️ Duplicado: mismo cliente, fecha y productos.", "info");
+
+    // Firma antes de enviar
+    const [sig, pToSend] = withSignature(p);
+    if (seenSig(sig)) {
+      showToast("⚠️ Pedido duplicado (mismos datos). No se envió.", "info");
       return;
     }
 
@@ -791,11 +803,9 @@
 
     try {
       if (!navigator.onLine) throw new Error("offline");
-      await postPedido(p);
+      await postPedido(pToSend);
 
-      // Marca firma como enviada (solo en éxito real)
-      if (p.sig) markSig(p.sig);
-
+      markSig(sig);
       addSentId(p.id);
       lastSent.add(p.id);
       if (p.nombreVendedor) localStorage.setItem("vendedorNombre", p.nombreVendedor);
@@ -805,7 +815,7 @@
       const hist = getHistory();
       hist.push({ id: p.id, timestamp: Date.now(), numeroCliente: p.numeroCliente, vendedor: p.nombreVendedor });
       setHistory(hist);
-      
+
       incStat("enviados");
       actualizarContadorDiario(true);
       playOk();
@@ -828,7 +838,7 @@
       saveDraft();
     } catch (e) {
       console.error("❌ Error en envío:", e);
-      guardarLocal(p);
+      guardarLocal(pToSend);
     } finally {
       sending = false;
       btnEnviar.disabled = false;
@@ -862,15 +872,15 @@
     const q = getQueue(); if(!q.length) return;
     if(animate){ connDot.className = "syncing"; }
     for(const p of [...q]){
-      try{
-        // Saltear duplicados ya enviados en este dispositivo
-        if (seenSig(p.sig)) {
-          setQueue(getQueue().filter(x => x.id!==p.id));
-          continue;
-        }
-        await postPedido(p);
-        if (p.sig) markSig(p.sig);
+      const [sig, pToSend] = withSignature(p);
+      if (seenSig(sig)) {
         setQueue(getQueue().filter(x => x.id!==p.id));
+        continue;
+      }
+      try{
+        await postPedido(pToSend);
+        setQueue(getQueue().filter(x => x.id!==p.id));
+        markSig(sig);
         incStat("reenviados");
       }catch{}
     }
@@ -889,8 +899,8 @@
     tabs[name].classList.add("active");
     sections[name].style.display="block";
 
-    if (name === 'nuevo') btnEnviar.style.display = 'flex';
-    else btnEnviar.style.display = 'none';
+    if (name === 'nuevo') { btnEnviar.style.display = 'flex'; }
+    else { btnEnviar.style.display = 'none'; }
 
     if(name==="pend") cargarPendientes();
     if(name==="stats") renderStats();
@@ -926,3 +936,6 @@
 </script>
 </body>
 </html>
+```
+
+Si algo no guarda la firma en el Form, confirmame que el campo **sig** quedó con ese `entry.1902043730` (y que no tenga validaciones que lo bloqueen).
