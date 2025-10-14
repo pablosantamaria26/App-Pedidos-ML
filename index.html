@@ -275,8 +275,8 @@
       setTimeout(()=>overlay.style.display="none",1800);
     }
 
-    // ===== Conexión real =====
-    // 🔍 Verificación real de conexión cada 15 segundos (modo seguro)
+// ===== Conexión real =====
+// 🔍 Verificación real de conexión cada 15 segundos (versión final sin CORS)
 async function checkConexionReal() {
   try {
     await fetch('https://www.gstatic.com/generate_204', { mode: 'no-cors', cache: 'no-store' });
@@ -286,22 +286,23 @@ async function checkConexionReal() {
   }
 }
 
+function setOnlineStatus(online) {
+  const banner = document.getElementById("netBanner");
+  if (!banner) return;
+  banner.style.display = online ? "none" : "block";
+}
 
-    function setOnlineStatus(online){
-      const banner=document.getElementById("netBanner");
-      if(!banner)return;
-      banner.style.display=online?"none":"block";
-    }
+// Ejecutar chequeo inicial y luego cada 15 segundos
+setInterval(checkConexionReal, 15000);
+checkConexionReal();
 
-    setInterval(checkConexionReal,15000);
-    checkConexionReal();
+// Registrar service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(() => console.log('✅ Service Worker registrado'))
+    .catch(err => console.log('❌ SW error', err));
+}
 
-    // Registrar service worker
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('service-worker.js')
-      .then(()=>console.log('✅ Service Worker registrado'))
-      .catch(err=>console.log('❌ SW error',err));
-    }
   </script>
 </body>
 </html>
