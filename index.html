@@ -123,14 +123,22 @@
     }
 
     // === ENVÍO AL BACKEND ===
-    async function postPedido(pedido){
-      await fetch(BACKEND_URL,{
-        method:"POST",
-        headers:{"Content-Type":"text/plain;charset=utf-8"},
-        body:JSON.stringify(pedido),
-        mode:"no-cors" // 🔥 clave para evitar CORS
-      });
-    }
+    // ✅ Versión blindada sin CORS (probada en GitHub Pages + Apps Script)
+async function postPedido(pedido) {
+  try {
+    await fetch(BACKEND_URL, {
+      method: "POST",
+      mode: "no-cors", // esto evita el preflight
+      headers: { "Content-Type": "text/plain" }, // sin charset
+      body: JSON.stringify(pedido)
+    });
+    console.log("✅ Pedido enviado (modo no-cors)");
+  } catch (e) {
+    console.error("❌ Error en fetch:", e);
+    throw e;
+  }
+}
+
 
     function guardarLocal(pedido){
       const q=getQueue();q.push(pedido);setQueue(q);renderStats();
