@@ -86,7 +86,6 @@
   </div>
 
   <script>
-    // ✅ BACKEND URL (la tuya actual)
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
 
     // === UTILIDADES ===
@@ -100,16 +99,17 @@
     }
     function mostrarConfirmacion(){
       const o=document.getElementById("confirmOverlay");
-      o.style.display="flex";
-      vibrar(150);
+      o.style.display="flex"; vibrar(150);
       setTimeout(()=>o.style.display="none",1800);
     }
 
-    // === LOCALSTORAGE ===
+    // === LOCAL STORAGE ===
     const getQueue=()=>JSON.parse(localStorage.getItem("pedidosPendientes")||"[]");
     const setQueue=a=>localStorage.setItem("pedidosPendientes",JSON.stringify(a));
     const getStats=()=>JSON.parse(localStorage.getItem("statsPedidos")||'{"enviados":0,"reenviados":0}');
     const setStats=s=>localStorage.setItem("statsPedidos",JSON.stringify(s));
+    const getEnviados=()=>JSON.parse(localStorage.getItem("pedidosEnviados")||"[]");
+    const setEnviados=a=>localStorage.setItem("pedidosEnviados",JSON.stringify(a));
 
     function incStat(k){const s=getStats();s[k]=(s[k]||0)+1;setStats(s);renderStats();}
     function renderStats(){
@@ -123,30 +123,35 @@
     }
 
     // === ENVÍO AL BACKEND ===
-    // ✅ Versión blindada sin CORS (probada en GitHub Pages + Apps Script)
-async function postPedido(pedido) {
-  try {
-    await fetch(BACKEND_URL, {
-      method: "POST",
-      mode: "no-cors", // esto evita el preflight
-      headers: { "Content-Type": "text/plain" }, // sin charset
-      body: JSON.stringify(pedido)
-    });
-    console.log("✅ Pedido enviado (modo no-cors)");
-  } catch (e) {
-    console.error("❌ Error en fetch:", e);
-    throw e;
-  }
-}
+    async function postPedido(pedido){
+      await fetch(BACKEND_URL,{
+        method:"POST", mode:"no-cors",
+        headers:{"Content-Type":"text/plain"},
+        body:JSON.stringify(pedido)
+      });
+    }
 
-
+    // === GUARDAR LOCAL Y DESCARTAR DUPLICADOS ===
     function guardarLocal(pedido){
-      const q=getQueue();q.push(pedido);setQueue(q);renderStats();
+      const q=getQueue();
+      if(q.some(p=>p.id===pedido.id)){ // ya existe
+        console.warn("Pedido duplicado no guardado localmente:",pedido.id);
+        return;
+      }
+      q.push(pedido);
+      setQueue(q); renderStats();
       mostrarToast("📡 Sin conexión. Pedido guardado localmente.");
     }
 
-    document.getElementById("btnEnviar").addEventListener("click",async()=>{
+    // === ENVÍO PRINCIPAL CON BLOQUEO ===
+    const btnEnviar=document.getElementById("btnEnviar");
+    let enviando=false;
+
+    btnEnviar.addEventListener("click",async()=>{
+      if(enviando) return;
+      enviando=true; btnEnviar.disabled=true; btnEnviar.textContent="Enviando...";
       vibrar();
+
       const pedido={
         id:Date.now(),
         fechaEntrega:fechaEntrega.value,
@@ -156,29 +161,62 @@ async function postPedido(pedido) {
         observaciones:observaciones.value.trim()
       };
       if(!pedido.fechaEntrega||!pedido.numeroCliente||!pedido.nombreVendedor||!pedido.productos){
-        mostrarToast("⚠️ Completá todos los campos obligatorios",true);return;
+        mostrarToast("⚠️ Completá todos los campos obligatorios",true);
+        enviando=false; btnEnviar.disabled=false; btnEnviar.textContent="Enviar pedido";
+        return;
       }
-      if(!navigator.onLine){guardarLocal(pedido);return;}
-      try{
-        await postPedido(pedido);
-        incStat("enviados");
-        mostrarConfirmacion();
-        fechaEntrega.value=numeroCliente.value=nombreVendedor.value=productos.value=observaciones.value="";
-      }catch(e){console.error(e);guardarLocal(pedido);}
+
+      // evitar reenvío del mismo ID
+      const enviados=getEnviados();
+      if(enviados.includes(pedido.id)){
+        mostrarToast("⚠️ Pedido ya enviado. Evitado duplicado.",true);
+        enviando=false; btnEnviar.disabled=false; btnEnviar.textContent="Enviar pedido";
+        return;
+      }
+
+      if(!navigator.onLine){guardarLocal(pedido);}
+      else{
+        try{
+          await postPedido(pedido);
+          incStat("enviados"); mostrarConfirmacion();
+          enviados.push(pedido.id); setEnviados(enviados);
+          fechaEntrega.value=numeroCliente.value=nombreVendedor.value=productos.value=observaciones.value="";
+        }catch(e){console.error(e); guardarLocal(pedido);}
+      }
+
+      enviando=false; btnEnviar.disabled=false; btnEnviar.textContent="Enviar pedido";
     });
+
+    // === AUTO-SYNC AUTOMÁTICO AL VOLVER CONEXIÓN ===
+    async function syncPendientes(){
+      const q=[...getQueue()];
+      if(!q.length||!navigator.onLine) return;
+      for(const p of q){
+        try{
+          await postPedido(p);
+          const enviados=getEnviados(); if(!enviados.includes(p.id)) enviados.push(p.id);
+          setEnviados(enviados);
+          setQueue(getQueue().filter(x=>x.id!==p.id));
+          incStat("reenviados");
+        }catch(e){console.error("❌ Falla al reenviar",e);}
+      }
+      cargarPendientes();
+      mostrarToast("🔄 Pendientes sincronizados");
+    }
+    window.addEventListener("online",syncPendientes);
 
     // === PENDIENTES ===
     async function reenviarPedido(id){
       vibrar();
-      const queue=getQueue();
-      const pedido=queue.find(p=>String(p.id)===String(id));
+      const q=getQueue();
+      const pedido=q.find(p=>String(p.id)===String(id));
       if(!pedido)return;
       if(!navigator.onLine){mostrarToast("⚠️ Sin conexión",true);return;}
       try{
         await postPedido(pedido);
-        setQueue(queue.filter(p=>String(p.id)!==String(id)));
-        incStat("reenviados");
-        cargarPendientes();
+        setQueue(q.filter(p=>p.id!==pedido.id));
+        const enviados=getEnviados(); enviados.push(pedido.id); setEnviados(enviados);
+        incStat("reenviados"); cargarPendientes();
         mostrarToast("✅ Pedido reenviado");
       }catch(e){console.error(e);mostrarToast("❌ Error al reenviar",true);}
     }
