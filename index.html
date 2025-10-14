@@ -53,110 +53,112 @@
   </style>
 </head>
 <body>
+<body>
+
+  
   <h1>🛒 App Pedidos ML</h1>
   <div id="status">Estado: <span id="netStatus">Online</span></div>
-  <button id="btnNuevoPedido">Nuevo Pedido</button>
+
+  <!-- FORMULARIO DE PEDIDO -->
+  <form id="pedidoForm" style="max-width:400px;margin:auto;text-align:left;">
+    <label>📅 Fecha de entrega</label><br>
+    <input type="date" id="fechaEntrega" required style="width:100%;padding:10px;margin-bottom:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;"><br>
+
+    <label>🧾 Número de cliente</label><br>
+    <input type="text" id="numeroCliente" placeholder="Ej: 10331" required style="width:100%;padding:10px;margin-bottom:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;"><br>
+
+    <label>👤 Nombre del vendedor</label><br>
+    <input type="text" id="nombreVendedor" placeholder="Ej: MARTIN" required style="width:100%;padding:10px;margin-bottom:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;"><br>
+
+    <label>📦 Productos solicitados</label><br>
+    <textarea id="productos" rows="4" placeholder="Detalle de productos..." required style="width:100%;padding:10px;margin-bottom:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;"></textarea><br>
+
+    <label>🗒️ Observaciones</label><br>
+    <textarea id="observaciones" rows="2" placeholder="Notas adicionales..." style="width:100%;padding:10px;margin-bottom:20px;font-size:16px;border-radius:8px;border:1px solid #ccc;"></textarea><br>
+
+    <button type="submit" id="btnEnviar" style="width:100%;padding:18px;font-size:20px;background:#0d6efd;color:white;border:none;border-radius:12px;cursor:pointer;">Enviar pedido</button>
+  </form>
 
   <div class="toast" id="toast">📡 Sin conexión, pedido guardado localmente</div>
 
-  <script>
-  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzpgGmnzY8dOEjKbNztmWpabZHnY74uGUDffy4fc5LD_r0AWebTYcykBHIcTHBQXWpQjQ/exec";
+
+
 
   
-  // === Vibración corta ===
-  function vibrar(ms = 50) {
-    if ('vibrate' in navigator) navigator.vibrate(ms);
+  <script>
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzpgGmnzY8dOEjKbNztmWpabZHnY74uGUDffy4fc5LD_r0AWebTYcykBHIcTHBQXWpQjQ/exec";
+
+// === Vibración ===
+function vibrar(ms = 50) {
+  if ('vibrate' in navigator) navigator.vibrate(ms);
+}
+
+// === Estado de conexión ===
+function actualizarEstadoConexion() {
+  const netSpan = document.getElementById("netStatus");
+  const online = navigator.onLine;
+  netSpan.textContent = online ? "Online" : "Offline";
+  netSpan.style.color = online ? "green" : "red";
+}
+window.addEventListener("online", actualizarEstadoConexion);
+window.addEventListener("offline", actualizarEstadoConexion);
+actualizarEstadoConexion();
+
+// === Guardar pedidos localmente ===
+function guardarPedidoLocal(pedido) {
+  const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+  pedidos.push(pedido);
+  localStorage.setItem("pedidosPendientes", JSON.stringify(pedidos));
+}
+
+// === Mostrar toast ===
+function mostrarToast(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.style.display = "block";
+  setTimeout(() => { toast.style.display = "none"; }, 5000);
+}
+
+// === Enviar pedido ===
+async function enviarPedido(pedido) {
+  try {
+    await fetch(BACKEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(pedido)
+    });
+    mostrarToast("✅ Pedido enviado correctamente");
+  } catch (err) {
+    guardarPedidoLocal(pedido);
+    mostrarToast("⚠️ Sin conexión, pedido guardado localmente");
+  }
+}
+
+// === Evento al enviar formulario ===
+document.getElementById("pedidoForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  vibrar();
+
+  const pedido = {
+    id: Date.now(),
+    fechaEntrega: document.getElementById("fechaEntrega").value,
+    numeroCliente: document.getElementById("numeroCliente").value.trim(),
+    nombreVendedor: document.getElementById("nombreVendedor").value.trim(),
+    productos: document.getElementById("productos").value.trim(),
+    observaciones: document.getElementById("observaciones").value.trim()
+  };
+
+  if (navigator.onLine) {
+    enviarPedido(pedido);
+  } else {
+    guardarPedidoLocal(pedido);
+    mostrarToast("📡 Sin conexión, pedido guardado localmente");
   }
 
-  // === Estado de conexión ===
-  function actualizarEstadoConexion() {
-    const netSpan = document.getElementById("netStatus");
-    const online = navigator.onLine;
-    netSpan.textContent = online ? "Online" : "Offline";
-    netSpan.style.color = online ? "green" : "red";
-    if (online) reenviarPedidosPendientes();
-  }
-  window.addEventListener("online", actualizarEstadoConexion);
-  window.addEventListener("offline", actualizarEstadoConexion);
-  actualizarEstadoConexion();
-
-  // === Guardar pedidos localmente ===
-  function guardarPedidoLocal(pedido) {
-    const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
-    pedidos.push(pedido);
-    localStorage.setItem("pedidosPendientes", JSON.stringify(pedidos));
-  }
-
-  function obtenerPedidosPendientes() {
-    return JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
-  }
-
-  function limpiarPedidosEnviados(id) {
-    const pedidos = obtenerPedidosPendientes().filter(p => p.id !== id);
-    localStorage.setItem("pedidosPendientes", JSON.stringify(pedidos));
-  }
-
-  // === Enviar pedido al backend ===
-  async function enviarPedido(pedido) {
-    try {
-      const res = await fetch(BACKEND_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pedido)
-      });
-
-      if (res.ok) {
-        limpiarPedidosEnviados(pedido.id);
-        mostrarToast("✅ Pedido enviado correctamente");
-      } else {
-        throw new Error("Error en el envío");
-      }
-    } catch (err) {
-      guardarPedidoLocal(pedido);
-      mostrarToast("⚠️ Sin conexión, pedido guardado localmente");
-    }
-  }
-
-  // === Reenviar automáticamente los pendientes ===
-  async function reenviarPedidosPendientes() {
-    const pendientes = obtenerPedidosPendientes();
-    if (pendientes.length > 0) {
-      mostrarToast(`🔄 Reintentando ${pendientes.length} pedido(s)...`);
-      for (const pedido of pendientes) {
-        await enviarPedido(pedido);
-      }
-    }
-  }
-
-  // === Mostrar toast ===
-  function mostrarToast(msg) {
-    const toast = document.getElementById("toast");
-    toast.textContent = msg;
-    toast.style.display = "block";
-    setTimeout(() => { toast.style.display = "none"; }, 5000);
-  }
-
-  // === Botón: crear pedido ===
-  document.getElementById("btnNuevoPedido").addEventListener("click", () => {
-    vibrar();
-
-    const pedido = {
-      id: Date.now().toString(),
-      fechaEntrega: "martes 14/10/2025", // después lo haremos dinámico
-      numeroCliente: "10331",
-      nombreVendedor: "MARTIN",
-      productos: "12 ESPONJA DORADA X13G ROMYL, 12 ESPONJA ACERO X13 G ROMYL",
-      observaciones: "Pedido de prueba desde la app"
-    };
-
-    if (navigator.onLine) {
-      enviarPedido(pedido);
-    } else {
-      guardarPedidoLocal(pedido);
-      mostrarToast("📡 Sin conexión, pedido guardado localmente");
-    }
-  });
+  e.target.reset(); // limpia el formulario
+});
 </script>
+
 
 </body>
 </html>
