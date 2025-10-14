@@ -3,35 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>App de Pedidos</title>
+  <title>App Pedidos ML</title>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0d6efd">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f3f3f3;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f6f8;
       margin: 0;
       padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #0d6efd;
+      margin-bottom: 10px;
+    }
+    #status {
+      color: #555;
+      font-size: 14px;
+      margin-bottom: 20px;
     }
     button {
       background: #0d6efd;
       color: white;
       border: none;
-      border-radius: 10px;
-      padding: 15px 25px;
-      font-size: 18px;
+      border-radius: 12px;
+      padding: 18px 30px;
+      font-size: 20px;
       cursor: pointer;
-      margin: 10px;
+      width: 90%;
+      max-width: 300px;
+      transition: 0.2s;
     }
     button:active {
       background: #0b5ed7;
+      transform: scale(0.97);
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffce00;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>🛒 App de Pedidos</h1>
+  <h1>🛒 App Pedidos ML</h1>
+  <div id="status">Estado: <span id="netStatus">Online</span></div>
   <button id="btnNuevoPedido">Nuevo Pedido</button>
-  <script src="app.js"></script>
+
+  <div class="toast" id="toast">📡 Sin conexión, pedido guardado localmente</div>
+
+  <script>
+    // === Vibración corta (si el dispositivo lo permite) ===
+    function vibrar(ms = 50) {
+      if ('vibrate' in navigator) navigator.vibrate(ms);
+    }
+
+    // === Verificar conexión ===
+    function actualizarEstadoConexion() {
+      const netSpan = document.getElementById("netStatus");
+      netSpan.textContent = navigator.onLine ? "Online" : "Offline";
+      netSpan.style.color = navigator.onLine ? "green" : "red";
+    }
+    window.addEventListener('online', actualizarEstadoConexion);
+    window.addEventListener('offline', actualizarEstadoConexion);
+    actualizarEstadoConexion();
+
+    // === Guardar pedidos localmente (localStorage) ===
+    function guardarPedidoLocal(pedido) {
+      const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+      pedidos.push(pedido);
+      localStorage.setItem("pedidosPendientes", JSON.stringify(pedidos));
+    }
+
+    // === Mostrar Toast persistente ===
+    function mostrarToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 5000);
+    }
+
+    // === Simular creación de pedido ===
+    document.getElementById("btnNuevoPedido").addEventListener("click", () => {
+      vibrar();
+      const pedido = {
+        id: Date.now(),
+        producto: "Producto de prueba",
+        fecha: new Date().toLocaleString()
+      };
+      if (navigator.onLine) {
+        alert("Pedido enviado correctamente ✅");
+      } else {
+        guardarPedidoLocal(pedido);
+        mostrarToast("📡 Sin conexión, pedido guardado localmente");
+      }
+    });
+  </script>
 </body>
 </html>
