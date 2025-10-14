@@ -4,164 +4,335 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Pedidos ML</title>
-  <meta name="theme-color" content="#f59e0b" />
+  <meta name="theme-color" content="#ff7f00" />
   <link rel="manifest" href="manifest.webmanifest" />
 
   <style>
     :root {
-      --primary:#f59e0b;
-      --bg:#0b0b0b;
-      --text:#f8fafc;
-      --card:#1a1a1a;
-      --muted:#9ca3af;
-      --shadow:0 4px 10px rgba(0,0,0,0.4);
-      --accent:#f59e0b;
+      --primary: #ff7f00;
+      --bg: #0b0f14;
+      --text: #f5f5f5;
+      --card: #1a1a1a;
+      --muted: #a3a3a3;
+      --shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
-    body[data-theme="light"] {
-      --primary:#0d6efd;
-      --bg:#f5f6f8;
-      --text:#1f2937;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --shadow:0 2px 6px rgba(0,0,0,0.15);
-      --accent:#0d6efd;
+    [data-theme='light'] {
+      --primary: #1e3a8a;
+      --bg: #f5f7fa;
+      --text: #1f2937;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
-    html,body {height:100%; margin:0; padding:0; font-family:'Segoe UI',Roboto,Arial,sans-serif; background:var(--bg); color:var(--text);}
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+    }
+
     header {
-      position:sticky; top:0; z-index:1000;
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 16px;
-      background:var(--primary); color:#fff; font-size:20px; font-weight:700;
-      box-shadow:0 2px 6px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--primary);
+      color: #fff;
+      padding: 14px 12px;
+      font-size: 20px;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
-    header span.title {flex:1; text-align:center;}
-    #themeToggle { background:none; border:none; color:#fff; font-size:20px; cursor:pointer; }
-    #counterBox { position:absolute; right:48px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.2); padding:3px 10px; border-radius:20px; font-size:14px; font-weight:600; transition:transform 0.3s ease;}
-    #counterBox.bump { transform:translateY(-50%) scale(1.3); }
-    #connDot { position:absolute; right:12px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; box-shadow:0 0 0 3px rgba(255,255,255,0.25);}
-    .online{ background:#22c55e; } .offline{ background:#ef4444; } .syncing{ animation:pulse .8s infinite alternate; background:#22c55e;}
-    @keyframes pulse{ from{filter:brightness(1);} to{filter:brightness(1.8);} }
 
-    #netBanner{display:none;text-align:center;background:#fde047;color:#1f2937;padding:8px;font-weight:600;font-size:14px;}
-
-    main{padding:18px;max-width:860px;margin:0 auto;}
-    label{display:block;font-size:14px;color:var(--muted);margin-bottom:6px;}
-    .row{margin-bottom:14px;}
-    input,textarea,select{
-      width:100%;box-sizing:border-box;font-size:16px;padding:12px;
-      border-radius:12px;border:1px solid #333;
-      background:var(--card);color:var(--text);outline:none;
+    #themeSwitch {
+      appearance: none;
+      width: 48px;
+      height: 26px;
+      background: #ccc;
+      border-radius: 26px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background 0.3s;
     }
-    body[data-theme="light"] input, body[data-theme="light"] textarea {
-      border:1px solid #cbd5e1;
+
+    #themeSwitch::before {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s;
     }
-    textarea{min-height:100px;resize:vertical;}
 
-    .toolbar{display:flex;gap:8px;margin:10px 0 14px 0;flex-wrap:wrap;align-items:center;}
-    .btn,.btn-secondary{
-      flex:1;min-width:160px;border:none;border-radius:14px;padding:16px;
-      font-size:17px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);
-      transition:transform .08s,filter .15s,background .2s;touch-action:manipulation;
+    #themeSwitch:checked {
+      background: #ff7f00;
     }
-    .btn{background:var(--accent);color:#fff;}
-    .btn:active{transform:scale(0.98);filter:brightness(0.9);}
-    .btn[disabled]{opacity:.6;cursor:not-allowed;}
-    .btn-secondary{background:#374151;color:#f9fafb;}
-    body[data-theme="light"] .btn-secondary{background:#e0e7ff;color:var(--primary);}
-    .btn-secondary:active{transform:scale(0.98);filter:brightness(0.9);}
 
-    .bottom-nav{
-      position:fixed;left:0;right:0;bottom:0;z-index:999;
-      background:var(--card);border-top:1px solid #333;
-      display:flex;gap:8px;padding:10px;box-shadow:0 -2px 6px rgba(0,0,0,0.4);
+    #themeSwitch:checked::before {
+      transform: translateX(22px);
     }
-    .tab-btn{flex:1;border:none;border-radius:10px;padding:12px;font-weight:700;}
-    .tab-btn{background:#333;color:#f9fafb;}
-    .tab-btn.active{background:var(--accent);color:#fff;}
-    body[data-theme="light"] .tab-btn{background:#e0e7ff;color:var(--primary);}
-    body[data-theme="light"] .tab-btn.active{background:var(--primary);color:#fff;}
 
-    .pedido-card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
-    .toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);
-      background:#ffcd38;color:#1f2937;padding:12px 16px;border-radius:12px;font-size:15px;display:none;z-index:1001;}
+    #connDot {
+      width: 12px; height: 12px; border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.25);
+    }
+    .online { background:#22c55e; }
+    .offline { background:#ef4444; }
 
-    #confirmOverlay{display:none;position:fixed;inset:0;z-index:1002;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;}
-    .success-box{background:linear-gradient(180deg,#16a34a,#0ea95e);color:#fff;border-radius:22px;padding:36px 28px;text-align:center;width:min(90vw,420px);box-shadow:0 16px 40px rgba(0,0,0,0.5);animation:popIn .35s ease;}
-    .success-icon{font-size:80px;animation:spin 0.7s ease forwards;}
-    @keyframes spin{from{transform:rotate(-180deg) scale(.6);opacity:.4;}to{transform:rotate(0) scale(1);opacity:1;}}
-    @keyframes popIn{from{transform:scale(0.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+    main { padding: 18px; max-width: 860px; margin: 0 auto; }
 
-    #helloBanner{display:none;margin:-8px 0 10px 0;font-weight:700;color:var(--accent);}
+    label { display:block; font-size:14px; color:var(--muted); margin-bottom:6px; }
+    input, textarea {
+      width:100%; box-sizing:border-box;
+      font-size:16px; padding:12px;
+      border-radius:12px; border:1px solid #cbd5e1;
+      background:var(--card); color:var(--text);
+      outline:none;
+    }
+    textarea { min-height:100px; resize:vertical; }
+
+    .btn {
+      display:block;
+      width:100%;
+      border:none;
+      border-radius:14px;
+      padding:16px;
+      font-size:17px;
+      font-weight:700;
+      background:var(--primary);
+      color:#fff;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      margin-top:12px;
+    }
+
+    .btn:active { transform:scale(0.98); }
+
+    .bottom-nav {
+      position:fixed; left:0; right:0; bottom:0;
+      background:var(--card);
+      border-top:1px solid #333;
+      display:flex; gap:8px; padding:10px;
+    }
+
+    .tab-btn {
+      flex:1;
+      border:none;
+      border-radius:10px;
+      padding:12px;
+      font-weight:700;
+      background:#333;
+      color:#fff;
+    }
+
+    .tab-btn.active {
+      background:var(--primary);
+    }
+
+    .pedido-card {
+      background:var(--card);
+      border-radius:12px;
+      padding:14px;
+      margin-bottom:12px;
+      box-shadow:var(--shadow);
+    }
+
+    .stat-card {
+      background:var(--card);
+      border-radius:12px;
+      padding:16px;
+      text-align:center;
+      margin:8px 0;
+      box-shadow:var(--shadow);
+    }
+
+    #dailyCount {
+      font-size:14px;
+      background:rgba(255,255,255,0.15);
+      padding:6px 10px;
+      border-radius:12px;
+    }
+
   </style>
 </head>
 <body>
-  <div id="netBanner">📡 Sin conexión — los pedidos se guardan localmente</div>
   <header>
-    <button id="themeToggle" title="Cambiar tema">🌙</button>
-    <span class="title">🛒 Pedidos ML</span>
-    <span id="counterBox">0</span>
-    <span id="connDot" class="offline"></span>
+    <input type="checkbox" id="themeSwitch">
+    <span>Pedidos ML</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span id="dailyCount">0 hoy</span>
+      <div id="connDot" class="offline"></div>
+    </div>
   </header>
 
   <main id="nuevoPedido">
-    <div id="helloBanner"></div>
-    <div class="row"><label>📅 Fecha de entrega</label><input type="date" id="fechaEntrega" /></div>
-    <div class="row"><label>🧾 Número de cliente</label><input type="number" id="numeroCliente" placeholder="Ej: 10331" /></div>
-    <div class="row"><label>👤 Nombre del vendedor</label><input type="text" id="nombreVendedor" placeholder="Ej: MARTIN" /></div>
-    <div class="row"><label>📦 Productos solicitados</label><textarea id="productos" rows="4" placeholder="Detalle de productos..."></textarea></div>
-    <div class="row"><label>🗒️ Observaciones</label><textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea></div>
-    <div class="row"><label><input type="checkbox" id="shareWA" /> Enviar resumen por WhatsApp</label></div>
-    <div class="toolbar">
-      <button id="btnEnviar" class="btn">Enviar pedido</button>
-      <button id="btnNuevoLote" class="btn-secondary">Agregar otro</button>
+    <div class="row">
+      <label>📅 Fecha de entrega</label>
+      <input type="date" id="fechaEntrega" />
     </div>
+    <div class="row">
+      <label>🧾 Número de cliente</label>
+      <input type="number" id="numeroCliente" />
+    </div>
+    <div class="row">
+      <label>👤 Nombre del vendedor</label>
+      <input type="text" id="nombreVendedor" />
+    </div>
+    <div class="row">
+      <label>📦 Productos</label>
+      <textarea id="productos"></textarea>
+    </div>
+    <div class="row">
+      <label>🗒️ Observaciones</label>
+      <textarea id="observaciones"></textarea>
+    </div>
+    <button id="btnEnviar" class="btn">Enviar pedido</button>
   </main>
 
-  <main id="pendientes" style="display:none;"><h3>📋 Pedidos pendientes</h3><div id="listaPendientes"></div></main>
-  <main id="estadisticas" style="display:none;"><h3>📊 Estadísticas</h3><div id="stats"></div></main>
+  <main id="pendientes" style="display:none;">
+    <h3>📋 Pendientes</h3>
+    <div id="listaPendientes"></div>
+  </main>
+
+  <main id="estadisticas" style="display:none;">
+    <h3>📊 Estadísticas</h3>
+    <div class="stat-card"><div>Enviados</div><div id="statEnviados">0</div></div>
+    <div class="stat-card"><div>Pendientes</div><div id="statPendientes">0</div></div>
+  </main>
 
   <div class="bottom-nav">
     <button id="btnNuevo" class="tab-btn active">Nuevo</button>
-    <button id="btnVerPendientes" class="tab-btn">Pendientes</button>
-    <button id="btnVerEstadisticas" class="tab-btn">Estadísticas</button>
+    <button id="btnPend" class="tab-btn">Pendientes</button>
+    <button id="btnStats" class="tab-btn">Estadísticas</button>
   </div>
 
-  <div class="toast" id="toast"></div>
-  <div id="confirmOverlay"><div class="success-box"><div class="success-icon">✅</div><h2>¡Pedido enviado!</h2></div></div>
+  <script>
+    const $ = id => document.getElementById(id);
+    const themeSwitch = $("themeSwitch");
+    const root = document.documentElement;
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
 
-<script>
-const BACKEND_URL="https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
-const $=id=>document.getElementById(id);
-const btnEnviar=$("btnEnviar"),toast=$("toast"),connDot=$("connDot"),themeToggle=$("themeToggle"),counterBox=$("counterBox");
+    const fechaEntrega = $("fechaEntrega");
+    const numeroCliente = $("numeroCliente");
+    const nombreVendedor = $("nombreVendedor");
+    const productos = $("productos");
+    const observaciones = $("observaciones");
+    const btnEnviar = $("btnEnviar");
+    const connDot = $("connDot");
+    const dailyCount = $("dailyCount");
 
-// === THEME SWITCH ===
-(function(){const stored=localStorage.getItem("themeMode")||"dark";setTheme(stored);themeToggle.addEventListener("click",()=>{const newMode=document.body.dataset.theme==="dark"?"light":"dark";setTheme(newMode);});})();
-function setTheme(mode){document.body.dataset.theme=mode;localStorage.setItem("themeMode",mode);themeToggle.textContent=mode==="dark"?"☀️":"🌙";}
+    const tabs = {
+      nuevo: $("btnNuevo"),
+      pend: $("btnPend"),
+      stats: $("btnStats")
+    };
+    const sections = {
+      nuevo: $("nuevoPedido"),
+      pend: $("pendientes"),
+      stats: $("estadisticas")
+    };
 
-// === COUNTER ===
-(function initCounter(){const today=new Date().toISOString().slice(0,10);const saved=JSON.parse(localStorage.getItem("dailyCounter")||"{}");if(saved.date!==today){localStorage.setItem("dailyCounter",JSON.stringify({date:today,count:0}));counterBox.textContent="0";}else counterBox.textContent=saved.count;})();
-function incCounter(){const today=new Date().toISOString().slice(0,10);const data=JSON.parse(localStorage.getItem("dailyCounter")||"{}");const count=(data.date===today?(data.count||0):0)+1;localStorage.setItem("dailyCounter",JSON.stringify({date:today,count}));counterBox.textContent=count;counterBox.classList.add("bump");setTimeout(()=>counterBox.classList.remove("bump"),300);}
+    // Tema guardado
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    root.dataset.theme = savedTheme;
+    themeSwitch.checked = savedTheme === "dark" ? true : false;
 
-// === TOAST ===
-function showToast(msg,type="info"){toast.textContent=msg;toast.style.background=type==="error"?"#ef4444":type==="ok"?"#86efac":"#ffcd38";toast.style.color=type==="error"?"#fff":"#1f2937";toast.style.display="block";setTimeout(()=>toast.style.display="none",3000);}
+    themeSwitch.addEventListener("change", () => {
+      const mode = themeSwitch.checked ? "dark" : "light";
+      root.dataset.theme = mode;
+      localStorage.setItem("theme", mode);
+    });
 
-// === ENVÍO PEDIDOS ===
-async function postPedido(pedido){try{await fetch(BACKEND_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(pedido)});return{status:"ok"};}catch(e){console.error(e);throw e;}}
-let sending=false;
-async function enviarPedido(){if(sending)return;const fechaEntrega=$("fechaEntrega").value,numeroCliente=$("numeroCliente").value,nombreVendedor=$("nombreVendedor").value,productos=$("productos").value,observaciones=$("observaciones").value;if(!fechaEntrega||!numeroCliente||!nombreVendedor||!productos){showToast("Completá todos los campos","error");return;}sending=true;btnEnviar.disabled=true;btnEnviar.textContent="Enviando...";const pedido={id:Date.now(),fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones};try{if(!navigator.onLine)throw new Error("offline");postPedido(pedido);showToast("Pedido enviado","ok");incCounter();$("confirmOverlay").style.display="flex";setTimeout(()=>$("confirmOverlay").style.display="none",1600);}catch(e){showToast("Sin conexión, guardado local","info");}finally{sending=false;btnEnviar.disabled=false;btnEnviar.textContent="Enviar pedido";}}
-btnEnviar.addEventListener("click",enviarPedido);
+    function setTab(tab) {
+      Object.values(tabs).forEach(b => b.classList.remove("active"));
+      Object.values(sections).forEach(s => s.style.display = "none");
+      tabs[tab].classList.add("active");
+      sections[tab].style.display = "block";
+    }
 
-// === NAV ===
-const tabs={nuevo:$("btnNuevo"),pend:$("btnVerPendientes"),stats:$("btnVerEstadisticas")};const sections={nuevo:$("nuevoPedido"),pend:$("pendientes"),stats:$("estadisticas")};
-Object.entries(tabs).forEach(([k,btn])=>{btn.onclick=()=>{Object.values(tabs).forEach(b=>b.classList.remove("active"));Object.values(sections).forEach(s=>s.style.display="none");btn.classList.add("active");sections[k].style.display="block";};});
+    tabs.nuevo.onclick = () => setTab("nuevo");
+    tabs.pend.onclick = () => setTab("pend");
+    tabs.stats.onclick = () => setTab("stats");
 
-// === ONLINE STATUS ===
-function setOnline(on){connDot.className=on?"online":"offline";}
-window.addEventListener("online",()=>setOnline(true));
-window.addEventListener("offline",()=>setOnline(false));
-setOnline(navigator.onLine);
-</script>
+    // online/offline
+    function setOnline(on) {
+      connDot.className = on ? "online" : "offline";
+    }
+    setOnline(navigator.onLine);
+    window.addEventListener("online", () => setOnline(true));
+    window.addEventListener("offline", () => setOnline(false));
+
+    // contador diario
+    function updateDailyCount() {
+      const today = new Date().toISOString().slice(0,10);
+      const data = JSON.parse(localStorage.getItem("countData") || "{}");
+      if (data.date !== today) {
+        data.date = today;
+        data.count = 0;
+      }
+      dailyCount.textContent = data.count + " hoy";
+      localStorage.setItem("countData", JSON.stringify(data));
+    }
+    updateDailyCount();
+
+    function incDailyCount() {
+      const data = JSON.parse(localStorage.getItem("countData") || "{}");
+      data.count = (data.count || 0) + 1;
+      data.date = new Date().toISOString().slice(0,10);
+      localStorage.setItem("countData", JSON.stringify(data));
+      updateDailyCount();
+    }
+
+    // envio
+    async function postPedido(pedido) {
+      try {
+        await fetch(BACKEND_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(pedido)
+        });
+        return true;
+      } catch (e) {
+        console.error(e);
+        return false;
+      }
+    }
+
+    btnEnviar.addEventListener("click", async () => {
+      const p = {
+        id: Date.now(),
+        fechaEntrega: fechaEntrega.value,
+        numeroCliente: numeroCliente.value,
+        nombreVendedor: nombreVendedor.value,
+        productos: productos.value,
+        observaciones: observaciones.value
+      };
+      if (!p.fechaEntrega || !p.numeroCliente || !p.nombreVendedor || !p.productos) {
+        alert("Completá todos los campos");
+        return;
+      }
+      await postPedido(p);
+      incDailyCount();
+      const vend = p.nombreVendedor;
+      localStorage.setItem("vendedorNombre", vend);
+      numeroCliente.value = "";
+      productos.value = "";
+      observaciones.value = "";
+    });
+
+    const vend = localStorage.getItem("vendedorNombre");
+    if (vend) nombreVendedor.value = vend;
+
+  </script>
 </body>
 </html>
