@@ -1,15 +1,3 @@
-¡genial! Ya vi el `entry` nuevo en tu URL de pre-fill. Para usarlo como firma anti-duplicados, abajo te dejo **el archivo completo** con estos agregados, sin tocar tu lógica existente:
-
-* `GF.sig = "entry.1902043730"` (el ID que mostraste).
-* Generación de firma determinística `makeSignature(p)` (normaliza fecha/cliente/vendedor/productos).
-* Al **enviar**, **reenviar**, **reintentar todos** y **auto-sync**:
-
-  * Si la firma ya fue enviada (`seenSig(sig)`), se descarta como duplicado.
-  * Si no, se adjunta al form (`add(GF.sig, p.sig)`) y, al OK, se marca (`markSig(sig)`).
-
-Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado 👇
-
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -156,13 +144,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     #btnEnviar:active { transform: translateX(-50%) scale(0.97); filter: brightness(1.1); }
     #btnEnviar[disabled] { opacity: .7; cursor: not-allowed; filter: grayscale(.2); box-shadow: var(--shadow); }
 
-    .spinner {
-      width: 20px; height: 20px;
-      border: 3px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
+    .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
     .btn[disabled] .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -175,17 +157,10 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
       padding-bottom: calc(12px + env(safe-area-inset-bottom));
     }
     @media (prefers-color-scheme: dark){ .bottom-nav{ background: rgba(22, 27, 34, 0.7); } }
-    .bottom-nav button{
-      flex: 1; border-radius: 12px; padding: 14px 8px; font-weight: 600;
-      border: none; background: transparent; color: var(--muted);
-      transition: all .2s ease;
-    }
+    .bottom-nav button{ flex: 1; border-radius: 12px; padding: 14px 8px; font-weight: 600; border: none; background: transparent; color: var(--muted); transition: all .2s ease; }
     .bottom-nav button.active{ background: var(--primary); color: #fff; }
 
-    .pedido-card, .stat-card {
-      background: var(--card); border-radius: 16px; padding: 16px;
-      margin-bottom: 14px; box-shadow: var(--shadow);
-    }
+    .pedido-card, .stat-card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
     .pedido-card hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
 
     .toast{
@@ -197,19 +172,9 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     }
     @keyframes fadeInDown { from { top: -20px; opacity: 0; } to { top: 16px; opacity: 1; } }
 
-    #confirmOverlay{
-      display: none; position: fixed; inset: 0; z-index: 1002;
-      background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-      align-items: center; justify-content: center;
-      animation: fadeIn .3s ease;
-    }
+    #confirmOverlay{ display: none; position: fixed; inset: 0; z-index: 1002; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center; animation: fadeIn .3s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .success-box{
-      background: var(--card);
-      color: var(--text); border-radius: 24px; padding: 36px 28px; text-align: center;
-      width: min(90vw, 320px); box-shadow: var(--shadow-lg);
-      animation: popIn .35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
+    .success-box{ background: var(--card); color: var(--text); border-radius: 24px; padding: 36px 28px; text-align: center; width: min(90vw, 320px); box-shadow: var(--shadow-lg); animation: popIn .35s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
     @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .success-box h2{ margin: 16px 0 0 0; font-size: 22px; }
     .success-box p { opacity:.7; margin:6px 0 0 0; }
@@ -226,12 +191,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
 
     .theme-row{ display:flex; align-items:center; gap:12px; margin: 6px 0 20px 0; flex-wrap:wrap; }
     .theme-row span { font-weight: 600; }
-    .swatch{
-      width: 32px; height: 32px; border-radius: 50%;
-      border: 3px solid var(--card);
-      cursor: pointer; box-shadow: 0 0 0 1px var(--border);
-      transition: transform .15s ease;
-    }
+    .swatch{ width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--card); cursor: pointer; box-shadow: 0 0 0 1px var(--border); transition: transform .15s ease; }
     .swatch:hover { transform: scale(1.1); }
 
     .search-row{ display: flex; gap: 8px; margin-bottom: 16px; }
@@ -356,8 +316,6 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
 
 <script>
   // ==== CONFIG ====
-
-  // === GOOGLE FORM (envío directo) ===
   const GF_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfgUbkynVRveiW547pgX0AgvVDGnCd1GUoXooMTDXkiCWgdKA/formResponse";
 
   const GF = {
@@ -369,23 +327,22 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     cliente:  "entry.1103049985",
     productos:"entry.1828255967",
     observaciones: "entry.897131524",
-    // NUEVO: firma de deduplicación (tu URL mostró este ID)
+    // firma de deduplicación (confirmada por tu URL)
     sig: "entry.1902043730"
   };
 
-  // === DEDUPE: normalización y firma determinística ===
+  // === DEDUPE: helpers ===
   function normalizeStr(s){
     return (s||"").toUpperCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g,"") // sin acentos
-      .replace(/[^A-Z0-9\s\n]/g,"")                    // solo A-Z 0-9 y espacios/saltos
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^A-Z0-9\s\n]/g,"")
       .replace(/\s+/g," ").trim();
   }
   function normalizeProductos(s){
     const lines = (s||"").split(/\n+/).map(x=>normalizeStr(x)).filter(Boolean);
-    lines.sort(); // A+B == B+A
+    lines.sort();
     return lines.join("|");
   }
-  // FNV-1a 32-bit en JS
   function fnv1a(str){
     let h = 0x811c9dc5;
     for(let i=0;i<str.length;i++){
@@ -397,24 +354,17 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     const base = `${(p.fechaEntrega||"").slice(0,10)}|${normalizeStr(p.numeroCliente)}|${normalizeStr(p.nombreVendedor)}|${normalizeProductos(p.productos)}`;
     return fnv1a(base);
   }
-
-  // Persistencia local de firmas enviadas
   const SIG_KEY = "signaturesEnviadas";
   function getSigMap(){ try { return JSON.parse(localStorage.getItem(SIG_KEY)||"{}"); } catch { return {}; } }
   function seenSig(sig){ return !!getSigMap()[sig]; }
-  function markSig(sig){
-    const m = getSigMap();
-    m[sig] = Date.now();
-    localStorage.setItem(SIG_KEY, JSON.stringify(m));
-  }
-  // Limpieza (firmas de +30 días)
+  function markSig(sig){ const m = getSigMap(); m[sig]=Date.now(); localStorage.setItem(SIG_KEY, JSON.stringify(m)); }
   (function pruneSigs(days=30){
-    const t = Date.now()-days*86400000, m = getSigMap(); let changed=false;
+    const t = Date.now()-days*86400000, m=getSigMap(); let changed=false;
     for(const k in m){ if(m[k]<t){ delete m[k]; changed=true; } }
     if(changed) localStorage.setItem(SIG_KEY, JSON.stringify(m));
   })();
 
-  // ==== ENVÍO AL FORM ====
+  // Envío al Google Form (incluye SIG)  // === DEDUPE: se envía p.sig ===
   function sendToGoogleForm(p){
     return new Promise((resolve)=>{
       const iframeName = "gform_iframe_" + Date.now();
@@ -439,13 +389,11 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
         form.appendChild(input);
       };
 
-      // Campos básicos
       add(GF.vendedor,     p.nombreVendedor);
       add(GF.cliente,      p.numeroCliente);
       add(GF.productos,    p.productos);
       add(GF.observaciones,p.observaciones || "");
 
-      // Fecha
       const fecha = (p.fechaEntrega || "").trim();
       if (fecha) {
         add(GF.fecha, fecha);
@@ -457,24 +405,15 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
         }
       }
 
-      // Firma anti-duplicado
+      // === DEDUPE: enviar firma al Form
       add(GF.sig, p.sig || "");
 
       document.body.appendChild(form);
 
       const cleanup = () => { try { form.remove(); iframe.remove(); } catch {} };
+      const timeout = setTimeout(() => { cleanup(); resolve({ status: "ok", via: "timeout" }); }, 5000);
 
-      const timeout = setTimeout(() => {
-        cleanup();
-        resolve({ status: "ok", via: "timeout" });
-      }, 5000);
-
-      iframe.addEventListener("load", ()=>{
-        clearTimeout(timeout);
-        cleanup();
-        resolve({ status: "ok" });
-      });
-
+      iframe.addEventListener("load", ()=>{ clearTimeout(timeout); cleanup(); resolve({ status: "ok" }); });
       form.submit();
     });
   }
@@ -498,27 +437,25 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
   const searchPend = $("searchPend");
   const pedidoContador = $("pedidoContador");
 
-  // ==== SONIDO & VIBRACIÓN ====
+  // SONIDO & VIBRA
   const sndOk = new Audio("data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA");
   function vib(ms=70){ if('vibrate' in navigator) navigator.vibrate(ms); }
   function playOk(){ try{ sndOk.currentTime=0; sndOk.play(); }catch{} }
 
-  // ==== TOAST ====
+  // TOAST
   function showToast(msg, type="info"){
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.textContent = msg;
-    let bgColor = "#ffcd38";
-    let color = "#1f2937";
+    let bgColor = "#ffcd38", color = "#1f2937";
     if (type === "error") { bgColor = "#ef4444"; color = "#fff"; }
     if (type === "ok") { bgColor = "#22c55e"; color = "#fff"; }
-    toast.style.background = bgColor;
-    toast.style.color = color;
+    toast.style.background = bgColor; toast.style.color = color;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3500);
   }
 
-  // ==== THEME ====
+  // THEME
   (()=>{
     const stored = localStorage.getItem("themeColor");
     if(stored) document.documentElement.style.setProperty("--primary", stored);
@@ -531,7 +468,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     });
   })();
 
-  // ==== STORAGE ====
+  // STORAGE
   const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
   const setQueue = arr => localStorage.setItem("pedidosPendientes", JSON.stringify(arr));
   const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
@@ -545,7 +482,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     localStorage.setItem("idsEnviados", JSON.stringify(arr));
   }
 
-  // ==== DRAFT ====
+  // DRAFT
   const DRAFT_KEY = "draftPedido";
   function saveDraft(){
     const d = {
@@ -571,7 +508,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
   }
   [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=> el.addEventListener("input", saveDraft));
 
-  // ==== PREFILL & GREETING ====
+  // PREFILL
   (function prefill(){
     const vend = localStorage.getItem("vendedorNombre");
     if(vend) nombreVendedor.value = vend;
@@ -582,21 +519,21 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
   })();
   numeroCliente.addEventListener("input", ()=> numeroCliente.value = numeroCliente.value.replace(/[^\d]/g,""));
 
-  // ==== DAILY COUNTER ====
+  // CONTADOR DIARIO
   function actualizarContadorDiario(increment = false) {
     const key = 'dailyCounter';
     const today = new Date().toISOString().slice(0, 10);
     let data = { date: today, count: 0 };
     try {
       const stored = JSON.parse(localStorage.getItem(key));
-      if (stored && stored.date === today) data = stored;
+      if (stored && stored.date === today) { data = stored; }
     } catch {}
-    if (increment) data.count++;
+    if (increment) { data.count++; }
     localStorage.setItem(key, JSON.stringify(data));
     pedidoContador.textContent = data.count;
   }
 
-  // ==== STATS ====
+  // STATS
   function renderStats(){
     const s = getStats();
     const pend = getQueue().length;
@@ -613,7 +550,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     $("barPendientes").style.width = total>0 ? (pend*100/total)+"%" : "0%";
     $("barReenviados").style.width = total>0 ? (reenviados*100/total)+"%" : "0%";
     $("barExito").style.width = exito+"%";
-
+    
     const hist = getHistory();
     const byDay = {};
     hist.forEach(h=>{
@@ -626,37 +563,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
   }
   function incStat(k){ const s = getStats(); s[k]=(s[k]||0)+1; setStats(s); renderStats(); }
 
-  // ==== PENDING ====
-  function cardHtml(p){
-    return `<div class="pedido-card">
-      <b>Cliente:</b> ${p.numeroCliente||"—"}<br>
-      <b>Vendedor:</b> ${p.nombreVendedor||"—"}<br>
-      <b>Fecha:</b> ${p.fechaEntrega||"—"}<br>
-      <hr>
-      <div class="toolbar" style="gap:8px; margin-top: 12px; flex-direction: row;">
-        <button class="btn" onclick="reenviarPedido('${p.id}')">🔄 Reenviar</button>
-        <button class="btn-secondary" onclick="eliminarPendiente('${p.id}')">🗑️ Eliminar</button>
-      </div>
-    </div>`;
-  }
-  function cargarPendientes(){
-    const cont = $("listaPendientes");
-    const q = getQueue();
-    const qf = searchPend.value.trim().toLowerCase();
-    let filtered = q;
-    if(qf){
-      filtered = q.filter(p =>
-        String(p.numeroCliente||"").toLowerCase().includes(qf) ||
-        String(p.nombreVendedor||"").toLowerCase().includes(qf)
-      );
-    }
-    cont.innerHTML = filtered.length ? filtered.map(cardHtml).join("") : "<p>No hay pedidos pendientes.</p>";
-    renderStats();
-    if(q.length>10) showToast("⚠️ Hay muchos pendientes (>10). Recomendado sincronizar.", "info");
-  }
-  searchPend.addEventListener("input", cargarPendientes);
-
-  // ==== CONNECTION ====
+  // CONEXIÓN
   function setOnlineStatus(on){
     netBanner.style.display = on ? "none" : "block";
     connDot.className = on ? "online" : "offline";
@@ -668,7 +575,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
   window.addEventListener("offline", ()=> setOnlineStatus(false));
   setOnlineStatus(navigator.onLine);
 
-  // ==== NOTIFICATIONS ====
+  // NOTIFICACIONES
   async function ensureNotiPerm(){
     try{
       if(!("Notification" in window)) return;
@@ -684,28 +591,21 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     }catch{}
   }
 
-  // ==== BACKEND POST ====
+  // POST
   async function postPedido(pedido) {
     if (!navigator.onLine) throw new Error("offline");
     return sendToGoogleForm(pedido);
   }
 
-  // Util para asegurar firma en un objeto pedido
-  function withSignature(p){
-    const sig = p.sig || makeSignature(p);
-    return [sig, {...p, sig}];
-  }
-
-  // ==== QUEUE & RETRY ====
+  // QUEUE & RETRY
   async function reenviarPedido(id){
     vib();
     const q = getQueue();
     const p = q.find(x => String(x.id)===String(id));
     if(!p) return;
 
-    const [sig, pToSend] = withSignature(p);
-
-    // Si ya fue enviado, descartamos de pendientes
+    // === DEDUPE: recompute o usa guardado
+    const sig = p.sig || makeSignature(p);
     if (seenSig(sig)) {
       setQueue(q.filter(x => String(x.id)!==String(id)));
       cargarPendientes();
@@ -715,12 +615,13 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
 
     if(!navigator.onLine){ showToast("Sin conexión para reenviar", "error"); return; }
     try{
-      const data = await postPedido(pToSend);
+      p.sig = sig; // enviar al Form
+      await postPedido(p);
       setQueue(q.filter(x => String(x.id)!==String(id)));
-      markSig(sig);
+      markSig(sig);                   // === DEDUPE: marcar
       incStat("reenviados");
       cargarPendientes();
-      showToast(data.status==="duplicate" ? "Duplicado detectado (descartado)" : "Pedido reenviado", data.status==="duplicate"?"info":"ok");
+      showToast("Pedido reenviado", "ok");
       connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700);
       notify("Reenvío OK","El pedido fue reenviado correctamente");
     }catch(e){
@@ -745,16 +646,16 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     let toSend = filterToday ? q.filter(p => (p.fechaEntrega||"").slice(0,10)===today) : q;
     if(!toSend.length){ showToast(filterToday ? "No hay pendientes de hoy" : "No hay pendientes", "info"); return; }
     for(const p of [...toSend]){
-      const [sig, pToSend] = withSignature(p);
+      const sig = p.sig || makeSignature(p);          // === DEDUPE
       if (seenSig(sig)) {
-        // quitar duplicado sin re-enviar
         setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
         continue;
       }
       try{
-        await postPedido(pToSend);
+        p.sig = sig;
+        await postPedido(p);
         setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
-        markSig(sig);
+        markSig(sig);                                 // === DEDUPE
         incStat("reenviados");
       }catch{}
     }
@@ -766,7 +667,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
   $("btnReintentarTodos").addEventListener("click", ()=> reintentarTodos(false));
   $("btnSyncHoy").addEventListener("click", ()=> reintentarTodos(true));
 
-  // ==== SEND NEW ORDER ====
+  // SEND NEW ORDER
   let sending = false;
   const lastSent = getSentIds();
   function buildPedido(){
@@ -790,12 +691,13 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     if (sending) return;
     if (lastSent.has(p.id)) { showToast("Duplicado detectado (id repetido)", "info"); return; }
 
-    // Firma antes de enviar
-    const [sig, pToSend] = withSignature(p);
+    // === DEDUPE: calcular firma y bloquear si ya existe
+    const sig = makeSignature(p);
     if (seenSig(sig)) {
-      showToast("⚠️ Pedido duplicado (mismos datos). No se envió.", "info");
+      showToast("Este pedido ya fue enviado (duplicado)", "info");
       return;
     }
+    p.sig = sig; // adjuntar para el envío
 
     sending = true;
     btnEnviar.disabled = true;
@@ -803,9 +705,9 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
 
     try {
       if (!navigator.onLine) throw new Error("offline");
-      await postPedido(pToSend);
+      await postPedido(p);
 
-      markSig(sig);
+      markSig(sig);                     // === DEDUPE: registrar tras éxito
       addSentId(p.id);
       lastSent.add(p.id);
       if (p.nombreVendedor) localStorage.setItem("vendedorNombre", p.nombreVendedor);
@@ -815,7 +717,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
       const hist = getHistory();
       hist.push({ id: p.id, timestamp: Date.now(), numeroCliente: p.numeroCliente, vendedor: p.nombreVendedor });
       setHistory(hist);
-
+      
       incStat("enviados");
       actualizarContadorDiario(true);
       playOk();
@@ -838,7 +740,8 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
       saveDraft();
     } catch (e) {
       console.error("❌ Error en envío:", e);
-      guardarLocal(pToSend);
+      // No marcamos la firma aquí; se marcará cuando se reenvíe con éxito
+      guardarLocal(p);
     } finally {
       sending = false;
       btnEnviar.disabled = false;
@@ -866,21 +769,19 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     enviarPedido(p, {mass:true});
   });
 
-  // ==== AUTO-SYNC ====
+  // AUTO-SYNC
   async function syncPendientes(animate=false){
     if(!navigator.onLine) return;
     const q = getQueue(); if(!q.length) return;
     if(animate){ connDot.className = "syncing"; }
     for(const p of [...q]){
-      const [sig, pToSend] = withSignature(p);
-      if (seenSig(sig)) {
-        setQueue(getQueue().filter(x => x.id!==p.id));
-        continue;
-      }
+      const sig = p.sig || makeSignature(p);         // === DEDUPE
+      if (seenSig(sig)) { setQueue(getQueue().filter(x => x.id!==p.id)); continue; }
       try{
-        await postPedido(pToSend);
+        p.sig = sig;
+        await postPedido(p);
         setQueue(getQueue().filter(x => x.id!==p.id));
-        markSig(sig);
+        markSig(sig);                                 // === DEDUPE
         incStat("reenviados");
       }catch{}
     }
@@ -889,7 +790,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     notify("Sincronizado","Se reenviaron pedidos pendientes");
   }
 
-  // ==== TABS ====
+  // TABS
   const sections = {nuevo:$("nuevoPedido"), pend:$("pendientes"), stats:$("estadisticas")};
   const tabs = {nuevo:$("btnNuevo"), pend:$("btnVerPendientes"), stats:$("btnVerEstadisticas")};
   function setTab(name){
@@ -898,10 +799,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
     Object.values(sections).forEach(s=> s.style.display="none");
     tabs[name].classList.add("active");
     sections[name].style.display="block";
-
-    if (name === 'nuevo') { btnEnviar.style.display = 'flex'; }
-    else { btnEnviar.style.display = 'none'; }
-
+    if (name === 'nuevo') { btnEnviar.style.display = 'flex'; } else { btnEnviar.style.display = 'none'; }
     if(name==="pend") cargarPendientes();
     if(name==="stats") renderStats();
   }
@@ -909,7 +807,7 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
   tabs.pend.onclick = ()=> setTab("pend");
   tabs.stats.onclick = ()=> setTab("stats");
 
-  // ==== INIT & MISC ====
+  // INIT
   window.addEventListener("beforeunload", (e)=>{
     if(getQueue().length>0){ e.preventDefault(); e.returnValue = ""; }
   });
@@ -936,6 +834,3 @@ Pegá esto tal cual y probá mandar dos iguales para ver el bloqueo de duplicado
 </script>
 </body>
 </html>
-```
-
-Si algo no guarda la firma en el Form, confirmame que el campo **sig** quedó con ese `entry.1902043730` (y que no tenga validaciones que lo bloqueen).
