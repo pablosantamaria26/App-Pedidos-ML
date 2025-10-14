@@ -17,6 +17,18 @@
       color: #1f2937;
     }
 
+   <div id="netBanner" style="
+  display:none;
+  background:#fde047;
+  color:#1f2937;
+  text-align:center;
+  padding:8px;
+  font-weight:600;
+  font-size:14px;
+">📡 Sin conexión — los pedidos se guardan localmente</div>
+
+    
+
     header {
       background: #0d6efd;
       color: white;
@@ -520,6 +532,17 @@ function setOnlineStatus(estado) {
 // Ejecutar chequeo inicial y luego cada 15 segundos
 setInterval(checkConexionReal, 15000);
 checkConexionReal();
+
+
+    function setOnlineStatus(estado) {
+  const banner = document.getElementById("netBanner");
+  if (estado) {
+    banner.style.display = "none";
+  } else {
+    banner.style.display = "block";
+  }
+}
+
 
   </script>
 </body>
