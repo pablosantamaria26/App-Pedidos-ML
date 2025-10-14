@@ -28,14 +28,9 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    main {
-      padding: 20px;
-    }
+    main { padding: 20px; }
 
-    label {
-      font-size: 14px;
-      color: #374151;
-    }
+    label { font-size: 14px; color: #374151; }
 
     input, textarea {
       width: 100%;
@@ -60,10 +55,12 @@
       transition: transform 0.1s ease, background 0.2s ease;
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
-    button:active {
-      transform: scale(0.97);
-      background: #0b5ed7;
+    button:active { transform: scale(0.97); background: #0b5ed7; }
+
+    .btn-secondary {
+      background:#e0e7ff; color:#0d6efd; box-shadow:none;
     }
+    .btn-secondary:active { background:#c7d2fe; }
 
     .toast {
       position: fixed;
@@ -77,6 +74,7 @@
       display: none;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       animation: fadeInOut 5s ease forwards;
+      z-index: 9998;
     }
 
     @keyframes fadeInOut {
@@ -97,6 +95,7 @@
       justify-content: space-around;
       padding: 10px 0;
       box-shadow: 0 -2px 6px rgba(0,0,0,0.15);
+      z-index: 9999;
     }
     .bottom-nav button {
       flex: 1;
@@ -107,10 +106,7 @@
       font-weight: 600;
       font-size: 16px;
     }
-    .bottom-nav button.active {
-      background: #0d6efd;
-      color: white;
-    }
+    .bottom-nav button.active { background: #0d6efd; color: white; }
 
     .pedido-card {
       background: white;
@@ -130,7 +126,6 @@
       align-items:center;
       z-index:9999;
     }
-
     #confirmOverlay div {
       background:white;
       border-radius:20px;
@@ -138,18 +133,40 @@
       text-align:center;
       animation: popIn 0.4s ease;
     }
-
     @keyframes popIn {
       0% { transform:scale(0.7); opacity:0; }
       70% { transform:scale(1.05); opacity:1; }
       100% { transform:scale(1); opacity:1; }
     }
+
+    /* 📊 Tarjetas de estadísticas */
+    .stats-grid {
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:6px;
+    }
+    .stat-card {
+      background:white;
+      border-radius:14px;
+      padding:16px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.08);
+      text-align:center;
+    }
+    .stat-title { font-size:13px; color:#6b7280; margin-bottom:6px; }
+    .stat-value { font-size:24px; font-weight:700; }
+    .stat-ok { color:#16a34a; }
+    .stat-warn { color:#d97706; }
+    .stat-info { color:#0ea5e9; }
+    .stat-gray { color:#6b7280; }
+
   </style>
 </head>
 
 <body>
   <header>🛒 Pedidos ML</header>
 
+  <!-- NUEVO PEDIDO -->
   <main id="nuevoPedido">
     <label>📅 Fecha de entrega</label>
     <input type="date" id="fechaEntrega">
@@ -169,14 +186,45 @@
     <button id="btnEnviar">Enviar pedido</button>
   </main>
 
+  <!-- PENDIENTES -->
   <main id="pendientes" style="display:none;">
     <h3>📋 Pedidos pendientes</h3>
+    <div style="margin-bottom:12px;">
+      <button class="btn-secondary" id="btnReintentarTodos">🔄 Reintentar todos</button>
+    </div>
     <div id="listaPendientes"></div>
+  </main>
+
+  <!-- ESTADÍSTICAS LOCALES -->
+  <main id="estadisticas" style="display:none;">
+    <h3>📊 Estadísticas (este dispositivo)</h3>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title">Enviados</div>
+        <div class="stat-value stat-ok" id="statEnviados">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Pendientes</div>
+        <div class="stat-value stat-warn" id="statPendientes">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Reenviados</div>
+        <div class="stat-value stat-info" id="statReenviados">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">% Éxito</div>
+        <div class="stat-value stat-gray" id="statExito">0%</div>
+      </div>
+    </div>
+    <p style="margin-top:10px;color:#6b7280;font-size:13px;">
+      * Estas métricas son locales a este equipo. Las globales se calcularán en el backend.
+    </p>
   </main>
 
   <div class="bottom-nav">
     <button id="btnNuevo" class="active">Nuevo</button>
     <button id="btnVerPendientes">Pendientes</button>
+    <button id="btnVerEstadisticas">Estadísticas</button>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -192,12 +240,11 @@
   <script>
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzpgGmnzY8dOEjKbNztmWpabZHnY74uGUDffy4fc5LD_r0AWebTYcykBHIcTHBQXWpQjQ/exec";
 
-    function vibrar(ms = 50) {
-      if ('vibrate' in navigator) navigator.vibrate(ms);
-    }
+    // ===== Utilidades =====
+    function vibrar(ms = 50) { if ('vibrate' in navigator) navigator.vibrate(ms); }
 
     // 🔊 Sonido embebido (funciona offline)
-    const sonidoOK = new Audio("data:audio/mp3;base64,//uQxA... (dejá así)");
+    const sonidoOK = new Audio("data:audio/mp3;base64,//uQxA..."); // (placeholder)
 
     function mostrarToast(msg) {
       const toast = document.getElementById("toast");
@@ -214,18 +261,35 @@
       setTimeout(() => overlay.style.display = "none", 1800);
     }
 
-    function guardarPedidoLocal(pedido) {
-      const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
-      pedidos.push(pedido);
-      localStorage.setItem("pedidosPendientes", JSON.stringify(pedidos));
+    // ===== Storage =====
+    function getQueue(){ return JSON.parse(localStorage.getItem("pedidosPendientes") || "[]"); }
+    function setQueue(arr){ localStorage.setItem("pedidosPendientes", JSON.stringify(arr)); }
+
+    function getStats(){
+      return JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
+    }
+    function setStats(s){ localStorage.setItem("statsPedidos", JSON.stringify(s)); }
+
+    function incStat(key){
+      const s = getStats();
+      s[key] = (s[key]||0) + 1;
+      setStats(s);
+      renderStats();
     }
 
+    function rememberVendedor(nombre){
+      if(nombre) localStorage.setItem("vendedorNombre", nombre);
+    }
+    function loadVendedor(){ return localStorage.getItem("vendedorNombre") || ""; }
+
+    // ===== UI: Pendientes & Stats =====
     function cargarPendientes() {
       const cont = document.getElementById("listaPendientes");
       cont.innerHTML = "";
-      const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+      const pedidos = getQueue();
       if (pedidos.length === 0) {
         cont.innerHTML = "<p>No hay pedidos pendientes.</p>";
+        renderStats();
         return;
       }
       pedidos.forEach(p => {
@@ -235,35 +299,92 @@
           <b>Cliente:</b> ${p.numeroCliente}<br>
           <b>Vendedor:</b> ${p.nombreVendedor}<br>
           <b>Fecha:</b> ${p.fechaEntrega}<br>
-          <b>Productos:</b><br>${p.productos.replace(/\n/g,"<br>")}
+          <b>Productos:</b><br>${(p.productos||"").replace(/\n/g,"<br>")}
           <hr>
-          <button onclick="reenviarPedido('${p.id}')">Reenviar</button>
+          <div style="display:flex; gap:8px;">
+            <button onclick="reenviarPedido('${p.id}')">Reenviar</button>
+            <button class="btn-secondary" onclick="eliminarPendiente('${p.id}')">Eliminar</button>
+          </div>
         `;
         cont.appendChild(div);
       });
+      renderStats();
+    }
+
+    function eliminarPendiente(id){
+      const cola = getQueue().filter(p => String(p.id)!==String(id));
+      setQueue(cola);
+      cargarPendientes();
+      mostrarToast("🗑️ Pedido eliminado de pendientes");
+    }
+
+    function renderStats(){
+      const s = getStats();
+      const pendientes = getQueue().length;
+      const enviados = s.enviados || 0;
+      const reenviados = s.reenviados || 0;
+      const totalIntentos = enviados + reenviados + pendientes;
+      const exito = totalIntentos>0 ? Math.round((enviados + reenviados) * 100 / totalIntentos) : 0;
+
+      document.getElementById("statEnviados").textContent = enviados;
+      document.getElementById("statPendientes").textContent = pendientes;
+      document.getElementById("statReenviados").textContent = reenviados;
+      document.getElementById("statExito").textContent = exito + "%";
+    }
+
+    // ===== Envío =====
+    async function postPedido(pedido){
+      // no-cors con content-type simple evita preflight y CORS
+      await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(pedido)
+      });
+    }
+
+    async function enviarPedidoOnline(pedido){
+      await postPedido(pedido);
+      incStat("enviados");
+      mostrarToast("✅ Pedido enviado correctamente");
+      mostrarConfirmacion();
     }
 
     async function reenviarPedido(id) {
       vibrar();
-      const pedidos = JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
-      const pedido = pedidos.find(p => p.id == id);
+      const pedidos = getQueue();
+      const pedido = pedidos.find(p => String(p.id) === String(id));
       if (!pedido) return;
       try {
-        await fetch(BACKEND_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(pedido)
-        });
-        mostrarToast("✅ Pedido reenviado correctamente");
-        const nuevos = pedidos.filter(p => p.id != id);
-        localStorage.setItem("pedidosPendientes", JSON.stringify(nuevos));
+        await postPedido(pedido);
+        // lo sacamos de la cola local; el backend tiene deduplicación por ID
+        const nuevos = pedidos.filter(p => String(p.id) !== String(id));
+        setQueue(nuevos);
+        incStat("reenviados");
         cargarPendientes();
+        mostrarToast("✅ Pedido reenviado");
         mostrarConfirmacion();
       } catch {
         mostrarToast("⚠️ Error al reenviar pedido");
       }
     }
 
+    async function reintentarTodos(){
+      const pendientes = getQueue();
+      if (pendientes.length===0) { mostrarToast("No hay pendientes"); return; }
+      for(const p of [...pendientes]){ // clonar por si se modifica
+        try {
+          await postPedido(p);
+          // quitar de la cola y contar como reenviado
+          const rest = getQueue().filter(x => String(x.id)!==String(p.id));
+          setQueue(rest);
+          incStat("reenviados");
+        } catch { /* si falla, se queda en cola */ }
+      }
+      cargarPendientes();
+      mostrarToast("🔄 Reintento completo");
+    }
+
+    // ===== Formulario =====
     document.getElementById("btnEnviar").addEventListener("click", async () => {
       vibrar();
       const pedido = {
@@ -280,50 +401,100 @@
         return;
       }
 
-      try {
-        await fetch(BACKEND_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(pedido)
-        });
-        mostrarToast("✅ Pedido enviado correctamente");
-        mostrarConfirmacion();
-        document.querySelector("form")?.reset();
-      } catch {
-        guardarPedidoLocal(pedido);
+      rememberVendedor(pedido.nombreVendedor);
+
+      if (navigator.onLine) {
+        try {
+          await enviarPedidoOnline(pedido);
+          document.getElementById("fechaEntrega").value = "";
+          document.getElementById("numeroCliente").value = "";
+          document.getElementById("productos").value = "";
+          document.getElementById("observaciones").value = "";
+          // mantenemos el nombre del vendedor cargado
+        } catch {
+          const cola = getQueue(); cola.push(pedido); setQueue(cola);
+          mostrarToast("📡 Sin conexión, pedido guardado localmente");
+          renderStats();
+        }
+      } else {
+        const cola = getQueue(); cola.push(pedido); setQueue(cola);
         mostrarToast("📡 Sin conexión, pedido guardado localmente");
+        renderStats();
       }
     });
 
-    // 🔹 Menú inferior
+    // ===== Auto-sync al volver la conexión =====
+    async function syncPendientes(){
+      if (!navigator.onLine) return;
+      const pendientes = getQueue();
+      if (pendientes.length===0) return;
+      for(const p of [...pendientes]){
+        try{
+          await postPedido(p);
+          const rest = getQueue().filter(x => String(x.id)!==String(p.id));
+          setQueue(rest);
+          incStat("reenviados");
+        }catch{/* se mantiene en cola */}
+      }
+      cargarPendientes();
+      mostrarToast("🔄 Pendientes sincronizados");
+    }
+    window.addEventListener("online", syncPendientes);
+
+    // ===== Menú inferior =====
     const btnNuevo = document.getElementById("btnNuevo");
     const btnVerPendientes = document.getElementById("btnVerPendientes");
+    const btnVerEstadisticas = document.getElementById("btnVerEstadisticas");
     const seccionNuevo = document.getElementById("nuevoPedido");
     const seccionPendientes = document.getElementById("pendientes");
+    const seccionEstadisticas = document.getElementById("estadisticas");
 
     btnNuevo.addEventListener("click", () => {
       vibrar();
       btnNuevo.classList.add("active");
       btnVerPendientes.classList.remove("active");
+      btnVerEstadisticas.classList.remove("active");
       seccionNuevo.style.display = "block";
       seccionPendientes.style.display = "none";
+      seccionEstadisticas.style.display = "none";
     });
 
     btnVerPendientes.addEventListener("click", () => {
       vibrar();
       btnVerPendientes.classList.add("active");
       btnNuevo.classList.remove("active");
+      btnVerEstadisticas.classList.remove("active");
       seccionNuevo.style.display = "none";
       seccionPendientes.style.display = "block";
+      seccionEstadisticas.style.display = "none";
       cargarPendientes();
     });
 
-    // 📦 Registrar service worker PWA
+    btnVerEstadisticas.addEventListener("click", () => {
+      vibrar();
+      btnVerEstadisticas.classList.add("active");
+      btnNuevo.classList.remove("active");
+      btnVerPendientes.classList.remove("active");
+      seccionNuevo.style.display = "none";
+      seccionPendientes.style.display = "none";
+      seccionEstadisticas.style.display = "block";
+      renderStats();
+    });
+
+    // ===== Inicialización =====
+    // Prefill vendedor recordado
+    const remembered = loadVendedor();
+    if (remembered) document.getElementById("nombreVendedor").value = remembered;
+
+    // Registrar SW PWA
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
       .then(() => console.log('✅ Service Worker registrado'))
       .catch(err => console.log('❌ SW error', err));
     }
+
+    // Al cargar: render inicial
+    renderStats();
   </script>
 </body>
 </html>
