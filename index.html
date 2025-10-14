@@ -40,7 +40,7 @@
     body{
       font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
       margin: 0;
-      /* Ajuste clave: Añade padding inferior para que el contenido no quede oculto por el botón fijo y la barra de nav */
+      /* deja espacio para el botón flotante y la bottom bar */
       padding: 0 0 180px 0;
       background: var(--bg); color: var(--text);
       overflow-x: hidden;
@@ -97,9 +97,9 @@
     /* --- Form Elements --- */
     .row { margin-bottom: 18px; }
     label {
-        display: flex; align-items: center;
-        font-size: 14px; font-weight: 500; color: var(--muted);
-        margin-bottom: 8px;
+      display: flex; align-items: center;
+      font-size: 14px; font-weight: 500; color: var(--muted);
+      margin-bottom: 8px;
     }
     input, textarea, select {
       width: 100%; box-sizing: border-box;
@@ -118,52 +118,30 @@
     }
     textarea { min-height: 120px; resize: vertical; }
 
-    /* === NUEVOS CAMBIOS: Ocultar elementos visualmente === */
-    .row:has(#shareWA) {
-        display: none;
-    }
-    #btnNuevoLote {
-        display: none;
-    }
+    /* Ocultar visualmente (mantener en DOM) */
+    .row:has(#shareWA) { display: none; }
+    #btnNuevoLote { display: none; }
 
-    /* === NUEVOS CAMBIOS: Botón de Enviar Flotante === */
+    /* --- Botón Enviar flotante --- */
     #btnEnviar {
-        position: fixed;
-        bottom: 90px; /* Altura para quedar justo sobre la barra de navegación */
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 998;
-
-        width: 90%;
-        max-width: 420px; /* Un máximo para pantallas más grandes */
-        
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        border-radius: 16px;
-        padding: 18px;
-        font-size: 17px;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
-        transition: transform .1s ease, filter .15s ease, background .2s ease;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
-
-        background: linear-gradient(45deg, var(--primary), #6366f1);
-        color: #fff;
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 998;
+      width: 90%;
+      max-width: 420px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; border-radius: 16px; padding: 18px;
+      font-size: 17px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+      transition: transform .1s ease, filter .15s ease, background .2s ease;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+      background: linear-gradient(45deg, var(--primary), #6366f1);
+      color: #fff;
     }
-    #btnEnviar:active {
-        transform: translateX(-50%) scale(0.97);
-        filter: brightness(1.1);
-    }
-    #btnEnviar[disabled] {
-        opacity: .7;
-        cursor: not-allowed;
-        filter: grayscale(.2);
-        box-shadow: var(--shadow);
-    }
+    #btnEnviar:active { transform: translateX(-50%) scale(0.97); filter: brightness(1.1); }
+    #btnEnviar[disabled] { opacity: .7; cursor: not-allowed; filter: grayscale(.2); box-shadow: var(--shadow); }
 
     /* --- Spinner --- */
     .spinner {
@@ -193,14 +171,14 @@
     }
     .bottom-nav button.active{ background: var(--primary); color: #fff; }
 
-    /* --- Pending & Stats Cards --- */
+    /* --- Cards --- */
     .pedido-card, .stat-card {
       background: var(--card); border-radius: 16px; padding: 16px;
       margin-bottom: 14px; box-shadow: var(--shadow);
     }
     .pedido-card hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
 
-    /* --- Toast Notifications --- */
+    /* --- Toast --- */
     .toast{
       position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
       color: #fff; padding: 14px 20px; border-radius: 12px;
@@ -222,25 +200,20 @@
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .success-box{
-      background: var(--card);
-      color: var(--text); border-radius: 24px; padding: 36px 28px; text-align: center;
+      background: var(--card); color: var(--text);
+      border-radius: 24px; padding: 36px 28px; text-align: center;
       width: min(90vw, 320px); box-shadow: var(--shadow-lg);
       animation: popIn .35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
-    @keyframes popIn {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .success-box h2{ margin: 16px 0 0 0; font-size: 22px; }
     .success-box p { opacity:.7; margin:6px 0 0 0; }
 
-    /* Animated Checkmark SVG */
     .checkmark-svg { width: 80px; height: 80px; }
     .checkmark-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke: var(--success); fill: none; animation: stroke .6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
     .checkmark-check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke-width: 4; stroke: var(--success); stroke-linecap: round; fill: none; animation: stroke .3s cubic-bezier(0.65, 0, 0.45, 1) .8s forwards; }
-    @keyframes stroke { 100% { stroke-dashoffset: 0; } }
 
-    /* --- Stats Section --- */
+    /* --- Stats --- */
     .stats-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
     .stat-title{ font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
     .stat-value{ font-size: 26px; font-weight: 700; }
@@ -258,12 +231,9 @@
     }
     .swatch:hover { transform: scale(1.1); }
 
-    /* --- Search --- */
     .search-row{ display: flex; gap: 8px; margin-bottom: 16px; }
     .search-row input{ flex:1; }
-    .search-row .btn, .search-row .btn-secondary {
-        width: auto; flex-shrink: 0; padding: 14px; min-width: 60px;
-    }
+    .search-row .btn, .search-row .btn-secondary { width: auto; flex-shrink: 0; padding: 14px; min-width: 60px; }
   </style>
 </head>
 <body>
@@ -307,10 +277,10 @@
       <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
     </div>
     <div class="row">
-        <label style="flex-direction: row; align-items: center; gap: 8px; font-weight: normal; color: var(--text);">
-            <input type="checkbox" id="shareWA" style="width: auto;" />
-            Enviar resumen por WhatsApp a Laura
-        </label>
+      <label style="flex-direction: row; align-items: center; gap: 8px; font-weight: normal; color: var(--text);">
+        <input type="checkbox" id="shareWA" style="width: auto;" />
+        Enviar resumen por WhatsApp a Laura
+      </label>
     </div>
 
     <div class="toolbar">
@@ -372,528 +342,587 @@
 
   <div id="confirmOverlay">
     <div class="success-box">
-        <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
-            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-        </svg>
+      <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+      </svg>
       <h2 style="margin:10px 0 0 0;">¡Pedido enviado!</h2>
       <p style="opacity:.9;margin:6px 0 0 0;">Se guardó correctamente</p>
     </div>
   </div>
 
 <script>
-    // ==== CONFIG ====
+  // ==== CONFIG ====
 
-   // === GOOGLE FORM (envío directo) ===
-const GF_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfgUbkynVRveiW547pgX0AgvVDGnCd1GUoXooMTDXkiCWgdKA/formResponse";
+  // === GOOGLE FORM (envío directo) ===
+  const GF_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfgUbkynVRveiW547pgX0AgvVDGnCd1GUoXooMTDXkiCWgdKA/formResponse";
 
-const GF = {
-  vendedor: "entry.1003904475",
-  fecha:    "entry.171879298",       // si el campo fuera texto o acepta ISO directo
-  fecha_day:   "entry.171879298_day",   // <-- añadir
-  fecha_month: "entry.171879298_month", // <-- añadir
-  fecha_year:  "entry.171879298_year",  // <-- añadir
-  cliente:  "entry.1103049985",
-  productos:"entry.1828255967",
-  observaciones: "entry.897131524"
-};
+  const GF = {
+    vendedor: "entry.1003904475",
+    fecha:    "entry.171879298",
+    fecha_day:   "entry.171879298_day",
+    fecha_month: "entry.171879298_month",
+    fecha_year:  "entry.171879298_year",
+    cliente:  "entry.1103049985",
+    productos:"entry.1828255967",
+    observaciones: "entry.897131524",
+    // NUEVO: firma de deduplicación (reemplazar con el ID real del campo "sig")
+    sig: "entry.XXXXXXXXX"
+  };
 
+  // === DEDUPE: normalización y firma determinística ===
+  function normalizeStr(s){
+    return (s||"").toUpperCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"") // sin acentos
+      .replace(/[^A-Z0-9\s\n]/g,"")                    // solo A-Z 0-9 y espacios/saltos
+      .replace(/\s+/g," ").trim();
+  }
+  function normalizeProductos(s){
+    const lines = (s||"").split(/\n+/).map(x=>normalizeStr(x)).filter(Boolean);
+    lines.sort(); // "A\nB" == "B\nA"
+    return lines.join("|");
+  }
+  // FNV-1a 32-bit en JS
+  function fnv1a(str){
+    let h = 0x811c9dc5;
+    for(let i=0;i<str.length;i++){
+      h = Math.imul(h ^ str.charCodeAt(i), 0x01000193);
+    }
+    return (h>>>0).toString(16);
+  }
+  function makeSignature(p){
+    const base = `${(p.fechaEntrega||"").slice(0,10)}|${normalizeStr(p.numeroCliente)}|${normalizeStr(p.nombreVendedor)}|${normalizeProductos(p.productos)}`;
+    return fnv1a(base);
+  }
 
- function sendToGoogleForm(p){
-  return new Promise((resolve)=>{
-    // Iframe oculto para evitar CORS / redirecciones
-    const iframeName = "gform_iframe_" + Date.now();
-    const iframe = document.createElement("iframe");
-    iframe.name = iframeName;
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
+  // Persistencia local de firmas enviadas
+  const SIG_KEY = "signaturesEnviadas";
+  function getSigMap(){ try { return JSON.parse(localStorage.getItem(SIG_KEY)||"{}"); } catch { return {}; } }
+  function seenSig(sig){ return !!getSigMap()[sig]; }
+  function markSig(sig){
+    const m = getSigMap();
+    m[sig] = Date.now();
+    localStorage.setItem(SIG_KEY, JSON.stringify(m));
+  }
+  // Limpieza (firmas de +30 días)
+  (function pruneSigs(days=30){
+    const t = Date.now()-days*86400000, m = getSigMap(); let changed=false;
+    for(const k in m){ if(m[k]<t){ delete m[k]; changed=true; } }
+    if(changed) localStorage.setItem(SIG_KEY, JSON.stringify(m));
+  })();
 
-    // Form oculto con los entry.*
-    const form = document.createElement("form");
-    form.action = GF_ACTION;
-    form.method = "POST";
-    form.target = iframeName;
-    form.acceptCharset = "UTF-8";
-    form.style.display = "none";
+  // Envío al Google Form via iframe oculto
+  function sendToGoogleForm(p){
+    return new Promise((resolve)=>{
+      const iframeName = "gform_iframe_" + Date.now();
+      const iframe = document.createElement("iframe");
+      iframe.name = iframeName;
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
 
-    const add = (name, val)=>{
-      if(!name) return; // por si alguna clave no existe
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = name;
-      input.value = val == null ? "" : String(val);
-      form.appendChild(input);
+      const form = document.createElement("form");
+      form.action = GF_ACTION;
+      form.method = "POST";
+      form.target = iframeName;
+      form.acceptCharset = "UTF-8";
+      form.style.display = "none";
+
+      const add = (name, val)=>{
+        if(!name) return;
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = val == null ? "" : String(val);
+        form.appendChild(input);
+      };
+
+      // Campos básicos
+      add(GF.vendedor,     p.nombreVendedor);
+      add(GF.cliente,      p.numeroCliente);
+      add(GF.productos,    p.productos);
+      add(GF.observaciones,p.observaciones || "");
+
+      // Firma dedupe cross-device
+      if (GF.sig && p.sig) add(GF.sig, p.sig);
+
+      // Fecha (YYYY-MM-DD) + subcampos si existen
+      const fecha = (p.fechaEntrega || "").trim();
+      if (fecha) {
+        add(GF.fecha, fecha);
+        const [yyyy, mm, dd] = fecha.split("-");
+        if (GF.fecha_day && GF.fecha_month && GF.fecha_year && dd && mm && yyyy) {
+          add(GF.fecha_day,   dd);
+          add(GF.fecha_month, mm);
+          add(GF.fecha_year,  yyyy);
+        }
+      }
+
+      document.body.appendChild(form);
+
+      const cleanup = () => { try { form.remove(); iframe.remove(); } catch {} };
+      const timeout = setTimeout(() => { cleanup(); resolve({ status: "ok", via: "timeout" }); }, 5000);
+
+      iframe.addEventListener("load", ()=>{
+        clearTimeout(timeout);
+        cleanup();
+        resolve({ status: "ok" });
+      });
+
+      form.submit();
+    });
+  }
+
+  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
+
+  // ==== ELEMENTOS ====
+  const $ = id => document.getElementById(id);
+  const fechaEntrega = $("fechaEntrega");
+  const numeroCliente = $("numeroCliente");
+  const nombreVendedor = $("nombreVendedor");
+  const productos = $("productos");
+  const observaciones = $("observaciones");
+  const btnEnviar = $("btnEnviar");
+  const btnNuevoLote = $("btnNuevoLote");
+  const toastContainer = $("toast-container");
+  const connDot = $("connDot");
+  const netBanner = $("netBanner");
+  const helloBanner = $("helloBanner");
+  const shareWA = $("shareWA");
+  const searchPend = $("searchPend");
+  const pedidoContador = $("pedidoContador");
+
+  // ==== SONIDO & VIBRACIÓN ====
+  const sndOk = new Audio("data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA");
+  function vib(ms=70){ if('vibrate' in navigator) navigator.vibrate(ms); }
+  function playOk(){ try{ sndOk.currentTime=0; sndOk.play(); }catch{} }
+
+  // ==== TOAST ====
+  function showToast(msg, type="info"){
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = msg;
+    let bgColor = "#ffcd38", color = "#1f2937";
+    if (type === "error") { bgColor = "#ef4444"; color = "#fff"; }
+    if (type === "ok")    { bgColor = "#22c55e"; color = "#fff"; }
+    toast.style.background = bgColor;
+    toast.style.color = color;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+  }
+
+  // ==== THEME ====
+  (()=>{
+    const stored = localStorage.getItem("themeColor");
+    if(stored) document.documentElement.style.setProperty("--primary", stored);
+    document.querySelectorAll(".swatch").forEach(s=>{
+      s.addEventListener("click", ()=>{
+        const c = s.getAttribute("data-color");
+        document.documentElement.style.setProperty("--primary", c);
+        localStorage.setItem("themeColor", c);
+      });
+    });
+  })();
+
+  // ==== STORAGE ====
+  const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
+  const setQueue = arr => localStorage.setItem("pedidosPendientes", JSON.stringify(arr));
+  const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
+  const setStats = s => localStorage.setItem("statsPedidos", JSON.stringify(s));
+  const getHistory = () => JSON.parse(localStorage.getItem("historialEnviados") || "[]");
+  const setHistory = h => localStorage.setItem("historialEnviados", JSON.stringify(h));
+  const getSentIds = () => new Set(JSON.parse(localStorage.getItem("idsEnviados") || "[]"));
+  const addSentId = (id) => {
+    const arr = JSON.parse(localStorage.getItem("idsEnviados") || "[]");
+    if(!arr.includes(id)) arr.push(id);
+    localStorage.setItem("idsEnviados", JSON.stringify(arr));
+  }
+
+  // ==== DRAFT ====
+  const DRAFT_KEY = "draftPedido";
+  function saveDraft(){
+    const d = {
+      fechaEntrega: fechaEntrega.value,
+      numeroCliente: numeroCliente.value,
+      nombreVendedor: nombreVendedor.value,
+      productos: productos.value,
+      observaciones: observaciones.value
     };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+  }
+  function loadDraft(){
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if(!raw) return;
+    try{
+      const d = JSON.parse(raw);
+      fechaEntrega.value = d.fechaEntrega || fechaEntrega.value;
+      numeroCliente.value = d.numeroCliente || "";
+      nombreVendedor.value = d.nombreVendedor || nombreVendedor.value;
+      productos.value = d.productos || "";
+      observaciones.value = d.observaciones || "";
+    }catch{}
+  }
+  [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=> el.addEventListener("input", saveDraft));
 
-    // Campos básicos
-    add(GF.vendedor,     p.nombreVendedor);
-    add(GF.cliente,      p.numeroCliente);
-    add(GF.productos,    p.productos);
-    add(GF.observaciones,p.observaciones || "");
+  // ==== PREFILL & GREETING ====
+  (function prefill(){
+    const vend = localStorage.getItem("vendedorNombre");
+    if(vend) nombreVendedor.value = vend;
+    const today = new Date().toISOString().slice(0,10);
+    if(!fechaEntrega.value) fechaEntrega.value = today;
+    helloBanner.style.display = vend ? "block" : "none";
+    if(vend) helloBanner.textContent = `Hola ${vend} 👋`;
+  })();
+  numeroCliente.addEventListener("input", ()=> numeroCliente.value = numeroCliente.value.replace(/[^\d]/g,""));
 
-    // Fecha (YYYY-MM-DD). Carga el entry simple y, si existen, los subcampos day/month/year
-    const fecha = (p.fechaEntrega || "").trim();
-    if (fecha) {
-      add(GF.fecha, fecha);
-      const [yyyy, mm, dd] = fecha.split("-");
-      if (GF.fecha_day && GF.fecha_month && GF.fecha_year && dd && mm && yyyy) {
-        add(GF.fecha_day,   dd);
-        add(GF.fecha_month, mm);
-        add(GF.fecha_year,  yyyy);
-      }
-    }
+  // ==== DAILY COUNTER ====
+  function actualizarContadorDiario(increment = false) {
+    const key = 'dailyCounter';
+    const today = new Date().toISOString().slice(0, 10);
+    let data = { date: today, count: 0 };
+    try {
+      const stored = JSON.parse(localStorage.getItem(key));
+      if (stored && stored.date === today) data = stored;
+    } catch {}
+    if (increment) data.count++;
+    localStorage.setItem(key, JSON.stringify(data));
+    pedidoContador.textContent = data.count;
+  }
 
-    document.body.appendChild(form);
+  // ==== STATS ====
+  function renderStats(){
+    const s = getStats();
+    const pend = getQueue().length;
+    const enviados = s.enviados||0, reenviados = s.reenviados||0;
+    const total = enviados + reenviados + pend;
+    const ok = enviados + reenviados;
+    const exito = total>0 ? Math.round(ok*100/total) : 0;
 
-    const cleanup = () => { try { form.remove(); iframe.remove(); } catch {} };
+    $("statEnviados").textContent = enviados;
+    $("statPendientes").textContent = pend;
+    $("statReenviados").textContent = reenviados;
+    $("statExito").textContent = exito + "%";
+    $("barEnviados").style.width = total>0 ? (enviados*100/total)+"%" : "0%";
+    $("barPendientes").style.width = total>0 ? (pend*100/total)+"%" : "0%";
+    $("barReenviados").style.width = total>0 ? (reenviados*100/total)+"%" : "0%";
+    $("barExito").style.width = exito+"%";
 
-    // Fallback por si 'load' no dispara (p.ej. Safari)
-    const timeout = setTimeout(() => {
-      cleanup();
-      resolve({ status: "ok", via: "timeout" });
-    }, 5000);
-
-    iframe.addEventListener("load", ()=>{
-      clearTimeout(timeout);
-      cleanup();
-      resolve({ status: "ok" });
+    const hist = getHistory();
+    const byDay = {};
+    hist.forEach(h=>{
+      const day = (new Date(h.timestamp)).toISOString().slice(0,10);
+      byDay[day] = (byDay[day]||0)+1;
     });
+    const days = Object.keys(byDay).length || 1;
+    const totalEnv = hist.length;
+    $("statPromedio").textContent = (totalEnv/days).toFixed(1);
+  }
+  function incStat(k){ const s = getStats(); s[k]=(s[k]||0)+1; setStats(s); renderStats(); }
 
-    form.submit();
-  });
-}
-
-
-
-  
-    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
-
-    // ==== ELEMENTOS ====
-    const $ = id => document.getElementById(id);
-    const fechaEntrega = $("fechaEntrega");
-    const numeroCliente = $("numeroCliente");
-    const nombreVendedor = $("nombreVendedor");
-    const productos = $("productos");
-    const observaciones = $("observaciones");
-    const btnEnviar = $("btnEnviar");
-    const btnNuevoLote = $("btnNuevoLote");
-    const toastContainer = $("toast-container");
-    const connDot = $("connDot");
-    const netBanner = $("netBanner");
-    const helloBanner = $("helloBanner");
-    const shareWA = $("shareWA");
-    const searchPend = $("searchPend");
-    const pedidoContador = $("pedidoContador"); // Nuevo elemento contador
-
-    // ==== SONIDO & VIBRACIÓN ====
-    const sndOk = new Audio("data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA");
-    function vib(ms=70){ if('vibrate' in navigator) navigator.vibrate(ms); }
-    function playOk(){ try{ sndOk.currentTime=0; sndOk.play(); }catch{} }
-
-    // ==== TOAST NOTIFICATION ====
-    function showToast(msg, type="info"){
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = msg;
-      let bgColor = "#ffcd38";
-      let color = "#1f2937";
-      if (type === "error") { bgColor = "#ef4444"; color = "#fff"; }
-      if (type === "ok") { bgColor = "#22c55e"; color = "#fff"; }
-      toast.style.background = bgColor;
-      toast.style.color = color;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3500);
+  // ==== PENDING ====
+  function cardHtml(p){
+    return `<div class="pedido-card">
+      <b>Cliente:</b> ${p.numeroCliente||"—"}<br>
+      <b>Vendedor:</b> ${p.nombreVendedor||"—"}<br>
+      <b>Fecha:</b> ${p.fechaEntrega||"—"}<br>
+      <hr>
+      <div class="toolbar" style="gap:8px; margin-top: 12px; flex-direction: row;">
+        <button class="btn" onclick="reenviarPedido('${p.id}')">🔄 Reenviar</button>
+        <button class="btn-secondary" onclick="eliminarPendiente('${p.id}')">🗑️ Eliminar</button>
+      </div>
+    </div>`;
+  }
+  function cargarPendientes(){
+    const cont = $("listaPendientes");
+    const q = getQueue();
+    const qf = searchPend.value.trim().toLowerCase();
+    let filtered = q;
+    if(qf){
+      filtered = q.filter(p =>
+        String(p.numeroCliente||"").toLowerCase().includes(qf) ||
+        String(p.nombreVendedor||"").toLowerCase().includes(qf)
+      );
     }
-
-    // ==== THEME ====
-    (()=>{
-      const stored = localStorage.getItem("themeColor");
-      if(stored) document.documentElement.style.setProperty("--primary", stored);
-      document.querySelectorAll(".swatch").forEach(s=>{
-        s.addEventListener("click", ()=>{
-          const c = s.getAttribute("data-color");
-          document.documentElement.style.setProperty("--primary", c);
-          localStorage.setItem("themeColor", c);
-        });
-      });
-    })();
-
-    // ==== STORAGE ====
-    const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
-    const setQueue = arr => localStorage.setItem("pedidosPendientes", JSON.stringify(arr));
-    const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
-    const setStats = s => localStorage.setItem("statsPedidos", JSON.stringify(s));
-    const getHistory = () => JSON.parse(localStorage.getItem("historialEnviados") || "[]");
-    const setHistory = h => localStorage.setItem("historialEnviados", JSON.stringify(h));
-    const getSentIds = () => new Set(JSON.parse(localStorage.getItem("idsEnviados") || "[]"));
-    const addSentId = (id) => {
-      const arr = JSON.parse(localStorage.getItem("idsEnviados") || "[]");
-      if(!arr.includes(id)) arr.push(id);
-      localStorage.setItem("idsEnviados", JSON.stringify(arr));
-    }
-
-    // ==== DRAFT ====
-    const DRAFT_KEY = "draftPedido";
-    function saveDraft(){
-      const d = {
-        fechaEntrega: fechaEntrega.value,
-        numeroCliente: numeroCliente.value,
-        nombreVendedor: nombreVendedor.value,
-        productos: productos.value,
-        observaciones: observaciones.value
-      };
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
-    }
-    function loadDraft(){
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if(!raw) return;
-      try{
-        const d = JSON.parse(raw);
-        fechaEntrega.value = d.fechaEntrega || fechaEntrega.value;
-        numeroCliente.value = d.numeroCliente || "";
-        nombreVendedor.value = d.nombreVendedor || nombreVendedor.value;
-        productos.value = d.productos || "";
-        observaciones.value = d.observaciones || "";
-      }catch{}
-    }
-    [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=> el.addEventListener("input", saveDraft));
-
-    // ==== PREFILL & GREETING ====
-    (function prefill(){
-      const vend = localStorage.getItem("vendedorNombre");
-      if(vend) nombreVendedor.value = vend;
-      const today = new Date().toISOString().slice(0,10);
-      if(!fechaEntrega.value) fechaEntrega.value = today;
-      helloBanner.style.display = vend ? "block" : "none";
-      if(vend) helloBanner.textContent = `Hola ${vend} 👋`;
-    })();
-    numeroCliente.addEventListener("input", ()=> numeroCliente.value = numeroCliente.value.replace(/[^\d]/g,""));
-
-    // ==== DAILY COUNTER ====
-    function actualizarContadorDiario(increment = false) {
-        const key = 'dailyCounter';
-        const today = new Date().toISOString().slice(0, 10);
-        let data = { date: today, count: 0 };
-        try {
-            const stored = JSON.parse(localStorage.getItem(key));
-            if (stored && stored.date === today) {
-                data = stored;
-            }
-        } catch {}
-
-        if (increment) {
-            data.count++;
-        }
-        localStorage.setItem(key, JSON.stringify(data));
-        pedidoContador.textContent = data.count;
-    }
-
-    // ==== STATS ====
-    function renderStats(){
-      const s = getStats();
-      const pend = getQueue().length;
-      const enviados = s.enviados||0, reenviados = s.reenviados||0;
-      const total = enviados + reenviados + pend;
-      const ok = enviados + reenviados;
-      const exito = total>0 ? Math.round(ok*100/total) : 0;
-
-      $("statEnviados").textContent = enviados;
-      $("statPendientes").textContent = pend;
-      $("statReenviados").textContent = reenviados;
-      $("statExito").textContent = exito + "%";
-      $("barEnviados").style.width = total>0 ? (enviados*100/total)+"%" : "0%";
-      $("barPendientes").style.width = total>0 ? (pend*100/total)+"%" : "0%";
-      $("barReenviados").style.width = total>0 ? (reenviados*100/total)+"%" : "0%";
-      $("barExito").style.width = exito+"%";
-      
-      const hist = getHistory();
-      const byDay = {};
-      hist.forEach(h=>{
-        const day = (new Date(h.timestamp)).toISOString().slice(0,10);
-        byDay[day] = (byDay[day]||0)+1;
-      });
-      const days = Object.keys(byDay).length || 1;
-      const totalEnv = hist.length;
-      $("statPromedio").textContent = (totalEnv/days).toFixed(1);
-    }
-    function incStat(k){ const s = getStats(); s[k]=(s[k]||0)+1; setStats(s); renderStats(); }
-
-    // ==== PENDING ====
-    function cardHtml(p){
-      return `<div class="pedido-card">
-        <b>Cliente:</b> ${p.numeroCliente||"—"}<br>
-        <b>Vendedor:</b> ${p.nombreVendedor||"—"}<br>
-        <b>Fecha:</b> ${p.fechaEntrega||"—"}<br>
-        <hr>
-        <div class="toolbar" style="gap:8px; margin-top: 12px; flex-direction: row;">
-          <button class="btn" onclick="reenviarPedido('${p.id}')">🔄 Reenviar</button>
-          <button class="btn-secondary" onclick="eliminarPendiente('${p.id}')">🗑️ Eliminar</button>
-        </div>
-      </div>`;
-    }
-    function cargarPendientes(){
-      const cont = $("listaPendientes");
-      const q = getQueue();
-      const qf = searchPend.value.trim().toLowerCase();
-      let filtered = q;
-      if(qf){
-        filtered = q.filter(p =>
-          String(p.numeroCliente||"").toLowerCase().includes(qf) ||
-          String(p.nombreVendedor||"").toLowerCase().includes(qf)
-        );
-      }
-      cont.innerHTML = filtered.length ? filtered.map(cardHtml).join("") : "<p>No hay pedidos pendientes.</p>";
-      renderStats();
-      if(q.length>10) showToast("⚠️ Hay muchos pendientes (>10). Recomendado sincronizar.", "info");
-    }
-    searchPend.addEventListener("input", cargarPendientes);
-
-    // ==== CONNECTION ====
-    function setOnlineStatus(on){
-      netBanner.style.display = on ? "none" : "block";
-      connDot.className = on ? "online" : "offline";
-    }
-    window.addEventListener("online", async ()=>{
-      setOnlineStatus(true);
-      await syncPendientes(true);
-    });
-    window.addEventListener("offline", ()=> setOnlineStatus(false));
-    setOnlineStatus(navigator.onLine);
-
-    // ==== NOTIFICATIONS ====
-    async function ensureNotiPerm(){
-      try{
-        if(!("Notification" in window)) return;
-        if(Notification.permission==="granted") return;
-        if(Notification.permission!=="denied") await Notification.requestPermission();
-      }catch{}
-    }
-    function notify(title, body){
-      try{
-        if(("Notification" in window) && Notification.permission==="granted"){
-          new Notification(title, { body });
-        }
-      }catch{}
-    }
-
-    // ==== BACKEND POST ====
-   async function postPedido(pedido) {
-  // En línea: enviamos al Google Form; offline: que falle y caiga al guardado local
-  if (!navigator.onLine) throw new Error("offline");
-  return sendToGoogleForm(pedido);
-}
-
-
-    // ==== QUEUE & RETRY ====
-    async function reenviarPedido(id){
-      vib();
-      if(!navigator.onLine){ showToast("Sin conexión para reenviar", "error"); return; }
-      const q = getQueue();
-      const p = q.find(x => String(x.id)===String(id));
-      if(!p) return;
-      try{
-        const data = await postPedido(p);
-        setQueue(q.filter(x => String(x.id)!==String(id)));
-        incStat("reenviados");
-        cargarPendientes();
-        showToast(data.status==="duplicate" ? "Duplicado detectado (descartado)" : "Pedido reenviado", data.status==="duplicate"?"info":"ok");
-        connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700);
-        notify("Reenvío OK","El pedido fue reenviado correctamente");
-      }catch(e){
-        console.error(e); showToast("Error al reenviar", "error");
-      }
-    }
-    window.reenviarPedido = reenviarPedido;
-
-    function eliminarPendiente(id){
-      const q = getQueue().filter(x => String(x.id)!==String(id));
-      setQueue(q);
-      cargarPendientes();
-      showToast("Pedido eliminado de pendientes", "info");
-    }
-    window.eliminarPendiente = eliminarPendiente;
-
-    async function reintentarTodos(filterToday=false){
-      if(!navigator.onLine){ showToast("Sin conexión", "error"); return; }
-      const q = getQueue();
-      if(!q.length){ showToast("No hay pendientes", "info"); return; }
-      const today = new Date().toISOString().slice(0,10);
-      let toSend = filterToday ? q.filter(p => (p.fechaEntrega||"").slice(0,10)===today) : q;
-      if(!toSend.length){ showToast(filterToday ? "No hay pendientes de hoy" : "No hay pendientes", "info"); return; }
-      for(const p of [...toSend]){
-        try{
-          await postPedido(p);
-          setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
-          incStat("reenviados");
-        }catch{}
-      }
-      cargarPendientes();
-      showToast(filterToday ? "Reenviados los de hoy" : "Reintento completo", "ok");
-      connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700);
-      notify("Sincronización","Se reenviaron pedidos pendientes");
-    }
-    $("btnReintentarTodos").addEventListener("click", ()=> reintentarTodos(false));
-    $("btnSyncHoy").addEventListener("click", ()=> reintentarTodos(true));
-
-    // ==== SEND NEW ORDER ====
-    let sending = false;
-    const lastSent = getSentIds();
-    function buildPedido(){
-      return {
-        id: Date.now(),
-        fechaEntrega: fechaEntrega.value,
-        numeroCliente: (numeroCliente.value||"").trim(),
-        nombreVendedor: (nombreVendedor.value||"").trim(),
-        productos: (productos.value||"").trim(),
-        observaciones: (observaciones.value||"").trim()
-      };
-    }
-    function validPedido(p){ return p.fechaEntrega && p.numeroCliente && p.nombreVendedor && p.productos; }
-    function guardarLocal(p){
-      const q = getQueue(); q.push(p); setQueue(q);
-      renderStats();
-      showToast("📡 Guardado local por conexión", "info");
-    }
-
-    async function enviarPedido(p, options = { mass: false }) {
-        if (sending) return;
-        if (lastSent.has(p.id)) { showToast("Duplicado detectado (id repetido)", "info"); return; }
-
-        sending = true;
-        btnEnviar.disabled = true;
-        btnEnviar.querySelector('.spinner').style.display = 'block';
-
-        try {
-            if (!navigator.onLine) throw new Error("offline");
-            await postPedido(p);
-
-            addSentId(p.id);
-            lastSent.add(p.id);
-            if (p.nombreVendedor) localStorage.setItem("vendedorNombre", p.nombreVendedor);
-            helloBanner.style.display = "block";
-            helloBanner.textContent = `Hola ${p.nombreVendedor} 👋`;
-
-            const hist = getHistory();
-            hist.push({ id: p.id, timestamp: Date.now(), numeroCliente: p.numeroCliente, vendedor: p.nombreVendedor });
-            setHistory(hist);
-            
-            incStat("enviados");
-            actualizarContadorDiario(true); // Incrementar contador
-            playOk();
-            vib(140);
-            showSuccess();
-            notify("Pedido enviado", "Se registró correctamente");
-
-            if (shareWA.checked) {
-                const txt = `Pedido ML%0ACliente: ${encodeURIComponent(p.numeroCliente)}%0AVendedor: ${encodeURIComponent(p.nombreVendedor)}%0AFecha: ${encodeURIComponent(p.fechaEntrega)}%0AProductos:%0A${encodeURIComponent(p.productos)}`;
-                window.open(`https://wa.me/5491133395487?text=${txt}`, "_blank");
-            }
-
-            if (options.mass) {
-                numeroCliente.value = ""; productos.value = ""; observaciones.value = "";
-                productos.focus();
-            } else {
-                fechaEntrega.value = new Date().toISOString().slice(0,10);
-                numeroCliente.value = ""; productos.value = ""; observaciones.value = "";
-            }
-            saveDraft();
-        } catch (e) {
-            console.error("❌ Error en envío:", e);
-            guardarLocal(p);
-        } finally {
-            sending = false;
-            btnEnviar.disabled = false;
-            btnEnviar.querySelector('.spinner').style.display = 'none';
-        }
-    }
-
-    function showSuccess(){
-      const ov = $("confirmOverlay");
-      ov.style.display = "flex";
-      setTimeout(()=> ov.style.display = "none", 1800);
-    }
-
-    btnEnviar.addEventListener("click", ()=>{
-      vib();
-      const p = buildPedido();
-      if(!validPedido(p)){ showToast("Completá todos los campos obligatorios","error"); return; }
-      enviarPedido(p, {mass:false});
-    });
-
-    btnNuevoLote.addEventListener("click", ()=>{
-      vib();
-      const p = buildPedido();
-      if(!validPedido(p)){ showToast("Completá todos los campos obligatorios","error"); return; }
-      enviarPedido(p, {mass:true});
-    });
-
-    // ==== AUTO-SYNC ====
-    async function syncPendientes(animate=false){
-      if(!navigator.onLine) return;
-      const q = getQueue(); if(!q.length) return;
-      if(animate){ connDot.className = "syncing"; }
-      for(const p of [...q]){
-        try{
-          await postPedido(p);
-          setQueue(getQueue().filter(x => x.id!==p.id));
-          incStat("reenviados");
-        }catch{}
-      }
-      cargarPendientes();
-      if(animate){ setTimeout(()=> setOnlineStatus(true), 700); }
-      notify("Sincronizado","Se reenviaron pedidos pendientes");
-    }
-
-    // ==== TABS ====
-    const sections = {nuevo:$("nuevoPedido"), pend:$("pendientes"), stats:$("estadisticas")};
-    const tabs = {nuevo:$("btnNuevo"), pend:$("btnVerPendientes"), stats:$("btnVerEstadisticas")};
-    function setTab(name){
-      vib(40);
-      Object.values(tabs).forEach(b=> b.classList.remove("active"));
-      Object.values(sections).forEach(s=> s.style.display="none");
-      tabs[name].classList.add("active");
-      sections[name].style.display="block";
-
-      // Mostrar u ocultar el botón flotante según la pestaña
-      if (name === 'nuevo') {
-        btnEnviar.style.display = 'flex';
-      } else {
-        btnEnviar.style.display = 'none';
-      }
-
-      if(name==="pend") cargarPendientes();
-      if(name==="stats") renderStats();
-    }
-    tabs.nuevo.onclick = ()=> setTab("nuevo");
-    tabs.pend.onclick = ()=> setTab("pend");
-    tabs.stats.onclick = ()=> setTab("stats");
-
-    // ==== INIT & MISC ====
-    window.addEventListener("beforeunload", (e)=>{
-      if(getQueue().length>0){ e.preventDefault(); e.returnValue = ""; }
-    });
-    (function dailyReminder(){
-      const key = "reminderDate", today = new Date().toISOString().slice(0,10);
-      const last = localStorage.getItem(key);
-      if(last!==today && getQueue().length>0){
-        showToast("⏰ Tienes pedidos sin enviar. Recordatorio diario.", "info");
-        localStorage.setItem(key, today);
-      }
-    })();
-
-    loadDraft();
+    cont.innerHTML = filtered.length ? filtered.map(cardHtml).join("") : "<p>No hay pedidos pendientes.</p>";
     renderStats();
-    ensureNotiPerm();
-    setTab("nuevo");
-    actualizarContadorDiario(); // Inicializar contador
+    if(q.length>10) showToast("⚠️ Hay muchos pendientes (>10). Recomendado sincronizar.", "info");
+  }
+  searchPend.addEventListener("input", cargarPendientes);
 
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('service-worker.js')
-        .then(()=>console.log('✅ Service Worker registrado'))
-        .catch(err=>console.log('❌ SW error',err));
+  // ==== CONNECTION ====
+  function setOnlineStatus(on){
+    netBanner.style.display = on ? "none" : "block";
+    connDot.className = on ? "online" : "offline";
+  }
+  window.addEventListener("online", async ()=>{
+    setOnlineStatus(true);
+    await syncPendientes(true);
+  });
+  window.addEventListener("offline", ()=> setOnlineStatus(false));
+  setOnlineStatus(navigator.onLine);
+
+  // ==== NOTIFICATIONS ====
+  async function ensureNotiPerm(){
+    try{
+      if(!("Notification" in window)) return;
+      if(Notification.permission==="granted") return;
+      if(Notification.permission!=="denied") await Notification.requestPermission();
+    }catch{}
+  }
+  function notify(title, body){
+    try{
+      if(("Notification" in window) && Notification.permission==="granted"){
+        new Notification(title, { body });
+      }
+    }catch{}
+  }
+
+  // ==== BACKEND POST ====
+  async function postPedido(pedido) {
+    // En línea: enviamos al Google Form; offline: que falle y caiga al guardado local
+    if (!navigator.onLine) throw new Error("offline");
+    return sendToGoogleForm(pedido);
+  }
+
+  // ==== QUEUE & RETRY ====
+  async function reenviarPedido(id){
+    vib();
+    const q = getQueue();
+    const p = q.find(x => String(x.id)===String(id));
+    if(!p) return;
+
+    // Dedupe antes de enviar
+    if (seenSig(p.sig)) {
+      setQueue(q.filter(x => String(x.id)!==String(id)));
+      cargarPendientes();
+      showToast("Duplicado detectado en pendientes (descartado)", "info");
+      return;
     }
 
-  
+    if(!navigator.onLine){ showToast("Sin conexión para reenviar", "error"); return; }
+    try{
+      const data = await postPedido(p);
+      // Marcamos la firma como enviada
+      if (p.sig) markSig(p.sig);
+
+      setQueue(q.filter(x => String(x.id)!==String(id)));
+      incStat("reenviados");
+      cargarPendientes();
+      showToast(data && data.status==="duplicate" ? "Duplicado detectado (descartado)" : "Pedido reenviado", (data && data.status==="duplicate")?"info":"ok");
+      connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700);
+      notify("Reenvío OK","El pedido fue reenviado correctamente");
+    }catch(e){
+      console.error(e); showToast("Error al reenviar", "error");
+    }
+  }
+  window.reenviarPedido = reenviarPedido;
+
+  function eliminarPendiente(id){
+    const q = getQueue().filter(x => String(x.id)!==String(id));
+    setQueue(q);
+    cargarPendientes();
+    showToast("Pedido eliminado de pendientes", "info");
+  }
+  window.eliminarPendiente = eliminarPendiente;
+
+  async function reintentarTodos(filterToday=false){
+    if(!navigator.onLine){ showToast("Sin conexión", "error"); return; }
+    const q = getQueue();
+    if(!q.length){ showToast("No hay pendientes", "info"); return; }
+    const today = new Date().toISOString().slice(0,10);
+    let toSend = filterToday ? q.filter(p => (p.fechaEntrega||"").slice(0,10)===today) : q;
+    if(!toSend.length){ showToast(filterToday ? "No hay pendientes de hoy" : "No hay pendientes", "info"); return; }
+
+    for(const p of [...toSend]){
+      try{
+        // Saltear duplicados ya enviados en este dispositivo
+        if (seenSig(p.sig)) {
+          setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
+          continue;
+        }
+        await postPedido(p);
+        if (p.sig) markSig(p.sig);
+        setQueue(getQueue().filter(x => String(x.id)!==String(p.id)));
+        incStat("reenviados");
+      }catch{}
+    }
+    cargarPendientes();
+    showToast(filterToday ? "Reenviados los de hoy" : "Reintento completo", "ok");
+    connDot.className = "syncing"; setTimeout(()=>setOnlineStatus(true), 700);
+    notify("Sincronización","Se reenviaron pedidos pendientes");
+  }
+  $("btnReintentarTodos").addEventListener("click", ()=> reintentarTodos(false));
+  $("btnSyncHoy").addEventListener("click", ()=> reintentarTodos(true));
+
+  // ==== SEND NEW ORDER ====
+  let sending = false;
+  const lastSent = getSentIds();
+
+  function buildPedido(){
+    const p = {
+      id: Date.now(),
+      fechaEntrega: fechaEntrega.value,
+      numeroCliente: (numeroCliente.value||"").trim(),
+      nombreVendedor: (nombreVendedor.value||"").trim(),
+      productos: (productos.value||"").trim(),
+      observaciones: (observaciones.value||"").trim()
+    };
+    p.sig = makeSignature(p); // NUEVO: firma determinística
+    return p;
+  }
+  function validPedido(p){ return p.fechaEntrega && p.numeroCliente && p.nombreVendedor && p.productos; }
+  function guardarLocal(p){
+    const q = getQueue(); q.push(p); setQueue(q);
+    renderStats();
+    showToast("📡 Guardado local por conexión", "info");
+  }
+
+  async function enviarPedido(p, options = { mass: false }) {
+    if (sending) return;
+    if (lastSent.has(p.id)) { showToast("Duplicado detectado (id repetido)", "info"); return; }
+    // Dedupe por firma en este dispositivo
+    if (seenSig(p.sig)) {
+      showToast("⚠️ Duplicado: mismo cliente, fecha y productos.", "info");
+      return;
+    }
+
+    sending = true;
+    btnEnviar.disabled = true;
+    btnEnviar.querySelector('.spinner').style.display = 'block';
+
+    try {
+      if (!navigator.onLine) throw new Error("offline");
+      await postPedido(p);
+
+      // Marca firma como enviada (solo en éxito real)
+      if (p.sig) markSig(p.sig);
+
+      addSentId(p.id);
+      lastSent.add(p.id);
+      if (p.nombreVendedor) localStorage.setItem("vendedorNombre", p.nombreVendedor);
+      helloBanner.style.display = "block";
+      helloBanner.textContent = `Hola ${p.nombreVendedor} 👋`;
+
+      const hist = getHistory();
+      hist.push({ id: p.id, timestamp: Date.now(), numeroCliente: p.numeroCliente, vendedor: p.nombreVendedor });
+      setHistory(hist);
+      
+      incStat("enviados");
+      actualizarContadorDiario(true);
+      playOk();
+      vib(140);
+      showSuccess();
+      notify("Pedido enviado", "Se registró correctamente");
+
+      if (shareWA.checked) {
+        const txt = `Pedido ML%0ACliente: ${encodeURIComponent(p.numeroCliente)}%0AVendedor: ${encodeURIComponent(p.nombreVendedor)}%0AFecha: ${encodeURIComponent(p.fechaEntrega)}%0AProductos:%0A${encodeURIComponent(p.productos)}`;
+        window.open(`https://wa.me/5491133395487?text=${txt}`, "_blank");
+      }
+
+      if (options.mass) {
+        numeroCliente.value = ""; productos.value = ""; observaciones.value = "";
+        productos.focus();
+      } else {
+        fechaEntrega.value = new Date().toISOString().slice(0,10);
+        numeroCliente.value = ""; productos.value = ""; observaciones.value = "";
+      }
+      saveDraft();
+    } catch (e) {
+      console.error("❌ Error en envío:", e);
+      guardarLocal(p);
+    } finally {
+      sending = false;
+      btnEnviar.disabled = false;
+      btnEnviar.querySelector('.spinner').style.display = 'none';
+    }
+  }
+
+  function showSuccess(){
+    const ov = $("confirmOverlay");
+    ov.style.display = "flex";
+    setTimeout(()=> ov.style.display = "none", 1800);
+  }
+
+  btnEnviar.addEventListener("click", ()=>{
+    vib();
+    const p = buildPedido();
+    if(!validPedido(p)){ showToast("Completá todos los campos obligatorios","error"); return; }
+    enviarPedido(p, {mass:false});
+  });
+
+  btnNuevoLote.addEventListener("click", ()=>{
+    vib();
+    const p = buildPedido();
+    if(!validPedido(p)){ showToast("Completá todos los campos obligatorios","error"); return; }
+    enviarPedido(p, {mass:true});
+  });
+
+  // ==== AUTO-SYNC ====
+  async function syncPendientes(animate=false){
+    if(!navigator.onLine) return;
+    const q = getQueue(); if(!q.length) return;
+    if(animate){ connDot.className = "syncing"; }
+    for(const p of [...q]){
+      try{
+        // Saltear duplicados ya enviados en este dispositivo
+        if (seenSig(p.sig)) {
+          setQueue(getQueue().filter(x => x.id!==p.id));
+          continue;
+        }
+        await postPedido(p);
+        if (p.sig) markSig(p.sig);
+        setQueue(getQueue().filter(x => x.id!==p.id));
+        incStat("reenviados");
+      }catch{}
+    }
+    cargarPendientes();
+    if(animate){ setTimeout(()=> setOnlineStatus(true), 700); }
+    notify("Sincronizado","Se reenviaron pedidos pendientes");
+  }
+
+  // ==== TABS ====
+  const sections = {nuevo:$("nuevoPedido"), pend:$("pendientes"), stats:$("estadisticas")};
+  const tabs = {nuevo:$("btnNuevo"), pend:$("btnVerPendientes"), stats:$("btnVerEstadisticas")};
+  function setTab(name){
+    vib(40);
+    Object.values(tabs).forEach(b=> b.classList.remove("active"));
+    Object.values(sections).forEach(s=> s.style.display="none");
+    tabs[name].classList.add("active");
+    sections[name].style.display="block";
+
+    if (name === 'nuevo') btnEnviar.style.display = 'flex';
+    else btnEnviar.style.display = 'none';
+
+    if(name==="pend") cargarPendientes();
+    if(name==="stats") renderStats();
+  }
+  tabs.nuevo.onclick = ()=> setTab("nuevo");
+  tabs.pend.onclick = ()=> setTab("pend");
+  tabs.stats.onclick = ()=> setTab("stats");
+
+  // ==== INIT & MISC ====
+  window.addEventListener("beforeunload", (e)=>{
+    if(getQueue().length>0){ e.preventDefault(); e.returnValue = ""; }
+  });
+  (function dailyReminder(){
+    const key = "reminderDate", today = new Date().toISOString().slice(0,10);
+    const last = localStorage.getItem(key);
+    if(last!==today && getQueue().length>0){
+      showToast("⏰ Tienes pedidos sin enviar. Recordatorio diario.", "info");
+      localStorage.setItem(key, today);
+    }
+  })();
+
+  loadDraft();
+  renderStats();
+  ensureNotiPerm();
+  setTab("nuevo");
+  actualizarContadorDiario();
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('service-worker.js')
+      .then(()=>console.log('✅ Service Worker registrado'))
+      .catch(err=>console.log('❌ SW error',err));
+  }
 </script>
 </body>
 </html>
