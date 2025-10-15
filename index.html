@@ -177,9 +177,9 @@
   /* Botón flotante principal (se angosta para dejar lugar al mic) */
   #btnEnviar {
     position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-    z-index: 998; width: calc(80% - 80px); max-width: 410px;  /* <-- ajustado */
+    z-index: 998; width: calc(90% - 80px); max-width: 420px;  /* <-- ajustado */
     display: flex; align-items: center; justify-content: center;
-    padding: 18px; font-size: 16px; border-radius: var(--radius-pill);
+    padding: 18px; font-size: 17px; border-radius: var(--radius-pill);
     background:
       radial-gradient(120% 160% at 0% 0%, rgba(255,255,255,.25), rgba(255,255,255,0) 40%),
       linear-gradient(90deg, var(--primary) 0%, var(--primary-2) 100%);
@@ -1112,225 +1112,96 @@
   showTab('nuevo');
   loadDraft();
 
+  /* =======================
+     DICTADO POR VOZ (nuevo)
+     ======================= */
+  const btnMic = $("btnMic");
+  const dictadoOverlay = $("dictadoOverlay");
+  const dictadoPreview = $("dictadoPreview");
+  const btnDictadoUsar = $("btnDictadoUsar");
+  const btnDictadoEditar = $("btnDictadoEditar");
+  const btnDictadoCancelar = $("btnDictadoCancelar");
 
-/* ===================================================================
-   CONFIGURACIÓN DE DICCIONARIOS Y FUNCIONES DE LIMPIEZA
-   =================================================================== */
+  let recognition = null;
+  let recogActive = false;
+  let interimBuffer = "";
+  let finalBuffer = "";
 
-// 🔹 DICCIONARIO DE PALABRAS CLAVE (Keywords)
-const keywordMap = {
-  // --- MARCAS ---
-  "make": "MAKE", "maque": "MAKE", "maqe": "MAKE", "meik": "MAKE", "meic": "MAKE",
-  "bio ba": "BIO BAG", "bio bak": "BIO BAG", "bio bach": "BIO BAG", "biobag": "BIO BAG",
-  "romil": "ROMYL", "romyl": "ROMYL", "romin": "ROMYL",
-  "fibran": "FIBRAN",
-  "desepla": "DESESPLAST",
-  "plastic house": "PLASTIC HOUSE",
-  "te": "TE",
-  "eco": "ECO",
-  "pop": "POP",
-
-  // --- ARTÍCULOS Y CORRECCIONES FONÉTICAS ---
-  "esponja": "ESPONJA", "esponga": "ESPONJA",
-  "salva una": "SALVA UÑA", "salva uñas": "SALVA UÑA", "salvauñas": "SALVA UÑA",
-  "rejilla": "REJILLA",
-  "broche": "BROCHE", "broches": "BROCHE",
-  "bowl": "BOWL", "bol": "BOWL",
-  "taper": "TAPER", "táper": "TAPER",
-  "hermetico": "HERMÉTICO", "hermético": "HERMÉTICO",
-  "litro": "LT", "litros": "LT", "lts": "LT", "lt": "LT",
-  "nido de abeja": "NIDO ABEJA", "nido abeja": "NIDO ABEJA",
-  "cierra fácil": "CIERRA FACIL", "cierrafacil": "CIERRA FACIL",
-  "lava coche": "LAVACOCHE",
-  
-  // --- DIMENSIONES Y MEDIDAS (MÁS ESPECÍFICAS PRIMERO) ---
-  "45 por 60": "45X60",
-  "50 por 70": "50X70",
-  "60 por 90": "60X90",
-  "80 por 110": "80X110",
-  "90 por 120": "90X120",
-  "por uno": "X1", "por 1": "X1",
-  "por dos": "X2", "por 2": "X2",
-  "por tres": "X3", "por 3": "X3",
-  "por cuatro": "X4", "por 4": "X4",
-  "por cinco": "X5", "por 5": "X5",
-  "por": "X" // Regla genérica al final
-};
-
-
-// 🔹 DICCIONARIO DE NÚMEROS HABLADOS
-const numerosMap = {
-  "un": "1", "una": "1", "uno": "1",
-  "dos": "2", "tres": "3", "cuatro": "4", "cinco": "5", "seis": "6", "siete": "7", "ocho": "8", "nueve": "9", "diez": "10",
-  "once": "11", "doce": "12", "trece": "13", "catorce": "14", "quince": "15",
-  "dieciseis": "16", "dieciséis": "16", "diecisiete": "17", "dieciocho": "18", "diecinueve": "19",
-  "veinte": "20", "veintiuno": "21", "veintidos": "22", "veintidós": "22", "veintitres": "23", "veintitrés": "23",
-  "veinticuatro": "24", "veinticinco": "25", "treinta": "30", "cuarenta": "40", "cincuenta": "50", "sesenta": "60"
-};
-
-// Función para convertir números hablados a dígitos
-function convertirNumerosDictado(text) {
-  for (const [palabra, numero] of Object.entries(numerosMap)) {
-    const regex = new RegExp(`\\b${palabra}\\b`, 'gi');
-    text = text.replace(regex, numero);
-  }
-  return text;
-}
-
-// Función principal de limpieza para cada línea dictada
-function limpiarDictadoAvanzado(text) {
-  text = text.toLowerCase().trim();
-  text = convertirNumerosDictado(text);
-
-  // Corregir sinónimos y fonéticas del diccionario
-  for (const [clave, valor] of Object.entries(keywordMap)) {
-    const regex = new RegExp(`\\b${clave}\\b`, 'gi');
-    text = text.replace(regex, valor);
-  }
-
-  let textoLimpio = text.replace(/\s+/g, ' ').toUpperCase();
-
-  // MEJORA: Si la línea empieza con "BULTO" o "CAJA" sin número, le agrega un "1"
-  if (textoLimpio.startsWith("BULTO ") || textoLimpio.startsWith("CAJA ")) {
-      // Revisa si el primer caracter NO es un número
-      if (isNaN(parseInt(textoLimpio.charAt(0)))) {
-          textoLimpio = "1 " + textoLimpio;
-      }
-  }
-
-  return textoLimpio;
-}
-
-
-/* ===================================================================
-   LÓGICA DEL DICTADO POR VOZ
-   =================================================================== */
-const btnMic = document.getElementById("btnMic");
-const dictadoOverlay = document.getElementById("dictadoOverlay");
-const dictadoPreview = document.getElementById("dictadoPreview");
-const btnDictadoUsar = document.getElementById("btnDictadoUsar");
-const btnDictadoEditar = document.getElementById("btnDictadoEditar");
-const btnDictadoCancelar = document.getElementById("btnDictadoCancelar");
-// Asegúrate de tener una referencia a tu textarea de productos
-const productos = document.getElementById("productos"); 
-
-let recognition = null;
-let recogActive = false;
-let interimBuffer = "";
-let finalBuffer = "";
-
-function closeDictado() {
-  dictadoOverlay.style.display = "none";
-  btnMic.classList.remove('rec');
-  if (recognition) {
-    try { recognition.stop(); } catch {}
-  }
-  recogActive = false;
-}
-
-function openDictado() {
-  dictadoOverlay.style.display = "flex";
-  dictadoPreview.value = "";
-  interimBuffer = "";
-  finalBuffer = "";
-}
-
-// Inicia dictado
-btnMic.addEventListener("click", () => {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    // Reemplaza "showToast" por tu función de notificación si la tienes
-    alert("Dictado no soportado en este navegador. Usá el micrófono del teclado.");
-    try { productos.focus(); } catch {}
-    return;
-  }
-  
-  openDictado();
-
-  recognition = new SR();
-  recognition.lang = "es-AR";
-  recognition.interimResults = true;
-  recognition.continuous = true;
-
-  btnMic.classList.add('rec');
-  recogActive = true;
-  
-  // ✅ LÓGICA DE PROCESAMIENTO MEJORADA
-  recognition.onresult = (e) => {
-    interimBuffer = ""; // Reseteamos el buffer interino en cada resultado
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const transcript = e.results[i][0].transcript;
-
-      // Si el reconocimiento detecta una pausa (frase finalizada)...
-      if (e.results[i].isFinal) {
-        // 1. Limpiamos esa línea individualmente.
-        let lineaLimpia = limpiarDictadoAvanzado(transcript);
-        
-        // 2. Si la línea no está vacía, la agregamos al buffer final con un salto de línea.
-        if (lineaLimpia) {
-            finalBuffer += lineaLimpia + "\n";
-        }
-
-      } else {
-        // Esto es para mostrar lo que estás diciendo en tiempo real.
-        interimBuffer += transcript;
-      }
+  function closeDictado(){
+    dictadoOverlay.style.display = "none";
+    btnMic.classList.remove('rec');
+    if(recognition){
+      try{ recognition.stop(); }catch{}
     }
-
-    // Mostramos el resultado final (sin dobles saltos de línea) + el texto interino actual.
-    dictadoPreview.value = finalBuffer.replace(/\n+/g, '\n') + interimBuffer;
-    // Hacemos scroll hacia abajo automáticamente
-    dictadoPreview.scrollTop = dictadoPreview.scrollHeight; 
-  };
-
-  recognition.onerror = (ev) => {
-    console.warn("SR error:", ev.error);
-    // Reemplaza "showToast" por tu función de notificación
-    alert("Error de dictado: " + ev.error);
-  };
-  
-  recognition.onend = () => {
-    btnMic.classList.remove('rec');
     recogActive = false;
-  };
-
-  try { recognition.start(); } catch (e) {
-      console.error("Error al iniciar reconocimiento:", e);
   }
-});
 
-// Botón "Usar" para agregar el texto al campo principal
-btnDictadoUsar.addEventListener("click", () => {
-  const txt = (dictadoPreview.value || "").trim();
-  if (txt) {
-    // Añade el texto dictado al final de lo que ya exista
-    productos.value = (productos.value ? (productos.value.trim() + "\n") : "") + txt.toUpperCase() + "\n";
-    // Reemplaza "saveDraft" por tu función de guardado si la tienes
-    // saveDraft(); 
+  function openDictado(){
+    dictadoOverlay.style.display = "flex";
+    dictadoPreview.value = "";
   }
-  closeDictado();
-  productos.focus();
-});
 
-// Botón "Editar" para detener el micrófono y corregir manualmente
-btnDictadoEditar.addEventListener("click", () => {
-  if (recogActive && recognition) {
-    try { recognition.stop(); } catch {}
-    recogActive = false;
-    btnMic.classList.remove('rec');
-  }
-  dictadoPreview.focus();
-});
+  // Inicia dictado
+  btnMic.addEventListener("click", () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){
+      showToast("Dictado no soportado aquí. Usá el micrófono del teclado.", "error");
+      try{ productos.focus(); }catch{}
+      return;
+    }
+    // Mostrar modal
+    openDictado();
 
-// Botón "Cancelar"
-btnDictadoCancelar.addEventListener("click", () => closeDictado());
+    // Configurar reconocimiento
+    recognition = new SR();
+    recognition.lang = "es-AR";            // ajustar acento local
+    recognition.interimResults = true;
+    recognition.continuous = true;
 
-// Helper para obtener elementos (si usas un framework, puedes quitar esto)
-function $(id) {
-    return document.getElementById(id);
-}
+    finalBuffer = ""; interimBuffer="";
+    btnMic.classList.add('rec');
+    recogActive = true;
+
+    recognition.onresult = (e) => {
+      interimBuffer = "";
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        const tr = e.results[i][0].transcript;
+        if(e.results[i].isFinal){
+          // Regla suave: "cantidad artículo ..." → ponemos cantidad primero en mayúscula la línea
+          const line = tr.trim();
+          finalBuffer += (finalBuffer ? "\n" : "") + line;
+        }else{
+          interimBuffer += tr;
+        }
+      }
+      dictadoPreview.value = (finalBuffer + (interimBuffer ? "\n" + interimBuffer : "")).toUpperCase();
+    };
+    recognition.onerror = (ev) => { console.warn("SR error:", ev.error); showToast("Error de dictado: "+ev.error, "error"); };
+    recognition.onend = () => { btnMic.classList.remove('rec'); recogActive=false; };
+    try{ recognition.start(); }catch(e){}
+  });
+
+  // Usar en Productos (append, no pisa lo existente)
+  btnDictadoUsar.addEventListener("click", () => {
+    const txt = (dictadoPreview.value||"").trim();
+    if(txt){
+      productos.value = (productos.value ? (productos.value.replace(/\s+$/,'') + "\n") : "") + txt.toUpperCase();
+      saveDraft();
+    }
+    closeDictado();
+    productos.focus();
+  });
+
+  // Dejar editando (solo cierra la escucha, mantiene modal abierto para que puedas corregir y luego "Usar")
+  btnDictadoEditar.addEventListener("click", () => {
+    if(recogActive && recognition){ try{ recognition.stop(); }catch{} recogActive=false; btnMic.classList.remove('rec'); }
+    dictadoPreview.focus();
+  });
+
+  // Cancelar
+  btnDictadoCancelar.addEventListener("click", () => closeDictado());
+
 </script>
-
 
   <!-- === Registro de Service Worker y botón de instalación PWA === -->
 <script>
