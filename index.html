@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Pedidos ML</title>
-  <meta name="theme-color" content="#4f46e5" />
+  <meta name="theme-color" content="#06b6d4" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,11 +12,12 @@
 
 <style>
   :root{
-    --primary: #4f46e5;
-    --primary-2: #4338ca;
-    --primary-light: rgba(79,70,229,.22);
-    --primary-rgb: 79,70,229;
-    --primary-2-rgb: 67,56,202;
+    /* Gradiente por defecto: Azul → Verde */
+    --primary:   #06b6d4; /* c1 */
+    --primary-2: #22c55e; /* c2 */
+    --primary-light: rgba(6,182,212,.22);
+    --primary-rgb: 6,182,212;
+    --primary-2-rgb: 34,197,94;
 
     /* --- TEMA CLARO (Default) --- */
     --bg: #f4f5f9;
@@ -37,9 +38,11 @@
     --error: #ef4444;
     --shadow: 0 4px 12px rgba(0,0,0,0.10);
     --shadow-lg: 0 10px 30px rgba(0,0,0,0.16);
+
+    --radius-pill: 999px;
   }
 
-  /* --- MODO OSCURO (Automático por sistema) --- */
+  /* --- MODO OSCURO --- */
   @media (prefers-color-scheme: dark){
     :root{
       --bg: #0A0C10;
@@ -60,8 +63,6 @@
       --placeholder: rgba(240, 246, 252, 0.45);
     }
   }
-  
-  /* Se mantiene la lógica del modo oscuro aunque no haya selector visible, por si se activa desde el sistema */
 
   html,body{ height: 100%; }
   body{
@@ -81,8 +82,7 @@
 
   header{
     position: sticky; top: 0; z-index: 1000;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
     background: linear-gradient(180deg, rgba(var(--card-grad-start),.85), rgba(var(--card-grad-end),.85));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -94,98 +94,63 @@
 
   .header-title{ font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px;}
   #pedidoContador{
-    background: var(--primary);
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-2) 100%);
     color: white;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 4px 8px;
-    border-radius: 99px;
-    min-width: 12px;
-    text-align: center;
+    font-size: 12px; font-weight: 700;
+    padding: 4px 8px; border-radius: 999px; min-width: 12px; text-align: center;
+    box-shadow: 0 6px 18px rgba(var(--primary-rgb),.35);
   }
 
-  #connDot{
-    width: 12px; height: 12px; border-radius: 50%;
-    border: 2px solid transparent;
-    box-shadow: 0 0 0 2px var(--border-tint);
-    flex-shrink: 0;
-  }
+  #connDot{ width: 12px; height: 12px; border-radius: 50%; border: 2px solid transparent; box-shadow: 0 0 0 2px var(--border-tint); flex-shrink: 0; }
   .online{ background: #22c55e; }
   .offline{ background: #ef4444; }
   .syncing{ background: #facc15; animation:pulse 0.8s ease-in-out infinite alternate; }
   @keyframes pulse{ from{ opacity: 1; } to{ opacity: 0.4; } }
 
-  .conn-label{
-    margin-left: 8px;
-    font-size: 12px;
-    font-style: italic;
-    letter-spacing: .1px;
-    opacity: .85;
-    min-width: 96px;
-    display: inline-block;
-  }
+  .conn-label{ margin-left: 8px; font-size: 12px; font-style: italic; letter-spacing: .1px; opacity: .85; min-width: 96px; display: inline-block; }
   #connDot.online  + .conn-label::before{ content: "en línea";      color:#22c55e; }
   #connDot.offline + .conn-label::before{ content: "sin conexión";  color:#ef4444; }
   #connDot.syncing + .conn-label::before{ content: "sincronizando…"; color:#f59e0b; }
 
-  #netBanner{
-    display:none; text-align:center;
-    background:#facc15; color:#1f2937;
-    padding: 8px; font-weight: 600; font-size: 14px;
-  }
+  #netBanner{ display:none; text-align:center; background:#facc15; color:#1f2937; padding: 8px; font-weight: 600; font-size: 14px; }
 
   main{ padding: 20px; max-width: 860px; margin: 0 auto; }
   h3 { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
 
   .row { margin-bottom: 18px; }
-  label {
-    display: flex; align-items: center;
-    font-size: 14px; font-weight: 500; color: var(--muted);
-    margin-bottom: 8px;
-  }
+  label { display: flex; align-items: center; font-size: 14px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
+
   input, textarea, select {
-    width: 100%; box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
-    font-size: 16px; padding: 16px;
-    border-radius: 12px;
+    width: 100%; box-sizing: border-box; font-family: 'Inter', sans-serif;
+    font-size: 16px; padding: 16px; border-radius: 14px;
     border: 1px solid var(--border-tint);
     background: linear-gradient(180deg, var(--field-grad-start), var(--field-grad-end));
-    color: var(--field-text) !important;
-    caret-color: var(--primary);
-    outline: none;
+    color: var(--field-text) !important; caret-color: var(--primary); outline: none;
     transition: border-color .2s ease, box-shadow .2s ease, background 300ms ease, color .2s ease;
-    -webkit-appearance: none;
-    background-clip: padding-box;
+    -webkit-appearance: none; background-clip: padding-box;
   }
   input::placeholder, textarea::placeholder{ color: var(--placeholder); }
-  input:focus, textarea:focus, select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-light);
-  }
+  input:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
   textarea { min-height: 120px; resize: vertical; }
 
   .row:has(#shareWA) { display: none; }
   #btnNuevoLote { display: none; }
 
+  /* === Botones estilo “pill” con degradado === */
   .btn, .btn-secondary{
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    border-radius: 14px;
-    padding: 12px 16px;
-    font-weight: 600;
-    font-size: 15px;
-    border: none;
-    cursor: pointer;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    border-radius: var(--radius-pill);
+    padding: 14px 18px; font-weight: 700; font-size: 15px; border: none; cursor: pointer;
     transition: transform .12s ease, filter .15s ease, box-shadow .25s ease, background .25s ease, color .2s ease;
   }
   .btn{
     color: #fff;
     background:
       linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0) 40%) ,
-      linear-gradient(45deg, var(--primary) 0%, var(--primary) 10%, var(--primary-2) 100%);
+      linear-gradient(90deg, var(--primary) 0%, var(--primary-2) 100%);
     box-shadow:
-      0 14px 36px rgba(var(--primary-rgb), .48),
-      0 4px 12px rgba(0,0,0,.12);
+      0 20px 40px rgba(var(--primary-rgb), .35),
+      0 6px 16px rgba(0,0,0,.12);
     filter: saturate(115%) contrast(105%);
   }
   .btn:hover{ transform: translateY(-1px); }
@@ -196,40 +161,32 @@
     color: var(--text);
     background:
       linear-gradient(var(--card-grad-start), var(--card-grad-end)) padding-box,
-      linear-gradient(135deg, var(--primary), var(--primary-2)) border-box;
+      linear-gradient(90deg, var(--primary), var(--primary-2)) border-box;
     border: 2px solid transparent;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
   }
   .btn-secondary:hover{ transform: translateY(-1px); }
   .btn-secondary:active{
     color: #fff;
-    background: linear-gradient(45deg, var(--primary), var(--primary-2));
-    box-shadow:
-      0 10px 26px rgba(var(--primary-rgb), .38),
-      0 3px 10px rgba(0,0,0,.10);
+    background:
+      linear-gradient(90deg, var(--primary), var(--primary-2)) padding-box,
+      linear-gradient(90deg, var(--primary), var(--primary-2)) border-box;
+    box-shadow: 0 12px 26px rgba(var(--primary-rgb), .28), 0 3px 10px rgba(0,0,0,.10);
   }
 
+  /* Botón flotante principal */
   #btnEnviar {
-    position: fixed;
-    bottom: 90px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 998;
-    width: 90%;
-    max-width: 420px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-    font-size: 17px;
-    border-radius: 16px;
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    z-index: 998; width: 90%; max-width: 420px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px; font-size: 17px; border-radius: var(--radius-pill);
     background:
       radial-gradient(120% 160% at 0% 0%, rgba(255,255,255,.25), rgba(255,255,255,0) 40%),
-      linear-gradient(45deg, var(--primary) 0%, var(--primary) 8%, var(--primary-2) 55%, rgba(var(--primary-rgb),1) 100%);
+      linear-gradient(90deg, var(--primary) 0%, var(--primary-2) 100%);
     color: #fff;
     box-shadow:
-      0 18px 40px rgba(var(--primary-rgb), .55),
-      0 8px 18px rgba(0,0,0,.14);
+      0 28px 60px rgba(var(--primary-rgb), .45),
+      0 10px 22px rgba(0,0,0,.14);
   }
   #btnEnviar:active { transform: translateX(-50%) scale(0.98); filter: brightness(1.06) saturate(120%); }
 
@@ -237,6 +194,7 @@
   .btn[disabled] .btn-text { display: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* Bottom nav */
   .bottom-nav{
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 999;
     background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
@@ -246,24 +204,27 @@
     padding-bottom: calc(12px + env(safe-area-inset-bottom));
     transition: background 300ms ease, border-color 300ms ease;
   }
-  .bottom-nav button{ flex: 1; border-radius: 12px; padding: 14px 8px; font-weight: 600; border: none; background: transparent; color: var(--muted); transition: all .2s ease; }
-  .bottom-nav button.active{ background: var(--primary); color: #fff; }
+  .bottom-nav button{
+    flex: 1; border-radius: 12px; padding: 14px 8px; font-weight: 600; border: none;
+    background: transparent; color: var(--muted); transition: all .2s ease;
+  }
+  .bottom-nav button.active{
+    background: linear-gradient(90deg, var(--primary), var(--primary-2));
+    color: #fff; box-shadow: 0 8px 22px rgba(var(--primary-rgb),.28);
+  }
 
   .pedido-card, .stat-card {
     background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
     border: 1px solid var(--border-tint);
-    border-radius: 16px; padding: 16px;
-    margin-bottom: 14px; box-shadow: var(--shadow);
+    border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow);
     transition: background 300ms ease, border-color 300ms ease;
   }
   .pedido-card hr { border: none; border-top: 1px solid var(--border-tint); margin: 12px 0; }
 
   .toast{
     position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
-    color: #fff; padding: 14px 20px; border-radius: 12px;
-    font-size: 15px; font-weight: 500;
-    box-shadow: var(--shadow-lg); z-index: 1001;
-    opacity: 0; animation: fadeInDown .3s ease forwards;
+    color: #fff; padding: 14px 20px; border-radius: 12px; font-size: 15px; font-weight: 500;
+    box-shadow: var(--shadow-lg); z-index: 1001; opacity: 0; animation: fadeInDown .3s ease forwards;
   }
   @keyframes fadeInDown { from { top: -20px; opacity: 0; } to { top: 16px; opacity: 1; } }
 
@@ -271,10 +232,8 @@
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   .success-box{
     background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
-    color: var(--text); border-radius: 24px; padding: 36px 28px; text-align: center;
-    width: min(90vw, 320px); box-shadow: var(--shadow-lg);
-    animation: popIn .35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    border: 1px solid var(--border-tint);
+    color: var(--text); border-radius: 24px; padding: 36px 28px; text-align: center; width: min(90vw, 320px);
+    box-shadow: var(--shadow-lg); animation: popIn .35s cubic-bezier(0.25, 0.46, 0.45, 0.94); border: 1px solid var(--border-tint);
   }
   @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .success-box h2{ margin: 16px 0 0 0; font-size: 22px; }
@@ -289,24 +248,28 @@
   .stat-title{ font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
   .stat-value{ font-size: 26px; font-weight: 700; }
   .bar{ margin-top: 10px; height: 8px; border-radius: 999px; background: var(--border-tint); overflow: hidden; }
-  .bar > .fill{ height: 100%; width: 0%; background: var(--primary); transition: width .4s ease; }
+  .bar > .fill{ height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--primary-2)); transition: width .4s ease; }
 
-  .theme-row{ display:flex; align-items:center; gap:12px; margin: 6px 0 20px 0; flex-wrap:wrap; }
-  .theme-row span { font-weight: 600; }
-  .swatch{ width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--card); cursor: pointer; box-shadow: 0 0 0 1px var(--border); transition: transform .15s ease; }
-  .swatch:hover { transform: scale(1.1); }
+  /* === Selector de tema moderno === */
+  .theme-row{
+    display:flex; align-items:center; gap:10px; margin: 10px 0 22px 0; flex-wrap:wrap;
+  }
+  .theme-row span { font-weight: 700; color: var(--muted); margin-right: 2px; }
+  .swatch{
+    display:inline-flex; align-items:center; gap:10px; padding: 10px 14px;
+    border-radius: var(--radius-pill);
+    color:#fff; font-weight:700; font-size:14px; letter-spacing:.2px;
+    border: 2px solid transparent; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    user-select:none; transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
+  }
+  .swatch:hover{ transform: translateY(-1px); box-shadow: 0 12px 26px rgba(0,0,0,.12); }
+  .swatch:active{ transform: translateY(0) scale(.98); filter: brightness(1.04); }
 
   .search-row{ display: flex; gap: 8px; margin-bottom: 10px; }
   .search-row input{ flex:1; }
   .search-row .btn, .search-row .btn-secondary { width: auto; flex-shrink: 0; min-width: 72px; }
 
-  .pend-legend{
-    font-size: 12px;
-    color: var(--muted);
-    display: grid;
-    gap: 4px;
-    margin: 6px 2px 14px;
-  }
+  .pend-legend{ font-size: 12px; color: var(--muted); display: grid; gap: 4px; margin: 6px 2px 14px; }
   .pend-legend b{ color: var(--text); font-weight: 600; }
 </style>
 </head>
@@ -323,14 +286,27 @@
 
   <main id="nuevoPedido">
     <div id="helloBanner"></div>
+
+    <!-- === Selector de tema (solo visual) === -->
     <div class="theme-row">
-      <span>🎨</span>
-      <div class="swatch" data-color="#4f46e5" title="Indigo"  style="background:linear-gradient(135deg,#4f46e5,#4338ca)"></div>
-      <div class="swatch" data-color="#16a34a" title="Verde"   style="background:linear-gradient(135deg,#16a34a,#3b82f6)"></div>
-      <div class="swatch" data-color="#db2777" title="Rosa"    style="background:linear-gradient(135deg,#db2777,#f59e0b)"></div>
-      <div class="swatch" data-color="#d97706" title="Naranja" style="background:linear-gradient(135deg,#d97706,#fb7185)"></div>
-      <div class="swatch" data-color="#06b6d4" title="Cian"    style="background:linear-gradient(135deg,#06b6d4,#7c3aed)"></div>
-      <div class="swatch" data-color="#facc15" title="Radical" style="background:linear-gradient(135deg,#facc15,#d97706)"></div>
+      <span>🎨 Tema:</span>
+      <div class="swatch" data-color="#06b6d4,#22c55e"
+           style="background:linear-gradient(90deg,#06b6d4,#22c55e)">Azul → Verde</div>
+
+      <div class="swatch" data-color="#2563eb,#06b6d4"
+           style="background:linear-gradient(90deg,#2563eb,#06b6d4)">Azul → Cian</div>
+
+      <div class="swatch" data-color="#db2777,#f59e0b"
+           style="background:linear-gradient(90deg,#db2777,#f59e0b)">Rosa → Naranja</div>
+
+      <div class="swatch" data-color="#8b5cf6,#ec4899"
+           style="background:linear-gradient(90deg,#8b5cf6,#ec4899)">Violeta → Magenta</div>
+
+      <div class="swatch" data-color="#f97316,#facc15"
+           style="background:linear-gradient(90deg,#f97316,#facc15); color:#1f2937">Naranja → Amarillo</div>
+
+      <div class="swatch" data-color="#0ea5e9,#22d3ee"
+           style="background:linear-gradient(90deg,#0ea5e9,#22d3ee)">Celeste → Cian</div>
     </div>
 
     <div class="row" id="rowFecha">
@@ -483,49 +459,54 @@
   })();
 
   // === Envío al Google Form (versión con fetch y no-cors) ===
-async function sendToGoogleForm(p) {
-  const formData = new FormData();
-  formData.append(GF.vendedor, p.nombreVendedor);
-  formData.append(GF.cliente, p.numeroCliente);
-  formData.append(GF.productos, p.productos);
-  formData.append(GF.observaciones, p.observaciones || "");
+  async function sendToGoogleForm(p) {
+    const formData = new FormData();
+    formData.append(GF.vendedor, p.nombreVendedor);
+    formData.append(GF.cliente, p.numeroCliente);
+    formData.append(GF.productos, p.productos);
+    formData.append(GF.observaciones, p.observaciones || "");
 
-  const fecha = (p.fechaEntrega || "").trim();
-  if (fecha) {
-    formData.append(GF.fecha, fecha);
-    const [yyyy, mm, dd] = fecha.split("-");
-    if (GF.fecha_day && GF.fecha_month && GF.fecha_year) {
-      formData.append(GF.fecha_day, dd);
-      formData.append(GF.fecha_month, mm);
-      formData.append(GF.fecha_year, yyyy);
+    const fecha = (p.fechaEntrega || "").trim();
+    if (fecha) {
+      formData.append(GF.fecha, fecha);
+      const [yyyy, mm, dd] = fecha.split("-");
+      if (GF.fecha_day && GF.fecha_month && GF.fecha_year) {
+        formData.append(GF.fecha_day, dd);
+        formData.append(GF.fecha_month, mm);
+        formData.append(GF.fecha_year, yyyy);
+      }
+    }
+
+    formData.append(GF.sig, p.sig || "");
+
+    try {
+      await fetch(GF_ACTION, {
+        method: "POST",
+        mode: "no-cors",
+        body: formData
+      });
+      return { status: "ok" };
+    } catch (err) {
+      console.error("❌ Error enviando pedido:", err);
+      return { status: "error" };
     }
   }
 
-  formData.append(GF.sig, p.sig || "");
-
-  try {
-    await fetch(GF_ACTION, {
-      method: "POST",
-      mode: "no-cors",
-      body: formData
-    });
-    return { status: "ok" };
-  } catch (err) {
-    console.error("❌ Error enviando pedido:", err);
-    return { status: "error" };
-  }
-}
-
   // ==== ELEMENTOS ====
   const $ = id => document.getElementById(id);
-  const fechaEntrega = $("fechaEntrega"), numeroCliente = $("numeroCliente"), nombreVendedor = $("nombreVendedor"), productos = $("productos"), observaciones = $("observaciones"), btnEnviar = $("btnEnviar"), btnNuevoLote = $("btnNuevoLote"), toastContainer = $("toast-container"), connDot = $("connDot"), netBanner = $("netBanner"), helloBanner = $("helloBanner"), shareWA = $("shareWA"), searchPend = $("searchPend"), pedidoContador = $("pedidoContador");
+  const fechaEntrega = $("fechaEntrega"), numeroCliente = $("numeroCliente"),
+        nombreVendedor = $("nombreVendedor"), productos = $("productos"),
+        observaciones = $("observaciones"), btnEnviar = $("btnEnviar"),
+        btnNuevoLote = $("btnNuevoLote"), toastContainer = $("toast-container"),
+        connDot = $("connDot"), netBanner = $("netBanner"), helloBanner = $("helloBanner"),
+        shareWA = $("shareWA"), searchPend = $("searchPend"), pedidoContador = $("pedidoContador");
 
   // SONIDO & VIBRA
   const sndOk = new Audio("data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA");
   function vib(ms=70){ if('vibrate' in navigator) navigator.vibrate(ms); }
   function playOk(){ try{ sndOk.currentTime=0; sndOk.play(); }catch{} }
 
-  // TOAST
+  // TOAST (sin cambios funcionales)
   function showToast(msg, type="info"){
     const toast = document.createElement('div');
     toast.className = 'toast';
@@ -538,37 +519,51 @@ async function sendToGoogleForm(p) {
     setTimeout(() => toast.remove(), 3500);
   }
 
-  // ===== THEME dinámico =====
-  function setTheme(hex){
+  // ===== THEME dinámico (ahora acepta 1 ó 2 colores) =====
+  function setTheme(input){
     const root = document.documentElement;
-    const base = hexToRgb(hex);
-    const primary2 = rgbToHex(darkenRGB(base, 0.18));
-    
-    root.style.setProperty("--primary", hex);
-    root.style.setProperty("--primary-2", primary2);
-    root.style.setProperty("--primary-light", `rgba(${base.r},${base.g},${base.b},0.22)`);
-    root.style.setProperty("--primary-rgb", `${base.r},${base.g},${base.b}`);
-    
+
+    let c1, c2;
+    if (typeof input === "string" && input.includes(",")) {
+      const parts = input.split(",").map(s=>s.trim());
+      c1 = parts[0]; c2 = parts[1] || parts[0];
+    } else {
+      c1 = input || getComputedStyle(root).getPropertyValue("--primary").trim() || "#06b6d4";
+      // si viene solo 1 color, se oscurece para el 2do
+      c2 = rgbToHex(darkenRGB(hexToRgb(c1), 0.18));
+    }
+
+    const base1 = hexToRgb(c1);
+    const base2 = hexToRgb(c2);
+
+    root.style.setProperty("--primary", c1);
+    root.style.setProperty("--primary-2", c2);
+    root.style.setProperty("--primary-light", `rgba(${base1.r},${base1.g},${base1.b},0.22)`);
+    root.style.setProperty("--primary-rgb", `${base1.r},${base1.g},${base1.b}`);
+    root.style.setProperty("--primary-2-rgb", `${base2.r},${base2.g},${base2.b}`);
+
+    // Ajustes suaves del tema claro basados en c1
     const isDarkPref = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     if(!isDarkPref){
-        const border   = rgbToHex(lightenRGB(base, 0.78));
-        const bgStart   = rgbToHex(lightenRGB(base, 0.90));
-        const bgEnd     = rgbToHex(lightenRGB(base, 0.97));
-        const cardStart = rgbToHex(lightenRGB(base, 0.94));
-        const cardEnd   = rgbToHex(lightenRGB(base, 0.985));
-        const fieldStart= rgbToHex(lightenRGB(base, 0.965));
-        const fieldEnd  = rgbToHex(lightenRGB(base, 0.99));
-        
-        root.style.setProperty("--border-tint", border);
-        root.style.setProperty("--bg-grad-start", bgStart);
-        root.style.setProperty("--bg-grad-end", bgEnd);
-        root.style.setProperty("--card-grad-start", cardStart);
-        root.style.setProperty("--card-grad-end", cardEnd);
-        root.style.setProperty("--field-grad-start", fieldStart);
-        root.style.setProperty("--field-grad-end", fieldEnd);
+      const border   = rgbToHex(lightenRGB(base1, 0.78));
+      const bgStart  = rgbToHex(lightenRGB(base1, 0.90));
+      const bgEnd    = rgbToHex(lightenRGB(base1, 0.97));
+      const cardStart= rgbToHex(lightenRGB(base1, 0.94));
+      const cardEnd  = rgbToHex(lightenRGB(base1, 0.985));
+      const fieldStart=rgbToHex(lightenRGB(base1, 0.965));
+      const fieldEnd  = rgbToHex(lightenRGB(base1, 0.99));
+      root.style.setProperty("--border-tint", border);
+      root.style.setProperty("--bg-grad-start", bgStart);
+      root.style.setProperty("--bg-grad-end", bgEnd);
+      root.style.setProperty("--card-grad-start", cardStart);
+      root.style.setProperty("--card-grad-end", cardEnd);
+      root.style.setProperty("--field-grad-start", fieldStart);
+      root.style.setProperty("--field-grad-end", fieldEnd);
     }
-    localStorage.setItem("themeColor", hex);
+
+    localStorage.setItem("themeColor", `${c1},${c2}`);
   }
+
   const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
   function hexToRgb(hex){
     let h = hex.replace('#','').trim();
@@ -584,9 +579,10 @@ async function sendToGoogleForm(p) {
   function darkenRGB(a,t){ return mixRGB(a,{r:0,g:0,b:0},t); }
   function lightenRGB(a,t){ return mixRGB(a,{r:255,g:255,b:255},t); }
 
+  // Init tema + clicks del selector (sin romper compatibilidad)
   (()=>{
     const stored = localStorage.getItem("themeColor");
-    setTheme(stored || getComputedStyle(document.documentElement).getPropertyValue("--primary") || "#4f46e5");
+    setTheme(stored || "#06b6d4,#22c55e");
     document.querySelectorAll(".swatch").forEach(s=>{
       s.addEventListener("click", ()=> setTheme(s.getAttribute("data-color")));
     });
@@ -603,13 +599,7 @@ async function sendToGoogleForm(p) {
   // DRAFT
   const DRAFT_KEY = "draftPedido";
   function saveDraft(){
-    const d = {
-      fechaEntrega: fechaEntrega.value,
-      numeroCliente: numeroCliente.value,
-      nombreVendedor: nombreVendedor.value,
-      productos: productos.value,
-      observaciones: observaciones.value
-    };
+    const d = { fechaEntrega: fechaEntrega.value, numeroCliente: numeroCliente.value, nombreVendedor: nombreVendedor.value, productos: productos.value, observaciones: observaciones.value };
     localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
   }
   function loadDraft(){
@@ -625,8 +615,8 @@ async function sendToGoogleForm(p) {
     }catch{}
   }
   [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=> el.addEventListener("input", saveDraft));
-  
-  // VALIDACIÓN y LÓGICA DE FORMULARIO
+
+  // VALIDACIÓN y LÓGICA DE FORMULARIO (sin cambios)
   function validateForm(){
     let valid = true;
     [fechaEntrega, numeroCliente, nombreVendedor, productos].forEach(el => {
@@ -640,7 +630,7 @@ async function sendToGoogleForm(p) {
     return valid;
   }
 
-  // LIMPIAR FORM
+  // LIMPIAR FORM (sin cambios)
   function clearForm(full=true){
     numeroCliente.value = "";
     productos.value = "";
@@ -659,57 +649,37 @@ async function sendToGoogleForm(p) {
   }
 
   function showSuccess(opts = {}){
-  const { title="¡Pedido enviado!", subtitle="Se registró correctamente", duration=3200 } = opts;
-  const ov = document.getElementById("confirmOverlay");
-  ov.style.display = "flex";
+    const { title="¡Pedido enviado!", subtitle="Se registró correctamente", duration=3200 } = opts;
+    const ov = document.getElementById("confirmOverlay");
+    ov.style.display = "flex";
+    const h2 = ov.querySelector("h2");
+    const p  = ov.querySelector("p");
+    if (h2) h2.textContent = title;
+    if (p)  p.textContent  = subtitle;
 
-  // Actualizar textos (si existieran)
-  const h2 = ov.querySelector("h2");
-  const p  = ov.querySelector("p");
-  if (h2) h2.textContent = title;
-  if (p)  p.textContent  = subtitle;
+    const circle = ov.querySelector(".checkmark-circle");
+    const check  = ov.querySelector(".checkmark-check");
+    [circle, check].forEach(el=>{ if(!el) return; el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; });
 
-  // Reiniciar animación del SVG en cada apertura
-  const circle = ov.querySelector(".checkmark-circle");
-  const check  = ov.querySelector(".checkmark-check");
-  [circle, check].forEach(el=>{
-    if(!el) return;
-    el.style.animation = "none";
-    void el.offsetWidth;               // forzar reflow
-    el.style.animation = "";           // re-aplicar animación CSS
-  });
+    clearTimeout(ov._hideTimer);
+    ov._hideTimer = setTimeout(()=>{ ov.style.display = "none"; }, duration);
+  }
 
-  clearTimeout(ov._hideTimer);
-  ov._hideTimer = setTimeout(()=>{ ov.style.display = "none"; }, duration);
-}
+  // Anti doble-click (sin cambios)
+  window.isCooling = function(el){ return !!(el && el.classList && el.classList.contains('cooldown')); };
+  window.startCooldown = function(el, ms = 1200){ if(!el) return; el.classList.add('cooldown'); setTimeout(()=> el.classList.remove('cooldown'), ms); };
 
-
-
-  // Anti doble-click (global)
-window.isCooling = function(el){
-  return !!(el && el.classList && el.classList.contains('cooldown'));
-};
-window.startCooldown = function(el, ms = 1200){
-  if(!el) return;
-  el.classList.add('cooldown');
-  setTimeout(()=> el.classList.remove('cooldown'), ms);
-};
-
-  
-
-  // LÓGICA DE ENVÍO
+  // LÓGICA DE ENVÍO (sin cambios funcionales)
   async function handleEnviar(){
     if (isCooling(btnEnviar)) return;
     if(!validateForm()) return;
-    
-    // ✅ feedback instantáneo
-showSuccess({
-  subtitle: navigator.onLine ? "Sincronizando con Google…" : "Guardado localmente, se enviará al reconectar",
-  duration: 3400
-});
-playOk(); vib();
 
-    
+    showSuccess({
+      subtitle: navigator.onLine ? "Sincronizando con Google…" : "Guardado localmente, se enviará al reconectar",
+      duration: 3400
+    });
+    playOk(); vib();
+
     btnEnviar.disabled = true;
     btnEnviar.querySelector('.spinner').style.display = 'block';
     btnEnviar.querySelector('.btn-text').style.display = 'none';
@@ -740,34 +710,24 @@ playOk(); vib();
 
     await syncQueue();
 
-     const stillPending = getQueue().some(p => p.id === pedido.id);
-
-if (!stillPending) {
-  // ✅ El modal de éxito ya se mostró al principio; acá sólo un toast final
-  showToast("Enviado ✔️", "ok"); // (opcional) si tu showToast acepta duración: , 1000
-
-  // Si ya hiciste playOk() y vib() al validar, NO los repitas acá:
-  // playOk(); vib();
-
-  markSig(pedido.sig);
-
-  const stats = getStats();
-  stats.enviados = (stats.enviados || 0) + 1;
-  setStats(stats);
-
-  const history = getHistory();
-  history.push({ id: pedido.id, date: new Date().toISOString().slice(0,10) });
-  if (history.length > 500) history.shift();
-  setHistory(history);
-} else {
-  // Se guardó offline y quedará para reintento
-  showToast("Pedido guardado localmente.", "info");
-}
-
+    const stillPending = getQueue().some(p => p.id === pedido.id);
+    if (!stillPending) {
+      showToast("Enviado ✔️", "ok");
+      markSig(pedido.sig);
+      const stats = getStats();
+      stats.enviados = (stats.enviados || 0) + 1;
+      setStats(stats);
+      const history = getHistory();
+      history.push({ id: pedido.id, date: new Date().toISOString().slice(0,10) });
+      if (history.length > 500) history.shift();
+      setHistory(history);
+    } else {
+      showToast("Pedido guardado localmente.", "info");
+    }
 
     if(shareWA.checked) {
-        const resumen = `*PEDIDO ML*\n\n- *Cliente:* ${pedido.numeroCliente}\n- *Vendedor:* ${pedido.nombreVendedor}\n- *Fecha Entrega:* ${pedido.fechaEntrega.split('-').reverse().join('/')}\n\n*PRODUCTOS:*\n${pedido.productos}${pedido.observaciones ? `\n\n*OBS:*\n${pedido.observaciones}`:''}`;
-        window.open(`https://wa.me/5491133395487?text=${encodeURIComponent(resumen)}`, '_blank');
+      const resumen = `*PEDIDO ML*\n\n- *Cliente:* ${pedido.numeroCliente}\n- *Vendedor:* ${pedido.nombreVendedor}\n- *Fecha Entrega:* ${pedido.fechaEntrega.split('-').reverse().join('/')}\n\n*PRODUCTOS:*\n${pedido.productos}${pedido.observaciones ? `\n\n*OBS:*\n${pedido.observaciones}`:''}`;
+      window.open(`https://wa.me/5491133395487?text=${encodeURIComponent(resumen)}`, '_blank');
     }
 
     clearForm(false);
@@ -779,7 +739,7 @@ if (!stillPending) {
 
   btnEnviar.addEventListener("click", handleEnviar);
 
-  // LÓGICA DE SINCRONIZACIÓN
+  // LÓGICA DE SINCRONIZACIÓN (sin cambios)
   let isSyncing = false;
   async function syncQueue(forceAll = false) {
     if (isSyncing || !navigator.onLine) return;
@@ -790,7 +750,7 @@ if (!stillPending) {
     let queue = getQueue();
     let originalQueueSize = queue.length;
     let failed = [];
-    
+
     for (const pedido of queue) {
       if (!navigator.onLine) { failed.push(pedido); continue; }
       try {
@@ -798,9 +758,9 @@ if (!stillPending) {
         if (res.status === 'ok') {
           markSig(pedido.sig);
           if (forceAll) {
-              const stats = getStats();
-              stats.reenviados = (stats.reenviados || 0) + 1;
-              setStats(stats);
+            const stats = getStats();
+            stats.reenviados = (stats.reenviados || 0) + 1;
+            setStats(stats);
           }
         } else { failed.push(pedido); }
       } catch (error) { failed.push(pedido); }
@@ -813,13 +773,13 @@ if (!stillPending) {
     if($("pendientes").style.display !== 'none') renderPendientes();
 
     if(forceAll && originalQueueSize > 0){
-        const enviados = originalQueueSize - failed.length;
-        if(enviados > 0) showToast(`${enviados} pedido${enviados>1?'s':''} reenviado${enviados>1?'s':''} con éxito!`, 'ok');
-        else showToast('No se pudieron reenviar los pedidos.', 'error');
+      const enviados = originalQueueSize - failed.length;
+      if(enviados > 0) showToast(`${enviados} pedido${enviados>1?'s':''} reenviado${enviados>1?'s':''} con éxito!`, 'ok');
+      else showToast('No se pudieron reenviar los pedidos.', 'error');
     }
   }
 
-  // MANEJO DE CONEXIÓN
+  // MANEJO DE CONEXIÓN (sin cambios)
   function updateConnectionStatus() {
     if (isSyncing) return;
     const online = navigator.onLine;
@@ -831,13 +791,13 @@ if (!stillPending) {
   window.addEventListener("online", updateConnectionStatus);
   window.addEventListener("offline", updateConnectionStatus);
 
-  // INICIALIZACIÓN
+  // INICIALIZACIÓN (sin cambios funcionales)
   document.addEventListener("DOMContentLoaded", () => {
     clearForm();
     loadDraft();
     updateConnectionStatus();
     setInterval(syncQueue, 60000);
-    
+
     const h = new Date().getHours();
     let saludo = "¡Buenas noches!";
     if(h >= 6 && h < 13) saludo = "¡Buenos días!";
@@ -856,62 +816,62 @@ if (!stillPending) {
     });
   });
 
-  // TABS
+  // TABS (sin cambios)
   const mainNuevo = $("nuevoPedido"), mainPendientes = $("pendientes"), mainStats = $("estadisticas");
   const btnNuevo = $("btnNuevo"), btnPendientes = $("btnVerPendientes"), btnStats = $("btnVerEstadisticas");
 
   function showTab(tabName) {
-      mainNuevo.style.display = 'none';
-      mainPendientes.style.display = 'none';
-      mainStats.style.display = 'none';
-      [btnNuevo, btnPendientes, btnStats].forEach(b=>b.classList.remove('active'));
-      btnEnviar.style.display = 'none';
+    mainNuevo.style.display = 'none';
+    mainPendientes.style.display = 'none';
+    mainStats.style.display = 'none';
+    [btnNuevo, btnPendientes, btnStats].forEach(b=>b.classList.remove('active'));
+    btnEnviar.style.display = 'none';
 
-      if (tabName === 'nuevo') {
-          mainNuevo.style.display = 'block';
-          btnNuevo.classList.add('active');
-          btnEnviar.style.display = 'flex';
-      } else if (tabName === 'pendientes') {
-          mainPendientes.style.display = 'block';
-          btnPendientes.classList.add('active');
-          renderPendientes();
-      } else if (tabName === 'stats') {
-          mainStats.style.display = 'block';
-          btnStats.classList.add('active');
-          renderStats();
-      }
+    if (tabName === 'nuevo') {
+      mainNuevo.style.display = 'block';
+      btnNuevo.classList.add('active');
+      btnEnviar.style.display = 'flex';
+    } else if (tabName === 'pendientes') {
+      mainPendientes.style.display = 'block';
+      btnPendientes.classList.add('active');
+      renderPendientes();
+    } else if (tabName === 'stats') {
+      mainStats.style.display = 'block';
+      btnStats.classList.add('active');
+      renderStats();
+    }
   }
   btnNuevo.addEventListener('click', () => showTab('nuevo'));
   btnPendientes.addEventListener('click', () => showTab('pendientes'));
   btnStats.addEventListener('click', () => showTab('stats'));
 
-  // PENDIENTES
+  // PENDIENTES (sin cambios)
   function renderPendientes(filter = "") {
-      const queue = getQueue();
-      const container = $("listaPendientes");
-      container.innerHTML = "";
-      const filteredQueue = queue.filter(p => p.numeroCliente.includes(filter));
+    const queue = getQueue();
+    const container = $("listaPendientes");
+    container.innerHTML = "";
+    const filteredQueue = queue.filter(p => p.numeroCliente.includes(filter));
 
-      if (filteredQueue.length === 0) {
-          container.innerHTML = `<div class="pedido-card" style="text-align:center; color: var(--muted);">No hay pedidos pendientes.</div>`;
-          return;
-      }
+    if (filteredQueue.length === 0) {
+      container.innerHTML = `<div class="pedido-card" style="text-align:center; color: var(--muted);">No hay pedidos pendientes.</div>`;
+      return;
+    }
 
-      filteredQueue.reverse().forEach(p => {
-          const card = document.createElement("div");
-          card.className = "pedido-card";
-          const d = new Date(p.timestamp);
-          card.innerHTML = `
-              <b>Cliente: ${p.numeroCliente}</b> (Vendedor: ${p.nombreVendedor})<br>
-              <small style="color:var(--muted)">Fecha entrega: ${p.fechaEntrega.split('-').reverse().join('/')} | Guardado: ${d.toLocaleDateString()} ${d.toLocaleTimeString()}</small>
-              <hr>
-              <pre style="white-space:pre-wrap; font-family:inherit; margin:0;">${p.productos}</pre>
-              ${p.observaciones ? `<hr><pre style="white-space:pre-wrap;font-family:inherit;margin:0;opacity:.8;">${p.observaciones}</pre>` : ''}
-          `;
-          container.appendChild(card);
-      });
+    filteredQueue.reverse().forEach(p => {
+      const card = document.createElement("div");
+      card.className = "pedido-card";
+      const d = new Date(p.timestamp);
+      card.innerHTML = `
+        <b>Cliente: ${p.numeroCliente}</b> (Vendedor: ${p.nombreVendedor})<br>
+        <small style="color:var(--muted)">Fecha entrega: ${p.fechaEntrega.split('-').reverse().join('/')} | Guardado: ${d.toLocaleDateString()} ${d.toLocaleTimeString()}</small>
+        <hr>
+        <pre style="white-space:pre-wrap; font-family:inherit; margin:0;">${p.productos}</pre>
+        ${p.observaciones ? `<hr><pre style="white-space:pre-wrap;font-family:inherit;margin:0;opacity:.8;">${p.observaciones}</pre>` : ''}
+      `;
+      container.appendChild(card);
+    });
   }
-  
+
   searchPend.addEventListener("input", e => renderPendientes(e.target.value));
   $("btnReintentarTodos").addEventListener("click", () => syncQueue(true));
   $("btnSyncHoy").addEventListener("click", () => {
@@ -919,44 +879,43 @@ if (!stillPending) {
     const queue = getQueue();
     const hoy = queue.filter(p => p.fechaEntrega === todayStr);
     if(hoy.length > 0) {
-        const originalQueue = [...queue];
-        setQueue(hoy);
-        syncQueue(true).then(() => {
-            const restantes = getQueue();
-            const originalMenosHoy = originalQueue.filter(p => p.fechaEntrega !== todayStr);
-            setQueue([...restantes, ...originalMenosHoy]);
-            renderPendientes();
-        });
+      const originalQueue = [...queue];
+      setQueue(hoy);
+      syncQueue(true).then(() => {
+        const restantes = getQueue();
+        const originalMenosHoy = originalQueue.filter(p => p.fechaEntrega !== todayStr);
+        setQueue([...restantes, ...originalMenosHoy]);
+        renderPendientes();
+      });
     } else {
-        showToast("No hay pedidos pendientes para hoy.", "info");
+      showToast("No hay pedidos pendientes para hoy.", "info");
     }
   });
 
-
   function updatePendingCount() {
-      const count = getQueue().length;
-      pedidoContador.textContent = count;
-      pedidoContador.style.display = count > 0 ? 'inline-block' : 'none';
-      const pendBtn = $("btnVerPendientes");
-      const currentCount = pendBtn.querySelector('span');
-      if (count > 0) {
-        if(currentCount) currentCount.textContent = count;
-        else pendBtn.innerHTML = `Pendientes <span style="background:var(--error);color:#fff;font-size:10px;padding:2px 5px;border-radius:6px;margin-left:4px;">${count}</span>`;
-      } else {
-        if(currentCount) pendBtn.textContent = 'Pendientes';
-      }
+    const count = getQueue().length;
+    pedidoContador.textContent = count;
+    pedidoContador.style.display = count > 0 ? 'inline-block' : 'none';
+    const pendBtn = $("btnVerPendientes");
+    const currentCount = pendBtn.querySelector('span');
+    if (count > 0) {
+      if(currentCount) currentCount.textContent = count;
+      else pendBtn.innerHTML = `Pendientes <span style="background:var(--error);color:#fff;font-size:10px;padding:2px 5px;border-radius:6px;margin-left:4px;">${count}</span>`;
+    } else {
+      if(currentCount) pendBtn.textContent = 'Pendientes';
+    }
   }
 
-  // STATS
+  // STATS (sin cambios)
   function renderStats(){
     const stats = getStats();
     const pendientes = getQueue().length;
     const total = (stats.enviados||0) + pendientes;
-    
+
     $("statEnviados").textContent = stats.enviados || 0;
     $("statPendientes").textContent = pendientes;
     $("statReenviados").textContent = stats.reenviados || 0;
-    
+
     const exito = total > 0 ? Math.round(((stats.enviados||0) / total) * 100) : 0;
     $("statExito").textContent = `${exito}%`;
 
@@ -964,18 +923,16 @@ if (!stillPending) {
     $("barPendientes").style.width = total > 0 ? `${(pendientes/total)*100}%` : '0%';
     $("barReenviados").style.width = (stats.enviados||0) > 0 ? `${Math.min(100, ((stats.reenviados||0)/(stats.enviados||0))*100)}%` : '0%';
     $("barExito").style.width = `${exito}%`;
-    
+
     const history = getHistory();
     const days = new Set(history.map(h => h.date)).size;
     const avg = days > 0 ? (history.length / days).toFixed(1) : 0;
     $("statPromedio").textContent = avg;
   }
-  
+
   // INIT
   showTab('nuevo');
   loadDraft();
-
-
 </script>
 </body>
 </html>
