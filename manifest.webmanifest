@@ -1,12 +1,14 @@
 {
   "name": "Pedidos ML",
   "short_name": "Pedidos ML",
+  "id": "./",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#06b6d4",
   "theme_color": "#06b6d4",
+  "description": "App de pedidos Mercado Limpio — rápida, offline y táctil.",
   "icons": [
     {
       "src": "./icon-192.png",
@@ -21,7 +23,5 @@
       "purpose": "any maskable"
     }
   ],
-  "splash_pages": [
-    "./splash-1024.png"
-  ]
+  "splash_pages": null
 }
