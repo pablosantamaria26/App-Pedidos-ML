@@ -251,21 +251,21 @@
   .bar > .fill{ height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--primary-2)); transition: width .4s ease; }
 
   /* === Selector de tema moderno === */
-  .theme-row{
-    display:flex; align-items:center; gap:10px; margin: 10px 0 22px 0; flex-wrap:wrap;
-  }
-  .theme-row span { font-weight: 700; color: var(--muted); margin-right: 2px; }
-  .swatch{
-    .swatch{
-  display:inline-flex; align-items:center; gap:8px; padding: 8px 12px;
+ .theme-row{
+  display:flex; align-items:center; gap:10px; margin:10px 0 22px 0; flex-wrap:wrap;
+}
+.theme-row span{ font-weight:700; color:var(--muted); margin-right:2px; }
+
+.swatch{
+  display:inline-flex; align-items:center; gap:8px; padding:8px 12px;
   border-radius: var(--radius-pill);
   color:#fff; font-weight:700; font-size:13px; letter-spacing:.2px;
-  border: 2px solid transparent; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  border:2px solid transparent; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.08);
   user-select:none; transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
+}
+.swatch:hover{ transform: translateY(-1px); box-shadow:0 12px 26px rgba(0,0,0,.12); }
+.swatch:active{ transform: translateY(0) scale(.98); filter:brightness(1.04); }
 
-  }
-  .swatch:hover{ transform: translateY(-1px); box-shadow: 0 12px 26px rgba(0,0,0,.12); }
-  .swatch:active{ transform: translateY(0) scale(.98); filter: brightness(1.04); }
 
   .search-row{ display: flex; gap: 8px; margin-bottom: 10px; }
   .search-row input{ flex:1; }
@@ -273,6 +273,43 @@
 
   .pend-legend{ font-size: 12px; color: var(--muted); display: grid; gap: 4px; margin: 6px 2px 14px; }
   .pend-legend b{ color: var(--text); font-weight: 600; }
+
+
+  /* Que el contenedor no quede tapado por el botón fijo al hacer scroll */
+#rowObs{ scroll-margin-bottom: 140px; }
+
+/* Altura cómoda + scroll interno elegante */
+#observaciones{
+  min-height: 120px;     /* altura base */
+  max-height: 45vh;      /* no ocupa toda la pantalla */
+  overflow: auto;        /* scroll dentro del campo */
+  line-height: 1.35;
+  scrollbar-gutter: stable;   /* evita saltos al aparecer la barra */
+  overscroll-behavior: contain; /* no arrastra el body al llegar al borde */
+}
+
+/* Al enfocar, permití un poquito más de alto (opcional) */
+#observaciones:focus{ max-height: 60vh; }
+
+/* Scrollbar linda (Chrome/Edge) */
+#observaciones::-webkit-scrollbar{ width: 10px; }
+#observaciones::-webkit-scrollbar-track{
+  background: var(--card-grad-end);
+  border-radius: 999px;
+}
+#observaciones::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, var(--primary), var(--primary-2));
+  border-radius: 999px;
+}
+#observaciones::-webkit-scrollbar-thumb:hover{ filter: brightness(1.08); }
+
+/* Scrollbar en Firefox */
+#observaciones{
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--card-grad-end);
+}
+
+  
 </style>
 </head>
 <body>
@@ -316,7 +353,7 @@
     </div>
     <div class="row" id="rowVendedor">
       <label>👤 Nombre del vendedor</label>
-      <input type="text" id="nombreVendedor" placeholder="Ej: MARTIN" />
+      <input type="text" id="nombreVendedor" placeholder="Ej: Josue" />
     </div>
     <div class="row" id="rowProductos">
       <label>📦 Productos solicitados</label>
@@ -324,7 +361,7 @@
     </div>
     <div class="row" id="rowObs">
       <label>🗒️ Observaciones (opcional)</label>
-      <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
+      <textarea id="observaciones" rows="5" placeholder="Notas adicionales..."></textarea>
     </div>
     <div class="row">
         <label style="flex-direction: row; align-items: center; gap: 8px; font-weight: normal; color: var(--text);">
