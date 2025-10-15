@@ -256,11 +256,13 @@
   }
   .theme-row span { font-weight: 700; color: var(--muted); margin-right: 2px; }
   .swatch{
-    display:inline-flex; align-items:center; gap:10px; padding: 10px 14px;
-    border-radius: var(--radius-pill);
-    color:#fff; font-weight:700; font-size:14px; letter-spacing:.2px;
-    border: 2px solid transparent; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.08);
-    user-select:none; transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
+    .swatch{
+  display:inline-flex; align-items:center; gap:8px; padding: 8px 12px;
+  border-radius: var(--radius-pill);
+  color:#fff; font-weight:700; font-size:13px; letter-spacing:.2px;
+  border: 2px solid transparent; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  user-select:none; transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
+
   }
   .swatch:hover{ transform: translateY(-1px); box-shadow: 0 12px 26px rgba(0,0,0,.12); }
   .swatch:active{ transform: translateY(0) scale(.98); filter: brightness(1.04); }
@@ -302,11 +304,6 @@
       <div class="swatch" data-color="#8b5cf6,#ec4899"
            style="background:linear-gradient(90deg,#8b5cf6,#ec4899)">Violeta → Magenta</div>
 
-      <div class="swatch" data-color="#f97316,#facc15"
-           style="background:linear-gradient(90deg,#f97316,#facc15); color:#1f2937">Naranja → Amarillo</div>
-
-      <div class="swatch" data-color="#0ea5e9,#22d3ee"
-           style="background:linear-gradient(90deg,#0ea5e9,#22d3ee)">Celeste → Cian</div>
     </div>
 
     <div class="row" id="rowFecha">
