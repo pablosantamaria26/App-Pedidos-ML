@@ -24,21 +24,24 @@
     --card: #ffffff;
     --muted: #6b7280;
     --border: #e5e7eb;
-    --border-tint: #9ca3af;       /* gris del borde un poco más fuerte */
+    --border-tint: #e5e7eb;
 
     /* Gradientes (más notorios) */
     --bg-grad-start: #f7f9ff;
     --bg-grad-end:   #eef2ff;
     --card-grad-start:#ffffff;
     --card-grad-end:  #eef2ff;
-    --field-grad-start:#e5e7eb;   /* gris más oscuro arriba */
-    --field-grad-end:  #cbd5e1;   /* gris más oscuro abajo */
-
+    --field-grad-start:#ffffff;
+    --field-grad-end:  #e9edff;
 
     --success: #16a34a;
     --error: #ef4444;
     --shadow: 0 4px 12px rgba(0,0,0,0.10);
     --shadow-lg: 0 10px 30px rgba(0,0,0,0.16);
+
+    /* Texto de campos por defecto (claro) */
+    --field-text: #0b0f14;
+    --placeholder: rgba(11,15,20,.55);
   }
   @media (prefers-color-scheme: dark){
     :root{
@@ -58,7 +61,29 @@
 
       --shadow: 0 4px 12px rgba(0,0,0,0.25);
       --shadow-lg: 0 10px 30px rgba(0,0,0,0.35);
+
+      /* En modo oscuro preferido del sistema, placeholders más claros */
+      --field-text: #f3f6ff;
+      --placeholder: rgba(243,246,255,.55);
     }
+  }
+  /* Forzar modo oscuro manual si se aplica .dark al html */
+  html.dark{
+    --text: #e6edf3;
+    --card: #0f1420;
+    --bg: #0d1117;
+
+    --bg-grad-start:#0b0f1a;
+    --bg-grad-end:#0e1424;
+    --card-grad-start:#151a23;
+    --card-grad-end:#0f1420;
+    --field-grad-start:#121826;
+    --field-grad-end:#0e1522;
+
+    --border-tint:#2a313b;
+
+    --field-text: #f3f6ff;
+    --placeholder: rgba(243,246,255,.55);
   }
 
   html,body{ height: 100%; }
@@ -149,13 +174,14 @@
     border-radius: 12px;
     border: 1px solid var(--border-tint);
     background: linear-gradient(180deg, var(--field-grad-start), var(--field-grad-end));
-    color: var(--text);
+    color: var(--field-text) !important;  /* color de escritura siempre visible */
+    caret-color: var(--field-text);
     outline: none;
     transition: border-color .2s ease, box-shadow .2s ease, background 300ms ease, color .2s ease;
     -webkit-appearance: none;
     background-clip: padding-box;
   }
-  input::placeholder, textarea::placeholder{ color: var(--muted); opacity:.8; }
+  input::placeholder, textarea::placeholder{ color: var(--placeholder); }
   input:focus, textarea:focus, select:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px var(--primary-light);
@@ -309,28 +335,51 @@
   }
   .pend-legend b{ color: var(--text); font-weight: 600; }
 
- /* Evita que el foco quede tapado por el botón fijo/nav inferior */
-html, body {
-  scroll-padding-bottom: 220px; /* altura de seguridad frente a UI fija */
-}
-
-/* Observaciones: scroll interno cómodo en móviles */
-#observaciones {
-  min-height: 140px;       /* un toque más alto de base */
-  max-height: 45vh;        /* limita para que no ocupe toda la pantalla */
-  overflow: auto;          /* permite scroll interno */
-  -webkit-overflow-scrolling: touch; /* scroll suave en iOS */
-  line-height: 1.35;
-}
-
-/* (Opcional) todos los inputs al enfocar dejan aire abajo para que el caret no quede tapado */
-input:focus,
-textarea:focus,
-select:focus {
-  scroll-margin-bottom: 220px;
-}
-
-  
+  /* ===== Selector modo (Auto/Claro/Oscuro) ===== */
+  .mode-switch{
+    position: relative;
+    display: inline-grid;
+    grid-auto-flow: column;
+    gap: 0;
+    background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
+    border: 1px solid var(--border-tint);
+    border-radius: 12px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    user-select: none;
+  }
+  .mode-option{
+    position: relative;
+    z-index: 1;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mode-thumb{
+    position: absolute;
+    z-index: 0;
+    top: 4px; left: 4px;
+    width: calc((100% - 8px)/3);
+    height: calc(100% - 8px);
+    border-radius: 8px;
+    background: linear-gradient(45deg, var(--primary), var(--primary-2));
+    box-shadow: 0 10px 22px rgba(var(--primary-rgb),.35), 0 2px 8px rgba(0,0,0,.10);
+    transition: left .25s ease;
+  }
+  .mode-switch[data-active="system"] .mode-thumb{ left: 4px; }
+  .mode-switch[data-active="light"]  .mode-thumb{ left: calc(4px + (100% - 8px)/3); }
+  .mode-switch[data-active="dark"]   .mode-thumb{ left: calc(4px + 2*(100% - 8px)/3); }
+  .mode-switch[data-active="system"] .mode-option[data-mode="system"],
+  .mode-switch[data-active="light"]  .mode-option[data-mode="light"],
+  .mode-switch[data-active="dark"]   .mode-option[data-mode="dark"]{
+    color: #fff;
+  }
 </style>
 </head>
 <body>
@@ -353,6 +402,14 @@ select:focus {
       <div class="swatch" data-color="#db2777" title="Rosa"    style="background:linear-gradient(135deg,#db2777,#f59e0b)"></div>
       <div class="swatch" data-color="#d97706" title="Naranja" style="background:linear-gradient(135deg,#d97706,#fb7185)"></div>
       <div class="swatch" data-color="#06b6d4" title="Cian"    style="background:linear-gradient(135deg,#06b6d4,#7c3aed)"></div>
+
+      <!-- Selector de modo -->
+      <div class="mode-switch" id="modeSwitch" role="tablist" aria-label="Modo de tema" style="margin-left:6px;">
+        <button class="mode-option" data-mode="system" role="tab" aria-selected="true">Auto</button>
+        <button class="mode-option" data-mode="light"  role="tab" aria-selected="false">Claro</button>
+        <button class="mode-option" data-mode="dark"   role="tab" aria-selected="false">Oscuro</button>
+        <span class="mode-thumb" aria-hidden="true"></span>
+      </div>
     </div>
 
     <div class="row" id="rowFecha">
@@ -611,11 +668,8 @@ select:focus {
   function mixRGB(a,b,t){ return { r:a.r+(b.r-a.r)*t, g:a.g+(b.g-a.g)*t, b:a.b+(b.b-a.b)*t }; }
   function darkenRGB(a,t){ return mixRGB(a,{r:0,g:0,b:0},t); }
   function lightenRGB(a,t){ return mixRGB(a,{r:255,g:255,b:255},t); }
-  function relLum({r,g,b}){ // luminancia relativa para decidir textos
-    const toLin = v => {
-      v/=255;
-      return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4);
-    };
+  function relLum({r,g,b}){ /* luminancia relativa */ 
+    const toLin = v => { v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4); };
     return 0.2126*toLin(r)+0.7152*toLin(g)+0.0722*toLin(b);
   }
 
@@ -645,14 +699,16 @@ select:focus {
     root.style.setProperty("--field-grad-start", fieldStart);
     root.style.setProperty("--field-grad-end", fieldEnd);
 
-    // Contraste de texto (solo en modo claro)
+    /* Ajuste de contraste de texto en claro según luminosidad del tema */
     const isDarkPref = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if(!isDarkPref){
+    if(!document.documentElement.classList.contains('dark') && !isDarkPref){
       const l = relLum(lightenRGB(base, 0.96));
       const text = l > 0.75 ? "#0f172a" : "#111827";
-      const muted = l > 0.75 ? "#6b7280" : "#6b7280";
+      const muted = "#6b7280";
       root.style.setProperty("--text", text);
       root.style.setProperty("--muted", muted);
+      root.style.setProperty("--field-text", "#0b0f14");
+      root.style.setProperty("--placeholder", "rgba(11,15,20,.55)");
     }
 
     localStorage.setItem("themeColor", hex);
@@ -665,6 +721,38 @@ select:focus {
       s.addEventListener("click", ()=> setTheme(s.getAttribute("data-color")));
     });
   })();
+
+  /* ===== MODO CLARO/OSCURO (selector pro) ===== */
+  const MODE_KEY = "uiMode"; // 'system' | 'light' | 'dark'
+  const modeSwitch = document.getElementById("modeSwitch");
+
+  function applyMode(mode){
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const useDark = (mode === "dark") || (mode === "system" && prefersDark);
+    document.documentElement.classList.toggle("dark", useDark);
+
+    if (modeSwitch){
+      modeSwitch.dataset.active = mode;
+      modeSwitch.querySelectorAll(".mode-option").forEach(btn=>{
+        btn.setAttribute("aria-selected", String(btn.dataset.mode === mode));
+      });
+    }
+  }
+  applyMode(localStorage.getItem(MODE_KEY) || "system");
+
+  if (modeSwitch){
+    modeSwitch.addEventListener("click", (e)=>{
+      const btn = e.target.closest(".mode-option");
+      if(!btn) return;
+      const mode = btn.dataset.mode; // system | light | dark
+      localStorage.setItem(MODE_KEY, mode);
+      applyMode(mode);
+    });
+  }
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>{
+    const saved = localStorage.getItem(MODE_KEY) || "system";
+    applyMode(saved);
+  });
 
   // STORAGE
   const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
@@ -716,7 +804,7 @@ select:focus {
     if(vend) helloBanner.textContent = `Hola ${vend} 👋`;
   })();
 
-  // Número de cliente: permitir SOLO dígitos (fix de regex)
+  // Número de cliente: permitir SOLO dígitos
   numeroCliente.addEventListener("input", ()=>{
     numeroCliente.value = numeroCliente.value.replace(/[^\d]/g,"");
   });
