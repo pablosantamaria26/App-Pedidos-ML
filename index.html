@@ -664,6 +664,19 @@ async function sendToGoogleForm(p) {
       setTimeout(()=> ov.style.display = "none", 2200);
   }
 
+
+  // Anti doble-click (global)
+window.isCooling = function(el){
+  return !!(el && el.classList && el.classList.contains('cooldown'));
+};
+window.startCooldown = function(el, ms = 1200){
+  if(!el) return;
+  el.classList.add('cooldown');
+  setTimeout(()=> el.classList.remove('cooldown'), ms);
+};
+
+  
+
   // LÓGICA DE ENVÍO
   async function handleEnviar(){
     if (isCooling(btnEnviar)) return;
@@ -925,13 +938,6 @@ async function sendToGoogleForm(p) {
   showTab('nuevo');
   loadDraft();
 
-  function isCooling(btn){ 
-  return btn.classList.contains('cooldown'); 
-}
-function startCooldown(btn, ms=800){
-  btn.classList.add('cooldown');
-  setTimeout(()=>btn.classList.remove('cooldown'), ms);
-}
 
 </script>
 </body>
