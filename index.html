@@ -60,26 +60,8 @@
       --placeholder: rgba(240, 246, 252, 0.45);
     }
   }
-
-  /* --- MODO OSCURO (Forzado manualmente) --- */
-  html.dark{
-    --bg: #0A0C10;
-    --text: #f0f6fc;
-    --card: #161b22;
-    --muted: #8b949e;
-    --border: #30363d;
-    --border-tint: #30363d;
-    --bg-grad-start: #0A0C10;
-    --bg-grad-end:   #0d1117;
-    --card-grad-start:#161b22;
-    --card-grad-end:  #1a2028;
-    --field-grad-start:#101419;
-    --field-grad-end:  #101419;
-    --shadow: 0 6px 16px rgba(0,0,0,0.35);
-    --shadow-lg: 0 12px 32px rgba(0,0,0,0.45);
-    --field-text: #f0f6fc;
-    --placeholder: rgba(240, 246, 252, 0.45);
-  }
+  
+  /* Se mantiene la lógica del modo oscuro aunque no haya selector visible, por si se activa desde el sistema */
 
   html,body{ height: 100%; }
   body{
@@ -208,7 +190,7 @@
   }
   .btn:hover{ transform: translateY(-1px); }
   .btn:active{ transform: translateY(0) scale(.98); filter: brightness(1.06) saturate(120%); }
-  .btn[disabled]{ opacity:.72; cursor:not-allowed; filter: grayscale(.25); box-shadow: var(--shadow); }
+  .btn[disabled], .btn.cooldown{ opacity:.72; cursor:not-allowed; filter: grayscale(.25); box-shadow: var(--shadow); pointer-events: none; }
 
   .btn-secondary{
     color: var(--text);
@@ -250,7 +232,6 @@
       0 8px 18px rgba(0,0,0,.14);
   }
   #btnEnviar:active { transform: translateX(-50%) scale(0.98); filter: brightness(1.06) saturate(120%); }
-  #btnEnviar.cooldown{ pointer-events: none; filter: grayscale(.35) brightness(.95); }
 
   .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
   .btn[disabled] .btn-text { display: none; }
@@ -301,6 +282,7 @@
 
   .checkmark-svg { width: 80px; height: 80px; }
   .checkmark-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke: var(--success); fill: none; animation: stroke .6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+  @keyframes stroke { 100% { stroke-dashoffset: 0; } }
   .checkmark-check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke-width: 4; stroke: var(--success); stroke-linecap: round; fill: none; animation: stroke .3s cubic-bezier(0.65, 0, 0.45, 1) .8s forwards; }
 
   .stats-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
@@ -326,51 +308,6 @@
     margin: 6px 2px 14px;
   }
   .pend-legend b{ color: var(--text); font-weight: 600; }
-
-  .mode-switch{
-    position: relative;
-    display: inline-grid;
-    grid-auto-flow: column;
-    gap: 0;
-    background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
-    border: 1px solid var(--border-tint);
-    border-radius: 12px;
-    padding: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
-    user-select: none;
-  }
-  .mode-option{
-    position: relative;
-    z-index: 1;
-    padding: 8px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .mode-thumb{
-    position: absolute;
-    z-index: 0;
-    top: 4px; left: 4px;
-    width: calc((100% - 8px)/3);
-    height: calc(100% - 8px);
-    border-radius: 8px;
-    background: linear-gradient(45deg, var(--primary), var(--primary-2));
-    box-shadow: 0 10px 22px rgba(var(--primary-rgb),.35), 0 2px 8px rgba(0,0,0,.10);
-    transition: left .25s ease;
-  }
-  .mode-switch[data-active="system"] .mode-thumb{ left: 4px; }
-  .mode-switch[data-active="light"]  .mode-thumb{ left: calc(4px + (100% - 8px)/3); }
-  .mode-switch[data-active="dark"]   .mode-thumb{ left: calc(4px + 2*(100% - 8px)/3); }
-  .mode-switch[data-active="system"] .mode-option[data-mode="system"],
-  .mode-switch[data-active="light"]  .mode-option[data-mode="light"],
-  .mode-switch[data-active="dark"]   .mode-option[data-mode="dark"]{
-    color: #fff;
-  }
 </style>
 </head>
 <body>
@@ -394,13 +331,6 @@
       <div class="swatch" data-color="#d97706" title="Naranja" style="background:linear-gradient(135deg,#d97706,#fb7185)"></div>
       <div class="swatch" data-color="#06b6d4" title="Cian"    style="background:linear-gradient(135deg,#06b6d4,#7c3aed)"></div>
       <div class="swatch" data-color="#facc15" title="Radical" style="background:linear-gradient(135deg,#facc15,#d97706)"></div>
-
-      <div class="mode-switch" id="modeSwitch" role="tablist" aria-label="Modo de tema" style="margin-left:6px;">
-        <button class="mode-option" data-mode="system" role="tab" aria-selected="true">Auto</button>
-        <button class="mode-option" data-mode="light"  role="tab" aria-selected="false">Claro</button>
-        <button class="mode-option" data-mode="dark"   role="tab" aria-selected="false">Oscuro</button>
-        <span class="mode-thumb" aria-hidden="true"></span>
-      </div>
     </div>
 
     <div class="row" id="rowFecha">
@@ -417,7 +347,7 @@
     </div>
     <div class="row" id="rowProductos">
       <label>📦 Productos solicitados</label>
-      <textarea id="productos" rows="4" placeholder="Detalle de productos..." autocapitalize="characters" autocorrect="off" inputmode="text" style="text-transform: uppercase;"></textarea>
+      <textarea id="productos" rows="4" placeholder="Detalle de productos..." autocapitalize="characters" autocorrect="off" inputmode="text"></textarea>
     </div>
     <div class="row" id="rowObs">
       <label>🗒️ Observaciones (opcional)</label>
@@ -605,24 +535,9 @@
     });
   }
 
-  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxPAwRf6K5d7xf-UfcM79wVOE1aMGfn6zT0pp_rF6Ta6qAGoCO8ZIEe2RWLlVP1WRIxEg/exec";
-
   // ==== ELEMENTOS ====
   const $ = id => document.getElementById(id);
-  const fechaEntrega = $("fechaEntrega");
-  const numeroCliente = $("numeroCliente");
-  const nombreVendedor = $("nombreVendedor");
-  const productos = $("productos");
-  const observaciones = $("observaciones");
-  const btnEnviar = $("btnEnviar");
-  const btnNuevoLote = $("btnNuevoLote");
-  const toastContainer = $("toast-container");
-  const connDot = $("connDot");
-  const netBanner = $("netBanner");
-  const helloBanner = $("helloBanner");
-  const shareWA = $("shareWA");
-  const searchPend = $("searchPend");
-  const pedidoContador = $("pedidoContador");
+  const fechaEntrega = $("fechaEntrega"), numeroCliente = $("numeroCliente"), nombreVendedor = $("nombreVendedor"), productos = $("productos"), observaciones = $("observaciones"), btnEnviar = $("btnEnviar"), btnNuevoLote = $("btnNuevoLote"), toastContainer = $("toast-container"), connDot = $("connDot"), netBanner = $("netBanner"), helloBanner = $("helloBanner"), shareWA = $("shareWA"), searchPend = $("searchPend"), pedidoContador = $("pedidoContador");
 
   // SONIDO & VIBRA
   const sndOk = new Audio("data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA");
@@ -643,6 +558,36 @@
   }
 
   // ===== THEME dinámico =====
+  function setTheme(hex){
+    const root = document.documentElement;
+    const base = hexToRgb(hex);
+    const primary2 = rgbToHex(darkenRGB(base, 0.18));
+    
+    root.style.setProperty("--primary", hex);
+    root.style.setProperty("--primary-2", primary2);
+    root.style.setProperty("--primary-light", `rgba(${base.r},${base.g},${base.b},0.22)`);
+    root.style.setProperty("--primary-rgb", `${base.r},${base.g},${base.b}`);
+    
+    const isDarkPref = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if(!isDarkPref){
+        const border   = rgbToHex(lightenRGB(base, 0.78));
+        const bgStart   = rgbToHex(lightenRGB(base, 0.90));
+        const bgEnd     = rgbToHex(lightenRGB(base, 0.97));
+        const cardStart = rgbToHex(lightenRGB(base, 0.94));
+        const cardEnd   = rgbToHex(lightenRGB(base, 0.985));
+        const fieldStart= rgbToHex(lightenRGB(base, 0.965));
+        const fieldEnd  = rgbToHex(lightenRGB(base, 0.99));
+        
+        root.style.setProperty("--border-tint", border);
+        root.style.setProperty("--bg-grad-start", bgStart);
+        root.style.setProperty("--bg-grad-end", bgEnd);
+        root.style.setProperty("--card-grad-start", cardStart);
+        root.style.setProperty("--card-grad-end", cardEnd);
+        root.style.setProperty("--field-grad-start", fieldStart);
+        root.style.setProperty("--field-grad-end", fieldEnd);
+    }
+    localStorage.setItem("themeColor", hex);
+  }
   const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
   function hexToRgb(hex){
     let h = hex.replace('#','').trim();
@@ -657,52 +602,6 @@
   function mixRGB(a,b,t){ return { r:a.r+(b.r-a.r)*t, g:a.g+(b.g-a.g)*t, b:a.b+(b.b-a.b)*t }; }
   function darkenRGB(a,t){ return mixRGB(a,{r:0,g:0,b:0},t); }
   function lightenRGB(a,t){ return mixRGB(a,{r:255,g:255,b:255},t); }
-  function relLum({r,g,b}){ /* luminancia relativa */
-    const toLin = v => { v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4); };
-    return 0.2126*toLin(r)+0.7152*toLin(g)+0.0722*toLin(b);
-  }
-
-  function setTheme(hex){
-    const base = hexToRgb(hex);
-    const primary2 = rgbToHex(darkenRGB(base, 0.18));
-    const border   = rgbToHex(lightenRGB(base, 0.78));
-
-    const bgStart   = rgbToHex(lightenRGB(base, 0.90));
-    const bgEnd     = rgbToHex(lightenRGB(base, 0.97));
-    const cardStart = rgbToHex(lightenRGB(base, 0.94));
-    const cardEnd   = rgbToHex(lightenRGB(base, 0.985));
-    const fieldStart= rgbToHex(lightenRGB(base, 0.965));
-    const fieldEnd  = rgbToHex(lightenRGB(base, 0.99));
-
-    const root = document.documentElement;
-    root.style.setProperty("--primary", hex);
-    root.style.setProperty("--primary-2", primary2);
-    root.style.setProperty("--primary-light", `rgba(${base.r},${base.g},${base.b},0.22)`);
-    root.style.setProperty("--primary-rgb", `${base.r},${base.g},${base.b}`);
-
-    /* Solo aplicar temas claros si no estamos en modo oscuro */
-    const savedMode = localStorage.getItem("uiMode") || "system";
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const isDarkMode = document.documentElement.classList.contains('dark') || (savedMode === 'system' && prefersDark);
-
-    if (!isDarkMode) {
-      root.style.setProperty("--border-tint", border);
-      root.style.setProperty("--bg-grad-start", bgStart);
-      root.style.setProperty("--bg-grad-end", bgEnd);
-      root.style.setProperty("--card-grad-start", cardStart);
-      root.style.setProperty("--card-grad-end", cardEnd);
-      root.style.setProperty("--field-grad-start", fieldStart);
-      root.style.setProperty("--field-grad-end", fieldEnd);
-      
-      const l = relLum(lightenRGB(base, 0.96));
-      const text = l > 0.75 ? "#0f172a" : "#111827";
-      root.style.setProperty("--text", text);
-      root.style.setProperty("--field-text", "#0b0f14");
-      root.style.setProperty("--placeholder", "rgba(11,15,20,.55)");
-    }
-
-    localStorage.setItem("themeColor", hex);
-  }
 
   (()=>{
     const stored = localStorage.getItem("themeColor");
@@ -712,42 +611,6 @@
     });
   })();
 
-  /* ===== MODO CLARO/OSCURO (selector pro) ===== */
-  const MODE_KEY = "uiMode"; // 'system' | 'light' | 'dark'
-  const modeSwitch = document.getElementById("modeSwitch");
-
-  function applyMode(mode){
-    const root = document.documentElement;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const useDark = (mode === "dark") || (mode === "system" && prefersDark);
-    root.classList.toggle("dark", useDark);
-
-    if (modeSwitch){
-      modeSwitch.dataset.active = mode;
-      modeSwitch.querySelectorAll(".mode-option").forEach(btn=>{
-        btn.setAttribute("aria-selected", String(btn.dataset.mode === mode));
-      });
-    }
-    // Vuelve a aplicar el tema de color para que se ajuste al nuevo modo (claro/oscuro)
-    const storedTheme = localStorage.getItem("themeColor");
-    if(storedTheme) setTheme(storedTheme);
-  }
-  applyMode(localStorage.getItem(MODE_KEY) || "system");
-
-  if (modeSwitch){
-    modeSwitch.addEventListener("click", (e)=>{
-      const btn = e.target.closest(".mode-option");
-      if(!btn) return;
-      const mode = btn.dataset.mode; // system | light | dark
-      localStorage.setItem(MODE_KEY, mode);
-      applyMode(mode);
-    });
-  }
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>{
-    const saved = localStorage.getItem(MODE_KEY) || "system";
-    applyMode(saved);
-  });
-
   // STORAGE
   const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
   const setQueue = arr => localStorage.setItem("pedidosPendientes", JSON.stringify(arr));
@@ -755,12 +618,6 @@
   const setStats = s => localStorage.setItem("statsPedidos", JSON.stringify(s));
   const getHistory = () => JSON.parse(localStorage.getItem("historialEnviados") || "[]");
   const setHistory = h => localStorage.setItem("historialEnviados", JSON.stringify(h));
-  const getSentIds = () => new Set(JSON.parse(localStorage.getItem("idsEnviados") || "[]"));
-  const addSentId = (id) => {
-    const arr = JSON.parse(localStorage.getItem("idsEnviados") || "[]");
-    if(!arr.includes(id)) arr.push(id);
-    localStorage.setItem("idsEnviados", JSON.stringify(arr));
-  }
 
   // DRAFT
   const DRAFT_KEY = "draftPedido";
@@ -786,19 +643,16 @@
       observaciones.value = d.observaciones || "";
     }catch{}
   }
-  [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=>{
-    el.addEventListener("input", saveDraft);
-  });
-
+  [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=> el.addEventListener("input", saveDraft));
+  
   // VALIDACIÓN y LÓGICA DE FORMULARIO
   function validateForm(){
     let valid = true;
     [fechaEntrega, numeroCliente, nombreVendedor, productos].forEach(el => {
+      el.style.borderColor = "";
       if(!el.value.trim()){
         el.style.borderColor = "var(--error)";
         valid = false;
-      } else {
-        el.style.borderColor = "";
       }
     });
     if(!valid) showToast("Por favor, completá todos los campos.", "error");
@@ -817,16 +671,23 @@
       const localDate = new Date(today - offset);
       fechaEntrega.value = localDate.toISOString().substring(0,10);
       localStorage.removeItem(DRAFT_KEY);
-      loadDraft(); // para resetear el draft
     }
     numeroCliente.focus();
     updatePendingCount();
     saveDraft();
   }
 
+  function showSuccess(){
+      const ov = $("confirmOverlay");
+      ov.style.display = "flex";
+      setTimeout(()=> ov.style.display = "none", 2200);
+  }
+
   // LÓGICA DE ENVÍO
   async function handleEnviar(){
+    if (isCooling(btnEnviar)) return;
     if(!validateForm()) return;
+    
     btnEnviar.disabled = true;
     btnEnviar.querySelector('.spinner').style.display = 'block';
     btnEnviar.querySelector('.btn-text').style.display = 'none';
@@ -855,23 +716,19 @@
     setQueue(queue);
     updatePendingCount();
 
-    // Sincronizar inmediatamente si hay conexión
     await syncQueue();
 
     const stillPending = getQueue().some(p => p.id === pedido.id);
     if (!stillPending) {
-        // Exito
-        document.getElementById("confirmOverlay").style.display = "flex";
-        setTimeout(() => document.getElementById("confirmOverlay").style.display = "none", 2200);
+        showSuccess();
         playOk(); vib();
         markSig(pedido.sig);
         const stats = getStats();
-        stats.enviados++;
+        stats.enviados = (stats.enviados || 0) + 1;
         setStats(stats);
-        
         let history = getHistory();
         history.push({id: pedido.id, date: new Date().toISOString().slice(0,10)});
-        if(history.length > 500) history.shift(); // Limitar historial
+        if(history.length > 500) history.shift();
         setHistory(history);
     } else {
         showToast("Pedido guardado localmente.", "info");
@@ -879,16 +736,14 @@
 
     if(shareWA.checked) {
         const resumen = `*PEDIDO ML*\n\n- *Cliente:* ${pedido.numeroCliente}\n- *Vendedor:* ${pedido.nombreVendedor}\n- *Fecha Entrega:* ${pedido.fechaEntrega.split('-').reverse().join('/')}\n\n*PRODUCTOS:*\n${pedido.productos}${pedido.observaciones ? `\n\n*OBS:*\n${pedido.observaciones}`:''}`;
-        window.open(`https://wa.me/5491100000000?text=${encodeURIComponent(resumen)}`, '_blank');
+        window.open(`https://wa.me/5491133395487?text=${encodeURIComponent(resumen)}`, '_blank');
     }
 
     clearForm(false);
     btnEnviar.disabled = false;
     btnEnviar.querySelector('.spinner').style.display = 'none';
     btnEnviar.querySelector('.btn-text').style.display = 'block';
-
-    btnEnviar.classList.add("cooldown");
-    setTimeout(()=>btnEnviar.classList.remove("cooldown"), 1000);
+    startCooldown(btnEnviar);
   }
 
   btnEnviar.addEventListener("click", handleEnviar);
@@ -904,38 +759,27 @@
     let queue = getQueue();
     let originalQueueSize = queue.length;
     let failed = [];
-    let sentIdsThisSync = [];
-
+    
     for (const pedido of queue) {
-      if (!navigator.onLine) {
-        failed.push(pedido);
-        continue;
-      }
+      if (!navigator.onLine) { failed.push(pedido); continue; }
       try {
         const res = await sendToGoogleForm(pedido);
         if (res.status === 'ok') {
-          sentIdsThisSync.push(pedido.id);
-          addSentId(pedido.id);
           markSig(pedido.sig);
           if (forceAll) {
               const stats = getStats();
-              stats.reenviados++;
+              stats.reenviados = (stats.reenviados || 0) + 1;
               setStats(stats);
           }
-        } else {
-          failed.push(pedido);
-        }
-      } catch (error) {
-        console.error("Error al enviar:", error);
-        failed.push(pedido);
-      }
+        } else { failed.push(pedido); }
+      } catch (error) { failed.push(pedido); }
     }
 
     setQueue(failed);
     isSyncing = false;
-    updateConnectionStatus(); // Actualiza el estado al terminar
+    updateConnectionStatus();
     updatePendingCount();
-    if(document.getElementById("pendientes").style.display !== 'none') renderPendientes();
+    if($("pendientes").style.display !== 'none') renderPendientes();
 
     if(forceAll && originalQueueSize > 0){
         const enviados = originalQueueSize - failed.length;
@@ -950,9 +794,7 @@
     const online = navigator.onLine;
     connDot.className = online ? "online" : "offline";
     netBanner.style.display = online ? "none" : "block";
-    if (online) {
-      setTimeout(syncQueue, 500); // Pequeño delay para asegurar la conexión
-    }
+    if (online) { setTimeout(syncQueue, 500); }
   }
 
   window.addEventListener("online", updateConnectionStatus);
@@ -963,18 +805,24 @@
     clearForm();
     loadDraft();
     updateConnectionStatus();
-    setInterval(syncQueue, 60000); // Sincroniza cada 1 minuto
+    setInterval(syncQueue, 60000);
     
-    // Saludo
     const h = new Date().getHours();
     let saludo = "¡Buenas noches!";
     if(h >= 6 && h < 13) saludo = "¡Buenos días!";
     if(h >= 13 && h < 20) saludo = "¡Buenas tardes!";
-    const nombreGuardado = localStorage.getItem("nombreVendedor") || "Vendedor/a";
-    if (nombreGuardado && nombreGuardado !== "Vendedor/a") {
+    const nombreGuardado = localStorage.getItem("nombreVendedor") || "";
+    if (nombreGuardado) {
         helloBanner.innerHTML = `<h3 style="margin-top:0;margin-bottom:20px;">${saludo}, <b>${nombreGuardado.split(' ')[0]}</b></h3>`;
+    } else {
+      helloBanner.style.display = "none";
     }
     nombreVendedor.addEventListener('change', (e) => localStorage.setItem("nombreVendedor", e.target.value));
+    productos.addEventListener("input", ()=>{
+      const s = productos.selectionStart, e = productos.selectionEnd;
+      productos.value = productos.value.toUpperCase();
+      try{ productos.setSelectionRange(s,e); }catch{}
+    });
   });
 
   // TABS
@@ -985,9 +833,7 @@
       mainNuevo.style.display = 'none';
       mainPendientes.style.display = 'none';
       mainStats.style.display = 'none';
-      btnNuevo.classList.remove('active');
-      btnPendientes.classList.remove('active');
-      btnStats.classList.remove('active');
+      [btnNuevo, btnPendientes, btnStats].forEach(b=>b.classList.remove('active'));
       btnEnviar.style.display = 'none';
 
       if (tabName === 'nuevo') {
@@ -1004,7 +850,6 @@
           renderStats();
       }
   }
-
   btnNuevo.addEventListener('click', () => showTab('nuevo'));
   btnPendientes.addEventListener('click', () => showTab('pendientes'));
   btnStats.addEventListener('click', () => showTab('stats'));
@@ -1043,11 +888,13 @@
     const queue = getQueue();
     const hoy = queue.filter(p => p.fechaEntrega === todayStr);
     if(hoy.length > 0) {
+        const originalQueue = [...queue];
         setQueue(hoy);
         syncQueue(true).then(() => {
             const restantes = getQueue();
-            const originalMenosHoy = queue.filter(p => p.fechaEntrega !== todayStr);
+            const originalMenosHoy = originalQueue.filter(p => p.fechaEntrega !== todayStr);
             setQueue([...restantes, ...originalMenosHoy]);
+            renderPendientes();
         });
     } else {
         showToast("No hay pedidos pendientes para hoy.", "info");
@@ -1059,10 +906,13 @@
       const count = getQueue().length;
       pedidoContador.textContent = count;
       pedidoContador.style.display = count > 0 ? 'inline-block' : 'none';
-      if(count > 0 && !btnPendientes.textContent.includes('(')){
-        btnPendientes.innerHTML = `Pendientes <span style="background:var(--error);color:#fff;font-size:10px;padding:2px 5px;border-radius:6px;margin-left:4px;">${count}</span>`;
-      } else if (count === 0) {
-        btnPendientes.textContent = 'Pendientes';
+      const pendBtn = $("btnVerPendientes");
+      const currentCount = pendBtn.querySelector('span');
+      if (count > 0) {
+        if(currentCount) currentCount.textContent = count;
+        else pendBtn.innerHTML = `Pendientes <span style="background:var(--error);color:#fff;font-size:10px;padding:2px 5px;border-radius:6px;margin-left:4px;">${count}</span>`;
+      } else {
+        if(currentCount) pendBtn.textContent = 'Pendientes';
       }
   }
 
@@ -1070,27 +920,29 @@
   function renderStats(){
     const stats = getStats();
     const pendientes = getQueue().length;
-    const total = stats.enviados + pendientes;
+    const total = (stats.enviados||0) + pendientes;
     
-    $("statEnviados").textContent = stats.enviados;
+    $("statEnviados").textContent = stats.enviados || 0;
     $("statPendientes").textContent = pendientes;
-    $("statReenviados").textContent = stats.reenviados;
+    $("statReenviados").textContent = stats.reenviados || 0;
     
-    const exito = total > 0 ? Math.round((stats.enviados / total) * 100) : 0;
+    const exito = total > 0 ? Math.round(((stats.enviados||0) / total) * 100) : 0;
     $("statExito").textContent = `${exito}%`;
 
-    // Bars
-    $("barEnviados").style.width = total > 0 ? `${(stats.enviados/total)*100}%` : '0%';
+    $("barEnviados").style.width = total > 0 ? `${((stats.enviados||0)/total)*100}%` : '0%';
     $("barPendientes").style.width = total > 0 ? `${(pendientes/total)*100}%` : '0%';
-    $("barReenviados").style.width = stats.enviados > 0 ? `${Math.min(100, (stats.reenviados/stats.enviados)*100)}%` : '0%';
+    $("barReenviados").style.width = (stats.enviados||0) > 0 ? `${Math.min(100, ((stats.reenviados||0)/(stats.enviados||0))*100)}%` : '0%';
     $("barExito").style.width = `${exito}%`;
     
-    // Promedio por día
     const history = getHistory();
     const days = new Set(history.map(h => h.date)).size;
     const avg = days > 0 ? (history.length / days).toFixed(1) : 0;
     $("statPromedio").textContent = avg;
   }
+  
+  // INIT
+  showTab('nuevo');
+  loadDraft();
 </script>
 </body>
 </html>
