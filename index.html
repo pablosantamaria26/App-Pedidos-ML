@@ -177,9 +177,9 @@
   /* Botón flotante principal (se angosta para dejar lugar al mic) */
   #btnEnviar {
     position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-    z-index: 998; width: calc(90% - 80px); max-width: 420px;  /* <-- ajustado */
+    z-index: 998; width: calc(80% - 80px); max-width: 410px;  /* <-- ajustado */
     display: flex; align-items: center; justify-content: center;
-    padding: 18px; font-size: 17px; border-radius: var(--radius-pill);
+    padding: 18px; font-size: 16px; border-radius: var(--radius-pill);
     background:
       radial-gradient(120% 160% at 0% 0%, rgba(255,255,255,.25), rgba(255,255,255,0) 40%),
       linear-gradient(90deg, var(--primary) 0%, var(--primary-2) 100%);
@@ -1112,6 +1112,39 @@
   showTab('nuevo');
   loadDraft();
 
+
+
+  // === Palabras clave de dictado (sinónimos / interpretaciones automáticas)
+const keywordMap = {
+  "ermético": "HERMÉTICO",
+  "ermetico": "HERMÉTICO",
+  "hermético": "HERMÉTICO",
+  "maque": "MAKE",
+  "romil": "ROMYL",
+  "baja": "BAG",
+  "45 por 60": "45X60",
+  "fibra": "FIBRAN",
+  "2300": "2.3L",
+  "desodorante piso": "DESODORANTE DE PISOS 5LT",
+  "film": "FILM ",
+  "bolsa consorcio": "BOLSA CONSORCIO",
+  "bolsa negra": "BOLSA CONSORCIO",
+  "MAQ": "MAKE"
+};
+
+// 🔄 Corrige el texto según coincidencias en el mapa
+function corregirDictado(texto) {
+  let resultado = texto;
+  for (const [clave, valor] of Object.entries(keywordMap)) {
+    const regex = new RegExp(`\\b${clave}\\b`, "gi");
+    resultado = resultado.replace(regex, valor);
+  }
+  return resultado;
+}
+
+  
+  
+
   /* =======================
      DICTADO POR VOZ (nuevo)
      ======================= */
@@ -1174,7 +1207,9 @@
           interimBuffer += tr;
         }
       }
-      dictadoPreview.value = (finalBuffer + (interimBuffer ? "\n" + interimBuffer : "")).toUpperCase();
+    const textoBruto = (finalBuffer + (interimBuffer ? "\n" + interimBuffer : "")).toUpperCase();
+dictadoPreview.value = corregirDictado(textoBruto);
+
     };
     recognition.onerror = (ev) => { console.warn("SR error:", ev.error); showToast("Error de dictado: "+ev.error, "error"); };
     recognition.onend = () => { btnMic.classList.remove('rec'); recogActive=false; };
