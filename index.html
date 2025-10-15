@@ -174,10 +174,10 @@
     box-shadow: 0 12px 26px rgba(var(--primary-rgb), .28), 0 3px 10px rgba(0,0,0,.10);
   }
 
-  /* Botón flotante principal */
+  /* Botón flotante principal (se angosta para dejar lugar al mic) */
   #btnEnviar {
     position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-    z-index: 998; width: 90%; max-width: 420px;
+    z-index: 998; width: calc(90% - 80px); max-width: 420px;  /* <-- ajustado */
     display: flex; align-items: center; justify-content: center;
     padding: 18px; font-size: 17px; border-radius: var(--radius-pill);
     background:
@@ -193,6 +193,22 @@
   .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
   .btn[disabled] .btn-text { display: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* === FAB de micrófono (nuevo, no rompe nada) === */
+  #btnMic{
+    position: fixed; right: 14px; bottom: 90px; z-index: 999;
+    width: 60px; height: 60px; border-radius: 50%;
+    border: none; cursor: pointer; color:#fff; font-size:24px; line-height: 0;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.21), rgba(255,255,255,0) 40%),
+      linear-gradient(90deg, var(--primary), var(--primary-2));
+    box-shadow: 0 16px 36px rgba(var(--primary-rgb), .45), 0 8px 18px rgba(0,0,0,.18);
+    transition: transform .12s ease, filter .15s ease;
+  }
+  #btnMic:active{ transform: scale(.98); filter: brightness(1.06) saturate(120%); }
+  #btnMic.rec{ animation: blip 0.8s ease-in-out infinite alternate; }
+  @keyframes blip{ from{ box-shadow: 0 0 0 0 rgba(var(--primary-rgb), .55);} to{ box-shadow: 0 0 0 12px rgba(var(--primary-rgb), .0);} }
 
   /* Bottom nav */
   .bottom-nav{
@@ -266,7 +282,6 @@
 .swatch:hover{ transform: translateY(-1px); box-shadow:0 12px 26px rgba(0,0,0,.12); }
 .swatch:active{ transform: translateY(0) scale(.98); filter:brightness(1.04); }
 
-
   .search-row{ display: flex; gap: 8px; margin-bottom: 10px; }
   .search-row input{ flex:1; }
   .search-row .btn, .search-row .btn-secondary { width: auto; flex-shrink: 0; min-width: 72px; }
@@ -274,42 +289,42 @@
   .pend-legend{ font-size: 12px; color: var(--muted); display: grid; gap: 4px; margin: 6px 2px 14px; }
   .pend-legend b{ color: var(--text); font-weight: 600; }
 
-
   /* Que el contenedor no quede tapado por el botón fijo al hacer scroll */
-#rowObs{ scroll-margin-bottom: 140px; }
+  #rowObs{ scroll-margin-bottom: 140px; }
+  /* Altura cómoda + scroll interno elegante */
+  #observaciones{
+    min-height: 120px; max-height: 45vh; overflow: auto; line-height: 1.35;
+    scrollbar-gutter: stable; overscroll-behavior: contain;
+  }
+  #observaciones:focus{ max-height: 60vh; }
+  #observaciones::-webkit-scrollbar{ width: 10px; }
+  #observaciones::-webkit-scrollbar-track{ background: var(--card-grad-end); border-radius: 999px; }
+  #observaciones::-webkit-scrollbar-thumb{
+    background: linear-gradient(180deg, var(--primary), var(--primary-2)); border-radius: 999px;
+  }
+  #observaciones::-webkit-scrollbar-thumb:hover{ filter: brightness(1.08); }
+  #observaciones{ scrollbar-width: thin; scrollbar-color: var(--primary) var(--card-grad-end); }
 
-/* Altura cómoda + scroll interno elegante */
-#observaciones{
-  min-height: 120px;     /* altura base */
-  max-height: 45vh;      /* no ocupa toda la pantalla */
-  overflow: auto;        /* scroll dentro del campo */
-  line-height: 1.35;
-  scrollbar-gutter: stable;   /* evita saltos al aparecer la barra */
-  overscroll-behavior: contain; /* no arrastra el body al llegar al borde */
-}
-
-/* Al enfocar, permití un poquito más de alto (opcional) */
-#observaciones:focus{ max-height: 60vh; }
-
-/* Scrollbar linda (Chrome/Edge) */
-#observaciones::-webkit-scrollbar{ width: 10px; }
-#observaciones::-webkit-scrollbar-track{
-  background: var(--card-grad-end);
-  border-radius: 999px;
-}
-#observaciones::-webkit-scrollbar-thumb{
-  background: linear-gradient(180deg, var(--primary), var(--primary-2));
-  border-radius: 999px;
-}
-#observaciones::-webkit-scrollbar-thumb:hover{ filter: brightness(1.08); }
-
-/* Scrollbar en Firefox */
-#observaciones{
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary) var(--card-grad-end);
-}
-
-  
+  /* === Modal de dictado (nuevo) === */
+  #dictadoOverlay{ display:none; position:fixed; inset:0; z-index:1003;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
+    align-items:center; justify-content:center; }
+  .dictado-box{
+    width:min(92vw,720px); max-height:80vh; overflow:auto;
+    background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
+    border:1px solid var(--border-tint); border-radius: 18px; padding:18px;
+    box-shadow: var(--shadow-lg);
+  }
+  .dictado-head{ display:flex; align-items:center; gap:10px; }
+  .dot-rec{ width:10px; height:10px; border-radius:50%; background:#ef4444; animation:rec 1s linear infinite alternate; }
+  @keyframes rec{ from{ opacity:.3 } to{ opacity:1 } }
+  #dictadoPreview{
+    width:100%; min-height:180px; margin:12px 0;
+    border-radius:14px; border:1px solid var(--border-tint);
+    background: linear-gradient(180deg, var(--field-grad-start), var(--field-grad-end));
+    padding:14px; font-family:inherit; font-size:15px; line-height:1.35;
+  }
+  .dictado-actions{ display:flex; gap:10px; justify-content:flex-end; }
 </style>
 </head>
 <body>
@@ -424,10 +439,46 @@
     </div>
   </main>
 
+  <!-- === NUEVA PESTAÑA: Predicciones === -->
+  <main id="predicciones" style="display:none;">
+    <h3>🔮 Predicciones (últimos 60 días, local)</h3>
+    <div class="stat-card">
+      <div class="stat-title">Próximas reposiciones sugeridas (7 días)</div>
+      <div id="listaPredicciones"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Historial por cliente (últimos 60 días)</div>
+      <div id="resumenClientes"></div>
+    </div>
+  </main>
+
   <div class="bottom-nav">
     <button id="btnNuevo" class="tab-btn active">Nuevo</button>
     <button id="btnVerPendientes" class="tab-btn">Pendientes</button>
     <button id="btnVerEstadisticas" class="tab-btn">Estadísticas</button>
+    <button id="btnVerPredicciones" class="tab-btn">Predicciones</button> <!-- nuevo -->
+  </div>
+
+  <!-- FAB micrófono -->
+  <button id="btnMic" title="Dictar productos" aria-label="Dictar productos">🎙️</button>
+
+  <!-- Modal de dictado -->
+  <div id="dictadoOverlay" role="dialog" aria-modal="true">
+    <div class="dictado-box">
+      <div class="dictado-head">
+        <div class="dot-rec"></div>
+        <h3 style="margin:0;">Dictado en vivo</h3>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">
+        Hablá natural. Sugerido: <b>“12 herméticos 2300, 6 film 45cm…”</b>. Después podés editar antes de usar.
+      </div>
+      <textarea id="dictadoPreview" placeholder="Escuchando…"></textarea>
+      <div class="dictado-actions">
+        <button id="btnDictadoCancelar" class="btn-secondary">Cancelar</button>
+        <button id="btnDictadoEditar" class="btn-secondary">Editar</button>
+        <button id="btnDictadoUsar" class="btn">Usar en Productos</button>
+      </div>
+    </div>
   </div>
 
   <div id="toast-container"></div>
@@ -459,7 +510,7 @@
     sig: "entry.1902043730"
   };
 
-  // === DEDUPE helpers (misma lógica) ===
+  // === DEDUPE helpers ===
   function normalizeStr(s){
     return (s||"").toUpperCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
@@ -492,7 +543,7 @@
     if(changed) localStorage.setItem(SIG_KEY, JSON.stringify(m));
   })();
 
-  // === Envío al Google Form (versión con fetch y no-cors) ===
+  // === Envío al Google Form (no-cors) ===
   async function sendToGoogleForm(p) {
     const formData = new FormData();
     formData.append(GF.vendedor, p.nombreVendedor);
@@ -514,11 +565,7 @@
     formData.append(GF.sig, p.sig || "");
 
     try {
-      await fetch(GF_ACTION, {
-        method: "POST",
-        mode: "no-cors",
-        body: formData
-      });
+      await fetch(GF_ACTION, { method: "POST", mode: "no-cors", body: formData });
       return { status: "ok" };
     } catch (err) {
       console.error("❌ Error enviando pedido:", err);
@@ -540,7 +587,7 @@
   function vib(ms=70){ if('vibrate' in navigator) navigator.vibrate(ms); }
   function playOk(){ try{ sndOk.currentTime=0; sndOk.play(); }catch{} }
 
-  // TOAST (sin cambios funcionales)
+  // TOAST
   function showToast(msg, type="info"){
     const toast = document.createElement('div');
     toast.className = 'toast';
@@ -553,7 +600,7 @@
     setTimeout(() => toast.remove(), 3500);
   }
 
-  // ===== THEME dinámico (ahora acepta 1 ó 2 colores) =====
+  // ===== THEME dinámico =====
   function setTheme(input){
     const root = document.documentElement;
 
@@ -563,7 +610,6 @@
       c1 = parts[0]; c2 = parts[1] || parts[0];
     } else {
       c1 = input || getComputedStyle(root).getPropertyValue("--primary").trim() || "#06b6d4";
-      // si viene solo 1 color, se oscurece para el 2do
       c2 = rgbToHex(darkenRGB(hexToRgb(c1), 0.18));
     }
 
@@ -576,7 +622,6 @@
     root.style.setProperty("--primary-rgb", `${base1.r},${base1.g},${base1.b}`);
     root.style.setProperty("--primary-2-rgb", `${base2.r},${base2.g},${base2.b}`);
 
-    // Ajustes suaves del tema claro basados en c1
     const isDarkPref = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     if(!isDarkPref){
       const border   = rgbToHex(lightenRGB(base1, 0.78));
@@ -613,22 +658,107 @@
   function darkenRGB(a,t){ return mixRGB(a,{r:0,g:0,b:0},t); }
   function lightenRGB(a,t){ return mixRGB(a,{r:255,g:255,b:255},t); }
 
-  // Init tema + clicks del selector (sin romper compatibilidad)
-  (()=>{
-    const stored = localStorage.getItem("themeColor");
-    setTheme(stored || "#06b6d4,#22c55e");
-    document.querySelectorAll(".swatch").forEach(s=>{
-      s.addEventListener("click", ()=> setTheme(s.getAttribute("data-color")));
-    });
+  (()=>{ const stored = localStorage.getItem("themeColor"); setTheme(stored || "#06b6d4,#22c55e");
+    document.querySelectorAll(".swatch").forEach(s=> s.addEventListener("click", ()=> setTheme(s.getAttribute("data-color"))) );
   })();
 
-  // STORAGE
+  // STORAGE (existentes)
   const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
   const setQueue = arr => localStorage.setItem("pedidosPendientes", JSON.stringify(arr));
   const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
   const setStats = s => localStorage.setItem("statsPedidos", JSON.stringify(s));
   const getHistory = () => JSON.parse(localStorage.getItem("historialEnviados") || "[]");
   const setHistory = h => localStorage.setItem("historialEnviados", JSON.stringify(h));
+
+  // === NUEVO: DB local para predicciones (por cliente) ===
+  const PRED_DB_KEY = "historialPorClienteV1";
+  const PRED_MAX_DAYS = 60;
+  function getPredDB(){ try { return JSON.parse(localStorage.getItem(PRED_DB_KEY)||"{}"); } catch { return {}; } }
+  function setPredDB(db){ localStorage.setItem(PRED_DB_KEY, JSON.stringify(db)); }
+  function prunePredDB(){
+    const db = getPredDB();
+    const cutoff = Date.now() - PRED_MAX_DAYS*86400000;
+    let changed = false;
+    for(const cli in db){
+      const arr = (db[cli]||[]).filter(it => (new Date(it.date).getTime() >= cutoff));
+      if(arr.length !== (db[cli]||[]).length){ db[cli] = arr; changed = true; }
+      if(arr.length===0) delete db[cli];
+    }
+    if(changed) setPredDB(db);
+  }
+  function logOrderForPrediction(p){
+    const db = getPredDB();
+    const cli = (p.numeroCliente||"").trim();
+    if(!cli) return;
+    if(!db[cli]) db[cli] = [];
+    db[cli].push({ date: new Date().toISOString().slice(0,10), productos: p.productos || "" });
+    setPredDB(db);
+    prunePredDB();
+  }
+  function computePredictions(){
+    prunePredDB();
+    const db = getPredDB();
+    const upcoming = []; // {cliente, dias, fechaEstimada, itemsTop}
+    const detail = [];   // por cliente
+    const today = new Date();
+
+    for(const cli in db){
+      const rows = db[cli].slice().sort((a,b)=> a.date.localeCompare(b.date)); // asc
+      if(rows.length===0) continue;
+      // intervalos entre compras
+      const ds = rows.map(r => new Date(r.date));
+      const gaps = [];
+      for(let i=1;i<ds.length;i++){
+        gaps.push( Math.max(1, Math.round((ds[i]-ds[i-1]) / 86400000)) );
+      }
+      const meanGap = gaps.length ? Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length) : null;
+      const lastDate = ds[ds.length-1];
+      let nextDate = null, daysLeft = null;
+      if(meanGap){
+        nextDate = new Date(lastDate.getTime() + meanGap*86400000);
+        daysLeft = Math.ceil((nextDate - today)/86400000);
+      }
+
+      // items más repetidos (conteo por línea)
+      const counts = {};
+      for(const r of rows){
+        (r.productos||"").split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
+          const key = line.toUpperCase();
+          counts[key] = (counts[key]||0) + 1;
+        });
+      }
+      const itemsTop = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
+
+      detail.push({ cliente: cli, pedidos: rows.length, ultima: rows[rows.length-1].date, freq: meanGap, itemsTop });
+
+      if(daysLeft!==null && daysLeft<=7){
+        upcoming.push({ cliente: cli, dias: daysLeft, fechaEstimada: nextDate.toISOString().slice(0,10), itemsTop });
+      }
+    }
+
+    upcoming.sort((a,b)=> a.dias - b.dias);
+    detail.sort((a,b)=> (a.cliente.localeCompare(b.cliente)));
+
+    // Render
+    const lp = $("listaPredicciones");
+    lp.innerHTML = upcoming.length
+      ? upcoming.map(u => `
+        <div class="pedido-card">
+          <b>Cliente ${u.cliente}</b> — en <b>${u.dias} día${u.dias===1?"":"s"}</b> (≈ ${u.fechaEstimada})
+          ${u.itemsTop.length ? `<div style="margin-top:6px;font-size:13px;color:var(--muted)">Suele pedir: ${u.itemsTop.join(" · ")}</div>` : ""}
+        </div>`).join("")
+      : `<div class="pedido-card" style="color:var(--muted)">Sin sugerencias en los próximos 7 días.</div>`;
+
+    const rc = $("resumenClientes");
+    rc.innerHTML = detail.length
+      ? detail.map(d => `
+        <div class="pedido-card">
+          <b>Cliente ${d.cliente}</b><br/>
+          <small style="color:var(--muted)">Pedidos: ${d.pedidos}${d.freq ? ` · Frec. media ~ ${d.freq} días` : ""} · Último: ${d.ultima}</small>
+          ${d.itemsTop.length ? `<div style="margin-top:6px;font-size:13px;opacity:.85">Top ítems: <i>${d.itemsTop.join(" | ")}</i></div>` : ""}
+        </div>`).join("")
+      : `<div class="pedido-card" style="color:var(--muted)">Aún no hay historial suficiente.</div>`;
+  }
 
   // DRAFT
   const DRAFT_KEY = "draftPedido";
@@ -650,7 +780,7 @@
   }
   [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=> el.addEventListener("input", saveDraft));
 
-  // VALIDACIÓN y LÓGICA DE FORMULARIO (sin cambios)
+  // VALIDACIÓN
   function validateForm(){
     let valid = true;
     [fechaEntrega, numeroCliente, nombreVendedor, productos].forEach(el => {
@@ -664,7 +794,7 @@
     return valid;
   }
 
-  // LIMPIAR FORM (sin cambios)
+  // LIMPIAR FORM
   function clearForm(full=true){
     numeroCliente.value = "";
     productos.value = "";
@@ -699,11 +829,11 @@
     ov._hideTimer = setTimeout(()=>{ ov.style.display = "none"; }, duration);
   }
 
-  // Anti doble-click (sin cambios)
+  // Anti doble-click
   window.isCooling = function(el){ return !!(el && el.classList && el.classList.contains('cooldown')); };
   window.startCooldown = function(el, ms = 1200){ if(!el) return; el.classList.add('cooldown'); setTimeout(()=> el.classList.remove('cooldown'), ms); };
 
-  // LÓGICA DE ENVÍO (sin cambios funcionales)
+  // LÓGICA DE ENVÍO (se mantiene igual; solo AGREGAMOS logOrderForPrediction cuando se envía OK)
   async function handleEnviar(){
     if (isCooling(btnEnviar)) return;
     if(!validateForm()) return;
@@ -755,6 +885,11 @@
       history.push({ id: pedido.id, date: new Date().toISOString().slice(0,10) });
       if (history.length > 500) history.shift();
       setHistory(history);
+
+      // === NUEVO: registrar para predicción (no interfiere con nada)
+      logOrderForPrediction(pedido);
+      computePredictions();
+
     } else {
       showToast("Pedido guardado localmente.", "info");
     }
@@ -773,7 +908,7 @@
 
   btnEnviar.addEventListener("click", handleEnviar);
 
-  // LÓGICA DE SINCRONIZACIÓN (sin cambios)
+  // SINCRONIZACIÓN
   let isSyncing = false;
   async function syncQueue(forceAll = false) {
     if (isSyncing || !navigator.onLine) return;
@@ -813,7 +948,7 @@
     }
   }
 
-  // MANEJO DE CONEXIÓN (sin cambios)
+  // CONEXIÓN
   function updateConnectionStatus() {
     if (isSyncing) return;
     const online = navigator.onLine;
@@ -825,7 +960,7 @@
   window.addEventListener("online", updateConnectionStatus);
   window.addEventListener("offline", updateConnectionStatus);
 
-  // INICIALIZACIÓN (sin cambios funcionales)
+  // INICIALIZACIÓN
   document.addEventListener("DOMContentLoaded", () => {
     clearForm();
     loadDraft();
@@ -848,17 +983,21 @@
       productos.value = productos.value.toUpperCase();
       try{ productos.setSelectionRange(s,e); }catch{}
     });
+
+    // Cargar predicciones al abrir
+    computePredictions();
   });
 
-  // TABS (sin cambios)
-  const mainNuevo = $("nuevoPedido"), mainPendientes = $("pendientes"), mainStats = $("estadisticas");
-  const btnNuevo = $("btnNuevo"), btnPendientes = $("btnVerPendientes"), btnStats = $("btnVerEstadisticas");
+  // TABS (agregamos 'pred')
+  const mainNuevo = $("nuevoPedido"), mainPendientes = $("pendientes"), mainStats = $("estadisticas"), mainPred = $("predicciones");
+  const btnNuevo = $("btnNuevo"), btnPendientes = $("btnVerPendientes"), btnStats = $("btnVerEstadisticas"), btnPred = $("btnVerPredicciones");
 
   function showTab(tabName) {
     mainNuevo.style.display = 'none';
     mainPendientes.style.display = 'none';
     mainStats.style.display = 'none';
-    [btnNuevo, btnPendientes, btnStats].forEach(b=>b.classList.remove('active'));
+    mainPred.style.display = 'none';
+    [btnNuevo, btnPendientes, btnStats, btnPred].forEach(b=>b.classList.remove('active'));
     btnEnviar.style.display = 'none';
 
     if (tabName === 'nuevo') {
@@ -873,13 +1012,18 @@
       mainStats.style.display = 'block';
       btnStats.classList.add('active');
       renderStats();
+    } else if (tabName === 'pred') {
+      mainPred.style.display = 'block';
+      btnPred.classList.add('active');
+      computePredictions();
     }
   }
   btnNuevo.addEventListener('click', () => showTab('nuevo'));
   btnPendientes.addEventListener('click', () => showTab('pendientes'));
   btnStats.addEventListener('click', () => showTab('stats'));
+  btnPred.addEventListener('click', () => showTab('pred'));
 
-  // PENDIENTES (sin cambios)
+  // PENDIENTES
   function renderPendientes(filter = "") {
     const queue = getQueue();
     const container = $("listaPendientes");
@@ -940,7 +1084,7 @@
     }
   }
 
-  // STATS (sin cambios)
+  // STATS
   function renderStats(){
     const stats = getStats();
     const pendientes = getQueue().length;
@@ -967,9 +1111,98 @@
   // INIT
   showTab('nuevo');
   loadDraft();
+
+  /* =======================
+     DICTADO POR VOZ (nuevo)
+     ======================= */
+  const btnMic = $("btnMic");
+  const dictadoOverlay = $("dictadoOverlay");
+  const dictadoPreview = $("dictadoPreview");
+  const btnDictadoUsar = $("btnDictadoUsar");
+  const btnDictadoEditar = $("btnDictadoEditar");
+  const btnDictadoCancelar = $("btnDictadoCancelar");
+
+  let recognition = null;
+  let recogActive = false;
+  let interimBuffer = "";
+  let finalBuffer = "";
+
+  function closeDictado(){
+    dictadoOverlay.style.display = "none";
+    btnMic.classList.remove('rec');
+    if(recognition){
+      try{ recognition.stop(); }catch{}
+    }
+    recogActive = false;
+  }
+
+  function openDictado(){
+    dictadoOverlay.style.display = "flex";
+    dictadoPreview.value = "";
+  }
+
+  // Inicia dictado
+  btnMic.addEventListener("click", () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){
+      showToast("Dictado no soportado aquí. Usá el micrófono del teclado.", "error");
+      try{ productos.focus(); }catch{}
+      return;
+    }
+    // Mostrar modal
+    openDictado();
+
+    // Configurar reconocimiento
+    recognition = new SR();
+    recognition.lang = "es-AR";            // ajustar acento local
+    recognition.interimResults = true;
+    recognition.continuous = true;
+
+    finalBuffer = ""; interimBuffer="";
+    btnMic.classList.add('rec');
+    recogActive = true;
+
+    recognition.onresult = (e) => {
+      interimBuffer = "";
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        const tr = e.results[i][0].transcript;
+        if(e.results[i].isFinal){
+          // Regla suave: "cantidad artículo ..." → ponemos cantidad primero en mayúscula la línea
+          const line = tr.trim();
+          finalBuffer += (finalBuffer ? "\n" : "") + line;
+        }else{
+          interimBuffer += tr;
+        }
+      }
+      dictadoPreview.value = (finalBuffer + (interimBuffer ? "\n" + interimBuffer : "")).toUpperCase();
+    };
+    recognition.onerror = (ev) => { console.warn("SR error:", ev.error); showToast("Error de dictado: "+ev.error, "error"); };
+    recognition.onend = () => { btnMic.classList.remove('rec'); recogActive=false; };
+    try{ recognition.start(); }catch(e){}
+  });
+
+  // Usar en Productos (append, no pisa lo existente)
+  btnDictadoUsar.addEventListener("click", () => {
+    const txt = (dictadoPreview.value||"").trim();
+    if(txt){
+      productos.value = (productos.value ? (productos.value.replace(/\s+$/,'') + "\n") : "") + txt.toUpperCase();
+      saveDraft();
+    }
+    closeDictado();
+    productos.focus();
+  });
+
+  // Dejar editando (solo cierra la escucha, mantiene modal abierto para que puedas corregir y luego "Usar")
+  btnDictadoEditar.addEventListener("click", () => {
+    if(recogActive && recognition){ try{ recognition.stop(); }catch{} recogActive=false; btnMic.classList.remove('rec'); }
+    dictadoPreview.focus();
+  });
+
+  // Cancelar
+  btnDictadoCancelar.addEventListener("click", () => closeDictado());
+
 </script>
 
-  
   <!-- === Registro de Service Worker y botón de instalación PWA === -->
 <script>
 if ('serviceWorker' in navigator) {
@@ -1016,6 +1249,5 @@ window.addEventListener('appinstalled', () => {
 });
 </script>
 
-  
 </body>
 </html>
