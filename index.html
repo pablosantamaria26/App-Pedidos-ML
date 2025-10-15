@@ -1125,9 +1125,9 @@
   "doble": "DOBLE", "eco": "ECO", "cabos": "CABO", "cabo": "CABO",
   "litro": "LT", "litros": "LT", "lts": "LT", "lt": "LT",
   "por": "X", "x": "X",
-  "bulto": "BULTO", "bultos": "BULTOS",
-  "contenedor": "CONTENEDOR", "acero": "ACERO",
-  "secador": "SECADOR", "plástico": "PLÁSTICO", "plastico": "PLÁSTICO"
+    "bulto": "BULTO", "bultos": "BULTOS",
+    "contenedor": "CONTENEDOR", "acero": "ACERO",
+    "secador": "SECADOR", "plástico": "PLÁSTICO", "plastico": "PLÁSTICO", "fibra": "FIBRAN"
 };
 
 // Conversión de números hablados a dígitos
@@ -1233,7 +1233,18 @@ function limpiarDictadoAvanzado(text) {
         }
       }
     const textoBruto = (finalBuffer + (interimBuffer ? "\n" + interimBuffer : "")).toUpperCase();
-dictadoPreview.value = limpiarDictadoAvanzado(textoBruto);
+// ✅ Limpieza y formato multilinea
+let limpio = limpiarDictadoAvanzado(textoBruto);
+
+// Insertar salto de línea antes de cada número detectado (excepto si está al principio)
+limpio = limpio.replace(/(?<!^)(\s)(\d+)\b/g, '\n$2');
+
+// Quitar dobles saltos
+limpio = limpio.replace(/\n+/g, '\n').trim();
+
+// Mostrar el texto en el cuadro de vista previa
+dictadoPreview.value = limpio;
+
 
 
 
