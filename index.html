@@ -1114,21 +1114,46 @@
 
 
 
- const keywordMap = {
-  "make": "MAKE", "maque": "MAKE",
-  "romil": "ROMYL", "romyl": "ROMYL", "romin": "ROMYL",
-  "bio bag": "BIO BAG", "bio bak": "BIO BAG", "bio bach": "BIO BAG", "bio back": "BIO BAG",
-  "fibra": "FIBRA", "esponja": "ESPONJA",
+const keywordMap = {
+  // 🔹 MARCAS
+  "make": "MAKE", "maque": "MAKE", "maqe": "MAKE", "meik": "MAKE", "meic": "MAKE",
+  "romil": "ROMYL", "romyl": "ROMYL", "romilc": "ROMYL", "romilco": "ROMYL", "romíl": "ROMYL", "romilro": "ROMYL",
+  "bio bag": "BIO BAG", "bio bak": "BIO BAG", "bio bach": "BIO BAG", "bio back": "BIO BAG", "biobag": "BIO BAG", "bio": "BIO BAG",
+  "fibran": "FIBRAN", "fibra": "FIBRAN", "fibra salva uña": "FIBRA SALVA UÑA", "fibra romil": "FIBRA ROMYL",
+  "decesplast": "DESESPLAST", "decesplat": "DESESPLAST", "desesplast": "DESESPLAST", "deceplast": "DESESPLAST",
+  "lumilagro": "LUMILAGRO", "lumilagros": "LUMILAGRO", "lumiladro": "LUMILAGRO",
+  "anden": "ANDEN", "andenes": "ANDEN",
+  "eco": "ECO", "eko": "ECO", "ecoplás": "ECO",
+  "plastic house": "PLASTIC HOUSE", "plastic jause": "PLASTIC HOUSE",
+  "romilromil": "ROMYL", "romil romil": "ROMYL",
+  "deseplast": "DESESPLAST","desepla": "DESESPLAST",
+
+  // 🔹 ARTÍCULOS / GENÉRICOS
+  "esponja": "ESPONJA", "esponga": "ESPONJA",
   "salva una": "SALVA UÑA", "salva uñas": "SALVA UÑA", "salva una romil": "SALVA UÑA ROMYL",
-  "rejilla": "REJILLA", "trapo": "TRAPO", "rejilla trapo": "TRAPO REJILLA",
-  "fibran": "FIBRAN", "broche": "BROCHE", "goma": "GOMA",
-  "doble": "DOBLE", "eco": "ECO", "cabos": "CABO", "cabo": "CABO",
+  "rejilla": "REJILLA", "trapo": "TRAPO", "trapito": "TRAPO", "rejilla trapo": "TRAPO REJILLA",
+  "broche": "BROCHE", "broches": "BROCHE",
+  "goma": "GOMA", "gomas": "GOMA",
+  "balde": "BALDE", "baldes": "BALDES",
+  "secador": "SECADOR", "secadora": "SECADOR",
+  "bulto": "BULTO", "bultos": "BULTOS",
+  "contenedor": "CONTENEDOR", "contenedores": "CONTENEDOR",
+  "plástico": "PLÁSTICO", "plastico": "PLÁSTICO",
+  "acero": "ACERO", "aceros": "ACERO",
+  "film": "FILM", "fin": "FILM",
+  "bolsa": "BOLSA", "bolsas": "BOLSA", "bolsa consorcio": "BOLSA CONSORCIO", "bolsa negra": "BOLSA CONSORCIO",
+  "lavandina": "LAVANDINA", "lavandinas": "LAVANDINA",
+  "papel": "PAPEL", "servilleta": "SERVILLETA",
+  "palangana": "PALANGANA", "fuente": "FUENTE", "fuentes": "FUENTE",
+  "repasador": "REPASADOR", "repasadores": "REPASADOR",
+  "cubo": "CUBO", "balde cubo": "CUBO",
+  "cepillo": "CEPILLO", "cepillos": "CEPILLO",
+  "escoba": "ESCOBA", "escobillón": "ESCOBILLÓN",
+  "bowl": "BOWL", "bol": "BOWL", "taper": "TAPER", "hermetico": "HERMÉTICO", "hermético": "HERMÉTICO",
   "litro": "LT", "litros": "LT", "lts": "LT", "lt": "LT",
-  "por": "X", "x": "X",
-    "bulto": "BULTO", "bultos": "BULTOS",
-    "contenedor": "CONTENEDOR", "acero": "ACERO",
-    "secador": "SECADOR", "plástico": "PLÁSTICO", "plastico": "PLÁSTICO", "fibra": "FIBRAN"
+  "por": "X", "x": "X"
 };
+
 
 // Conversión de números hablados a dígitos
 const numerosMap = {
@@ -1236,8 +1261,10 @@ function limpiarDictadoAvanzado(text) {
 // ✅ Limpieza y formato multilinea
 let limpio = limpiarDictadoAvanzado(textoBruto);
 
-// Insertar salto de línea antes de cada número detectado (excepto si está al principio)
-limpio = limpio.replace(/(?<!^)(\s)(\d+)\b/g, '\n$2');
+// ✅ Insertar salto de línea solo cuando el número indica una nueva cantidad
+// (evita cortar expresiones como "X 1 L", "POR 1 L" o "DE 6 L")
+limpio = limpio.replace(/(?<!^|\bX|\bPOR|\bDE|\d)(\s)(\d+)\b/gi, '\n$2');
+
 
 // Quitar dobles saltos
 limpio = limpio.replace(/\n+/g, '\n').trim();
