@@ -968,5 +968,54 @@
   showTab('nuevo');
   loadDraft();
 </script>
+
+  
+  <!-- === Registro de Service Worker y botón de instalación PWA === -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('./service-worker.js', { scope: './' })
+      .then(r => console.log('SW registrado:', r.scope))
+      .catch(err => console.error('SW error', err));
+  });
+}
+
+// 🧩 Evento que muestra botón “Instalar” en Android
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  const bar = document.querySelector('.bottom-nav');
+  if (!bar || document.getElementById('btnInstall')) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'btnInstall';
+  btn.className = 'tab-btn active';
+  btn.textContent = 'Instalar';
+  btn.style.background = 'linear-gradient(90deg, var(--primary), var(--primary-2))';
+  btn.style.color = '#fff';
+  btn.style.boxShadow = '0 8px 22px rgba(var(--primary-rgb),.28)';
+  bar.appendChild(btn);
+
+  btn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') showToast('Instalación iniciada', 'ok');
+    deferredPrompt = null;
+    btn.remove();
+  });
+});
+
+window.addEventListener('appinstalled', () => {
+  const b = document.getElementById('btnInstall');
+  if (b) b.remove();
+  showToast('App instalada ✔️', 'ok');
+});
+</script>
+
+  
 </body>
 </html>
