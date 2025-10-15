@@ -658,11 +658,31 @@ async function sendToGoogleForm(p) {
     saveDraft();
   }
 
-  function showSuccess(){
-      const ov = $("confirmOverlay");
-      ov.style.display = "flex";
-      setTimeout(()=> ov.style.display = "none", 2200);
-  }
+  function showSuccess(opts = {}){
+  const { title="¡Pedido enviado!", subtitle="Se registró correctamente", duration=3200 } = opts;
+  const ov = document.getElementById("confirmOverlay");
+  ov.style.display = "flex";
+
+  // Actualizar textos (si existieran)
+  const h2 = ov.querySelector("h2");
+  const p  = ov.querySelector("p");
+  if (h2) h2.textContent = title;
+  if (p)  p.textContent  = subtitle;
+
+  // Reiniciar animación del SVG en cada apertura
+  const circle = ov.querySelector(".checkmark-circle");
+  const check  = ov.querySelector(".checkmark-check");
+  [circle, check].forEach(el=>{
+    if(!el) return;
+    el.style.animation = "none";
+    void el.offsetWidth;               // forzar reflow
+    el.style.animation = "";           // re-aplicar animación CSS
+  });
+
+  clearTimeout(ov._hideTimer);
+  ov._hideTimer = setTimeout(()=>{ ov.style.display = "none"; }, duration);
+}
+
 
 
   // Anti doble-click (global)
@@ -681,6 +701,14 @@ window.startCooldown = function(el, ms = 1200){
   async function handleEnviar(){
     if (isCooling(btnEnviar)) return;
     if(!validateForm()) return;
+    
+    // ✅ feedback instantáneo
+showSuccess({
+  subtitle: navigator.onLine ? "Sincronizando con Google…" : "Guardado localmente, se enviará al reconectar",
+  duration: 3400
+});
+playOk(); vib();
+
     
     btnEnviar.disabled = true;
     btnEnviar.querySelector('.spinner').style.display = 'block';
@@ -712,21 +740,30 @@ window.startCooldown = function(el, ms = 1200){
 
     await syncQueue();
 
-    const stillPending = getQueue().some(p => p.id === pedido.id);
-    if (!stillPending) {
-        showSuccess();
-        playOk(); vib();
-        markSig(pedido.sig);
-        const stats = getStats();
-        stats.enviados = (stats.enviados || 0) + 1;
-        setStats(stats);
-        let history = getHistory();
-        history.push({id: pedido.id, date: new Date().toISOString().slice(0,10)});
-        if(history.length > 500) history.shift();
-        setHistory(history);
-    } else {
-        showToast("Pedido guardado localmente.", "info");
-    }
+     const stillPending = getQueue().some(p => p.id === pedido.id);
+
+if (!stillPending) {
+  // ✅ El modal de éxito ya se mostró al principio; acá sólo un toast final
+  showToast("Enviado ✔️", "ok"); // (opcional) si tu showToast acepta duración: , 1000
+
+  // Si ya hiciste playOk() y vib() al validar, NO los repitas acá:
+  // playOk(); vib();
+
+  markSig(pedido.sig);
+
+  const stats = getStats();
+  stats.enviados = (stats.enviados || 0) + 1;
+  setStats(stats);
+
+  const history = getHistory();
+  history.push({ id: pedido.id, date: new Date().toISOString().slice(0,10) });
+  if (history.length > 500) history.shift();
+  setHistory(history);
+} else {
+  // Se guardó offline y quedará para reintento
+  showToast("Pedido guardado localmente.", "info");
+}
+
 
     if(shareWA.checked) {
         const resumen = `*PEDIDO ML*\n\n- *Cliente:* ${pedido.numeroCliente}\n- *Vendedor:* ${pedido.nombreVendedor}\n- *Fecha Entrega:* ${pedido.fechaEntrega.split('-').reverse().join('/')}\n\n*PRODUCTOS:*\n${pedido.productos}${pedido.observaciones ? `\n\n*OBS:*\n${pedido.observaciones}`:''}`;
