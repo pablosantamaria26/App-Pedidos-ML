@@ -482,58 +482,39 @@
     if(changed) localStorage.setItem(SIG_KEY, JSON.stringify(m));
   })();
 
-  // Envío al Google Form
-  function sendToGoogleForm(p){
-    return new Promise((resolve)=>{
-      const iframeName = "gform_iframe_" + Date.now();
-      const iframe = document.createElement("iframe");
-      iframe.name = iframeName;
-      iframe.style.display = "none";
-      document.body.appendChild(iframe);
+  // === Envío al Google Form (versión con fetch y no-cors) ===
+async function sendToGoogleForm(p) {
+  const formData = new FormData();
+  formData.append(GF.vendedor, p.nombreVendedor);
+  formData.append(GF.cliente, p.numeroCliente);
+  formData.append(GF.productos, p.productos);
+  formData.append(GF.observaciones, p.observaciones || "");
 
-      const form = document.createElement("form");
-      form.action = GF_ACTION;
-      form.method = "POST";
-      form.target = iframeName;
-      form.acceptCharset = "UTF-8";
-      form.style.display = "none";
-
-      const add = (name, val)=>{
-        if(!name) return;
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = name;
-        input.value = val == null ? "" : String(val);
-        form.appendChild(input);
-      };
-
-      add(GF.vendedor,     p.nombreVendedor);
-      add(GF.cliente,      p.numeroCliente);
-      add(GF.productos,    p.productos);
-      add(GF.observaciones,p.observaciones || "");
-
-      const fecha = (p.fechaEntrega || "").trim();
-      if (fecha) {
-        add(GF.fecha, fecha);
-        const [yyyy, mm, dd] = fecha.split("-");
-        if (GF.fecha_day && GF.fecha_month && GF.fecha_year && dd && mm && yyyy) {
-          add(GF.fecha_day,   dd);
-          add(GF.fecha_month, mm);
-          add(GF.fecha_year,  yyyy);
-        }
-      }
-
-      add(GF.sig, p.sig || "");
-
-      document.body.appendChild(form);
-
-      const cleanup = () => { try { form.remove(); iframe.remove(); } catch {} };
-      const timeout = setTimeout(() => { cleanup(); resolve({ status: "ok", via: "timeout" }); }, 5000);
-
-      iframe.addEventListener("load", ()=>{ clearTimeout(timeout); cleanup(); resolve({ status: "ok" }); });
-      form.submit();
-    });
+  const fecha = (p.fechaEntrega || "").trim();
+  if (fecha) {
+    formData.append(GF.fecha, fecha);
+    const [yyyy, mm, dd] = fecha.split("-");
+    if (GF.fecha_day && GF.fecha_month && GF.fecha_year) {
+      formData.append(GF.fecha_day, dd);
+      formData.append(GF.fecha_month, mm);
+      formData.append(GF.fecha_year, yyyy);
+    }
   }
+
+  formData.append(GF.sig, p.sig || "");
+
+  try {
+    await fetch(GF_ACTION, {
+      method: "POST",
+      mode: "no-cors",
+      body: formData
+    });
+    return { status: "ok" };
+  } catch (err) {
+    console.error("❌ Error enviando pedido:", err);
+    return { status: "error" };
+  }
+}
 
   // ==== ELEMENTOS ====
   const $ = id => document.getElementById(id);
@@ -943,6 +924,15 @@
   // INIT
   showTab('nuevo');
   loadDraft();
+
+  function isCooling(btn){ 
+  return btn.classList.contains('cooldown'); 
+}
+function startCooldown(btn, ms=800){
+  btn.classList.add('cooldown');
+  setTimeout(()=>btn.classList.remove('cooldown'), ms);
+}
+
 </script>
 </body>
 </html>
