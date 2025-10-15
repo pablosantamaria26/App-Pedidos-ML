@@ -1,6 +1,6 @@
 // === Service Worker v3 (Optimizado para Pedidos ML) ===
 
-const CACHE_NAME = "pedidos-ml-v3";
+const CACHE_NAME = "pedidos-ml-v4";
 const OFFLINE_URLS = [
   "./",
   "./index.html",
