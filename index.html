@@ -1114,57 +1114,58 @@
 
 
 
-  // === Palabras clave de dictado (sinónimos / interpretaciones automáticas)
-const keywordMap = {
-  "bach": "BAG",
-  "ermetico": "HERMÉTICO",
-  "hermético": "HERMÉTICO",
-  "maque": "MAKE",
-  "romil": "ROMYL",
-  "baja": "BAG",
-  "45 por 60": "45X60",
-  "fibra": "FIBRAN",
-  "2300": "2.3L",
-  "desodorante piso": "DESODORANTE DE PISOS 5LT",
-  "film": "FILM ",
-  "bolsa consorcio": "BOLSA CONSORCIO",
-  "bolsa negra": "BOLSA CONSORCIO",
-  "MAQ": "MAKE"
+ const keywordMap = {
+  "make": "MAKE", "maque": "MAKE",
+  "romil": "ROMYL", "romyl": "ROMYL", "romin": "ROMYL",
+  "bio bag": "BIO BAG", "bio bak": "BIO BAG", "bio bach": "BIO BAG", "bio back": "BIO BAG",
+  "fibra": "FIBRA", "esponja": "ESPONJA",
+  "salva una": "SALVA UÑA", "salva uñas": "SALVA UÑA", "salva una romil": "SALVA UÑA ROMYL",
+  "rejilla": "REJILLA", "trapo": "TRAPO", "rejilla trapo": "TRAPO REJILLA",
+  "fibran": "FIBRAN", "broche": "BROCHE", "goma": "GOMA",
+  "doble": "DOBLE", "eco": "ECO", "cabos": "CABO", "cabo": "CABO",
+  "litro": "LT", "litros": "LT", "lts": "LT", "lt": "LT",
+  "por": "X", "x": "X",
+  "bulto": "BULTO", "bultos": "BULTOS",
+  "contenedor": "CONTENEDOR", "acero": "ACERO",
+  "secador": "SECADOR", "plástico": "PLÁSTICO", "plastico": "PLÁSTICO"
 };
 
-// 🔄 Corrige el texto según coincidencias en el mapa
-function corregirDictado(texto) {
-  let resultado = texto;
+// Conversión de números hablados a dígitos
+const numerosMap = {
+  "un": "1", "una": "1", "uno": "1",
+  "dos": "2", "tres": "3", "cuatro": "4", "cinco": "5", "seis": "6", "siete": "7", "ocho": "8", "nueve": "9", "diez": "10",
+  "once": "11", "doce": "12", "trece": "13", "catorce": "14", "quince": "15",
+  "dieciseis": "16", "dieciséis": "16", "diecisiete": "17", "dieciocho": "18", "diecinueve": "19",
+  "veinte": "20", "veintiuno": "21", "veintidos": "22", "veintidós": "22", "veintitres": "23", "veintitrés": "23",
+  "veinticuatro": "24", "veinticinco": "25", "treinta": "30", "cuarenta": "40", "cincuenta": "50", "sesenta": "60"
+};
+
+function convertirNumerosDictado(text) {
+  for (const [palabra, numero] of Object.entries(numerosMap)) {
+    const regex = new RegExp(`\\b${palabra}\\b`, 'gi');
+    text = text.replace(regex, numero);
+  }
+  return text;
+}
+
+// Limpieza avanzada del dictado
+function limpiarDictadoAvanzado(text) {
+  text = text.toLowerCase();
+  text = convertirNumerosDictado(text);
+
+  // Corregir sinónimos y fonéticas
   for (const [clave, valor] of Object.entries(keywordMap)) {
-    const regex = new RegExp(`\\b${clave}\\b`, "gi");
-    resultado = resultado.replace(regex, valor);
+    const regex = new RegExp(`\\b${clave}\\b`, 'gi');
+    text = text.replace(regex, valor);
   }
-  return resultado;
+
+  // Normalizar formato: número al inicio + producto
+  text = text.replace(/^\s*([0-9]+)\s*(.*)$/i, (_, num, prod) => `${num} ${prod.trim()}`);
+
+  // Quitar espacios duplicados y pasar a mayúsculas
+  return text.replace(/\s+/g, ' ').trim().toUpperCase();
 }
 
-
-
-  // === Conversión automática de números escritos a dígitos ===
-function convertirNumeros(texto) {
-  const mapa = {
-    "uno": "1", "una": "1",
-    "dos": "2", "tres": "3", "cuatro": "4", "cinco": "5",
-    "seis": "6", "siete": "7", "ocho": "8", "nueve": "9",
-    "diez": "10", "once": "11", "doce": "12", "trece": "13",
-    "catorce": "14", "quince": "15", "dieciséis": "16", "diecisiete": "17",
-    "dieciocho": "18", "diecinueve": "19", "veinte": "20",
-    "veintiuno": "21", "veintidós": "22", "veintitres": "23", "veinticuatro": "24",
-    "treinta": "30", "cuarenta": "40", "cincuenta": "50", "sesenta": "60",
-    "setenta": "70", "ochenta": "80", "noventa": "90", "cien": "100"
-  };
-
-  let resultado = texto.toLowerCase();
-  for (const [palabra, numero] of Object.entries(mapa)) {
-    const regex = new RegExp(`\\b${palabra}\\b`, "gi");
-    resultado = resultado.replace(regex, numero);
-  }
-  return resultado;
-}
 
   
   
@@ -1232,7 +1233,8 @@ function convertirNumeros(texto) {
         }
       }
     const textoBruto = (finalBuffer + (interimBuffer ? "\n" + interimBuffer : "")).toUpperCase();
-dictadoPreview.value = corregirDictado(convertirNumeros(textoBruto));
+dictadoPreview.value = limpiarDictadoAvanzado(textoBruto);
+
 
 
     };
