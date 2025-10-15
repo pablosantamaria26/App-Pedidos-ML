@@ -975,9 +975,9 @@
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('./service-worker.js', { scope: './' })
-      .then(r => console.log('SW registrado:', r.scope))
-      .catch(err => console.error('SW error', err));
+      .register('/App-Pedidos-ML/service-worker.js', { scope: '/App-Pedidos-ML/' })
+      .then(r => console.log('✅ SW registrado correctamente:', r.scope))
+      .catch(err => console.error('❌ Error al registrar SW:', err));
   });
 }
 
