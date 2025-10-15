@@ -10,11 +10,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+¡listo! Pegá **este bloque** tal cual para reemplazar el tuyo. Trae:
+
+* Gradientes más marcados (fondo, cards, campos y botones).
+* Swatches con look en degradé + color extra (Cian).
+* **Leyenda sutil del estado de red** al lado del círculo, que cambia sola (sin tocar JS) según las clases `.online/.offline/.syncing`.
+
+```html
 <style>
   :root{
     --primary: #4f46e5;
-    --primary-2: #4338ca;                 /* derivada para gradiente del botón */
-    --primary-light: rgba(79,70,229,.2);
+    --primary-2: #4338ca;                 /* segundo tono para el gradiente */
+    --primary-light: rgba(79,70,229,.22);
+
+    /* RGB para halos / sombras teñidas */
+    --primary-rgb: 79,70,229;
+    --primary-2-rgb: 67,56,202;
+
     --bg: #f4f5f9;
     --text: #111827;
     --card: #ffffff;
@@ -22,18 +34,18 @@
     --border: #e5e7eb;
     --border-tint: #e5e7eb;
 
-    /* NUEVO: gradientes temáticos */
-    --bg-grad-start: #f6f7ff;
-    --bg-grad-end:   #f3f4ff;
+    /* Gradientes temáticos (más notorios) */
+    --bg-grad-start: #f7f9ff;
+    --bg-grad-end:   #eef2ff;
     --card-grad-start:#ffffff;
-    --card-grad-end:  #fafbff;
+    --card-grad-end:  #eef2ff;
     --field-grad-start:#ffffff;
-    --field-grad-end:  #f8f9ff;
+    --field-grad-end:  #e9edff;
 
     --success: #16a34a;
     --error: #ef4444;
-    --shadow: 0 4px 12px rgba(0,0,0,0.08);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+    --shadow: 0 4px 12px rgba(0,0,0,0.10);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.16);
   }
   @media (prefers-color-scheme: dark){
     :root{
@@ -44,16 +56,16 @@
       --border: #30363d;
       --border-tint: #30363d;
 
-      /* Gradientes base en dark (se sobreescriben por JS al elegir color) */
-      --bg-grad-start: #0e1220;
-      --bg-grad-end:   #0b0f1a;
+      /* Profundos en dark */
+      --bg-grad-start: #0b0f1a;
+      --bg-grad-end:   #0e1424;
       --card-grad-start:#151a23;
-      --card-grad-end:  #121720;
-      --field-grad-start:#151a23;
-      --field-grad-end:  #101521;
+      --card-grad-end:  #0f1420;
+      --field-grad-start:#121826;
+      --field-grad-end:  #0e1522;
 
-      --shadow: 0 4px 12px rgba(0,0,0,0.2);
-      --shadow-lg: 0 10px 30px rgba(0,0,0,0.3);
+      --shadow: 0 4px 12px rgba(0,0,0,0.25);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.35);
     }
   }
 
@@ -62,8 +74,11 @@
     font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
     margin: 0;
     padding: 0 0 180px 0;
-    /* NUEVO: fondo en degradé según tema */
-    background: linear-gradient(180deg, var(--bg-grad-start), var(--bg-grad-end)) fixed;
+    /* Fondo con halos + degradé (más contraste) */
+    background:
+      radial-gradient(1200px 600px at 0% -10%, rgba(var(--primary-rgb), .18), transparent 60%),
+      radial-gradient(900px 500px at 110% 0%, rgba(var(--primary-2-rgb), .24), transparent 55%),
+      linear-gradient(180deg, var(--bg-grad-start), var(--bg-grad-end)) fixed;
     color: var(--text);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -75,7 +90,7 @@
     position: sticky; top: 0; z-index: 1000;
     display: flex; align-items: center; justify-content: space-between;
     gap: 12px;
-    /* NUEVO: header acompaña el tema */
+    /* Header acompaña el tema */
     background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -96,15 +111,33 @@
     min-width: 12px;
     text-align: center;
   }
+
+  /* Indicador de conexión + leyenda automática (sin JS extra) */
   #connDot{
     width: 12px; height: 12px; border-radius: 50%;
     border: 2px solid transparent;
     box-shadow: 0 0 0 2px var(--border-tint);
+    flex-shrink: 0;
   }
   .online{ background: #22c55e; }
   .offline{ background: #ef4444; }
   .syncing{ background: #facc15; animation:pulse 0.8s ease-in-out infinite alternate; }
   @keyframes pulse{ from{ opacity: 1; } to{ opacity: 0.4; } }
+
+  /* Leyenda junto al círculo (cambia por CSS según clase del círculo) */
+  .conn-label{
+    margin-left: 8px;
+    font-size: 12px;
+    font-style: italic;
+    letter-spacing: .1px;
+    opacity: .85;
+    min-width: 96px;
+    display: inline-block;
+  }
+  /* contenido dinámico */
+  #connDot.online  + .conn-label::before{ content: "en línea";      color:#22c55e; }
+  #connDot.offline + .conn-label::before{ content: "sin conexión";  color:#ef4444; }
+  #connDot.syncing + .conn-label::before{ content: "sincronizando…"; color:#f59e0b; }
 
   #netBanner{
     display:none; text-align:center;
@@ -127,7 +160,7 @@
     font-size: 16px; padding: 16px;
     border-radius: 12px;
     border: 1px solid var(--border-tint);
-    /* NUEVO: campos en degradé suave */
+    /* Campos en degradé */
     background: linear-gradient(180deg, var(--field-grad-start), var(--field-grad-end));
     color: var(--text);
     outline: none;
@@ -144,6 +177,7 @@
   .row:has(#shareWA) { display: none; }
   #btnNuevoLote { display: none; }
 
+  /* Botón principal con contraste fuerte entre los dos tonos */
   #btnEnviar {
     position: fixed;
     bottom: 90px;
@@ -161,26 +195,27 @@
     font-size: 17px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-    transition: transform .1s ease, filter .15s ease, background .2s ease;
+    color: #fff;
+    background: linear-gradient(45deg, var(--primary), var(--primary-2));
+    box-shadow:
+      0 12px 28px rgba(var(--primary-rgb), .35),
+      0 2px 10px rgba(0,0,0,.08);
+    transition: transform .12s ease, filter .15s ease, background .25s ease, box-shadow .25s ease;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    /* NUEVO: botón usa dos tonos del tema */
-    background: linear-gradient(45deg, var(--primary), var(--primary-2));
-    color: #fff;
   }
   #btnEnviar:active { transform: translateX(-50%) scale(0.97); filter: brightness(1.05); }
-  #btnEnviar[disabled] { opacity: .7; cursor: not-allowed; filter: grayscale(.2); box-shadow: var(--shadow); }
-  /* NUEVO: antirrebote visual/bloqueo */
+  #btnEnviar[disabled] { opacity: .72; cursor: not-allowed; filter: grayscale(.25); box-shadow: var(--shadow); }
+  /* antirrebote visual/bloqueo */
   #btnEnviar.cooldown{ pointer-events: none; filter: grayscale(.35) brightness(.95); }
 
   .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
   .btn[disabled] .btn-text { display: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* Nav inferior acompaña el tema */
   .bottom-nav{
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 999;
-    /* NUEVO: nav acompaña el tema */
     background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid var(--border-tint);
@@ -191,7 +226,7 @@
   .bottom-nav button{ flex: 1; border-radius: 12px; padding: 14px 8px; font-weight: 600; border: none; background: transparent; color: var(--muted); transition: all .2s ease; }
   .bottom-nav button.active{ background: var(--primary); color: #fff; }
 
-  /* NUEVO: cards con degradé suave */
+  /* Cards con degradé */
   .pedido-card, .stat-card {
     background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
     border: 1px solid var(--border-tint);
@@ -201,6 +236,7 @@
   }
   .pedido-card hr { border: none; border-top: 1px solid var(--border-tint); margin: 12px 0; }
 
+  /* Toasts */
   .toast{
     position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
     color: #fff; padding: 14px 20px; border-radius: 12px;
@@ -210,6 +246,7 @@
   }
   @keyframes fadeInDown { from { top: -20px; opacity: 0; } to { top: 16px; opacity: 1; } }
 
+  /* Overlay de éxito */
   #confirmOverlay{ display: none; position: fixed; inset: 0; z-index: 1002; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center; animation: fadeIn .3s ease; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   .success-box{
@@ -219,7 +256,7 @@
     animation: popIn .35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     border: 1px solid var(--border-tint);
   }
-  @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1); } }
+  @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .success-box h2{ margin: 16px 0 0 0; font-size: 22px; }
   .success-box p { opacity:.7; margin:6px 0 0 0; }
 
@@ -251,13 +288,14 @@
         <span id="pedidoContador">0</span>
     </div>
     <div id="connDot" class="offline"></div>
+    <span class="conn-label"></span>
   </header>
 
   <main id="nuevoPedido">
     <div id="helloBanner"></div>
     <div class="theme-row">
       <span>🎨</span>
-      <!-- Dejo los existentes y agrego uno más; uso gradiente visual en el swatch -->
+      <!-- Swatches en degradé + color extra -->
       <div class="swatch" data-color="#4f46e5" title="Indigo"  style="background:linear-gradient(135deg,#4f46e5,#4338ca)"></div>
       <div class="swatch" data-color="#16a34a" title="Verde"   style="background:linear-gradient(135deg,#16a34a,#3b82f6)"></div>
       <div class="swatch" data-color="#db2777" title="Rosa"    style="background:linear-gradient(135deg,#db2777,#f59e0b)"></div>
