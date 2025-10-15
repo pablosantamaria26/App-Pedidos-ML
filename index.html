@@ -171,7 +171,54 @@
   .row:has(#shareWA) { display: none; }
   #btnNuevoLote { display: none; }
 
-  /* Botón principal con contraste fuerte entre los dos tonos */
+  /* ===========================
+     BOTONES (más gradiente + táctil)
+     =========================== */
+  .btn, .btn-secondary{
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: transform .12s ease, filter .15s ease, box-shadow .25s ease, background .25s ease, color .2s ease;
+  }
+  /* Botón sólido en degradé con brillo */
+  .btn{
+    color: #fff;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0) 40%) ,
+      linear-gradient(45deg, var(--primary) 0%, var(--primary) 10%, var(--primary-2) 100%);
+    box-shadow:
+      0 14px 36px rgba(var(--primary-rgb), .48),
+      0 4px 12px rgba(0,0,0,.12);
+    filter: saturate(115%) contrast(105%);
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn:active{ transform: translateY(0) scale(.98); filter: brightness(1.06) saturate(120%); }
+  .btn[disabled]{ opacity:.72; cursor:not-allowed; filter: grayscale(.25); box-shadow: var(--shadow); }
+
+  /* Botón secundario: borde en degradé, rellena al presionar */
+  .btn-secondary{
+    color: var(--text);
+    background:
+      linear-gradient(var(--card-grad-start), var(--card-grad-end)) padding-box,
+      linear-gradient(135deg, var(--primary), var(--primary-2)) border-box;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .btn-secondary:hover{ transform: translateY(-1px); }
+  .btn-secondary:active{
+    color: #fff;
+    background: linear-gradient(45deg, var(--primary), var(--primary-2));
+    box-shadow:
+      0 10px 26px rgba(var(--primary-rgb), .38),
+      0 3px 10px rgba(0,0,0,.10);
+  }
+
+  /* Enviar (fijo) encima de nav, con super gradiente */
   #btnEnviar {
     position: fixed;
     bottom: 90px;
@@ -183,23 +230,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: none;
-    border-radius: 16px;
     padding: 18px;
     font-size: 17px;
-    font-weight: 600;
-    cursor: pointer;
+    border-radius: 16px;
+    /* Degradé MUY notorio + brillo */
+    background:
+      radial-gradient(120% 160% at 0% 0%, rgba(255,255,255,.25), rgba(255,255,255,0) 40%),
+      linear-gradient(45deg, var(--primary) 0%, var(--primary) 8%, var(--primary-2) 55%, rgba(var(--primary-rgb),1) 100%);
     color: #fff;
-    background: linear-gradient(45deg, var(--primary), var(--primary-2));
     box-shadow:
-      0 12px 28px rgba(var(--primary-rgb), .35),
-      0 2px 10px rgba(0,0,0,.08);
-    transition: transform .12s ease, filter .15s ease, background .25s ease, box-shadow .25s ease;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+      0 18px 40px rgba(var(--primary-rgb), .55),
+      0 8px 18px rgba(0,0,0,.14);
   }
-  #btnEnviar:active { transform: translateX(-50%) scale(0.97); filter: brightness(1.05); }
-  #btnEnviar[disabled] { opacity: .72; cursor: not-allowed; filter: grayscale(.25); box-shadow: var(--shadow); }
+  #btnEnviar:active { transform: translateX(-50%) scale(0.98); filter: brightness(1.06) saturate(120%); }
   /* antirrebote visual/bloqueo */
   #btnEnviar.cooldown{ pointer-events: none; filter: grayscale(.35) brightness(.95); }
 
@@ -269,9 +312,19 @@
   .swatch{ width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--card); cursor: pointer; box-shadow: 0 0 0 1px var(--border); transition: transform .15s ease; }
   .swatch:hover { transform: scale(1.1); }
 
-  .search-row{ display: flex; gap: 8px; margin-bottom: 16px; }
+  .search-row{ display: flex; gap: 8px; margin-bottom: 10px; }
   .search-row input{ flex:1; }
-  .search-row .btn, .search-row .btn-secondary { width: auto; flex-shrink: 0; padding: 14px; min-width: 60px; }
+  .search-row .btn, .search-row .btn-secondary { width: auto; flex-shrink: 0; min-width: 72px; }
+
+  /* Mini leyenda en “Pendientes” */
+  .pend-legend{
+    font-size: 12px;
+    color: var(--muted);
+    display: grid;
+    gap: 4px;
+    margin: 6px 2px 14px;
+  }
+  .pend-legend b{ color: var(--text); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -311,7 +364,7 @@
     </div>
     <div class="row" id="rowProductos">
       <label>📦 Productos solicitados</label>
-      <textarea id="productos" rows="4" placeholder="Detalle de productos..."></textarea>
+      <textarea id="productos" rows="4" placeholder="Detalle de productos..." autocapitalize="characters"></textarea>
     </div>
     <div class="row" id="rowObs">
       <label>🗒️ Observaciones (opcional)</label>
@@ -338,7 +391,12 @@
     <div class="search-row">
       <input id="searchPend" type="search" placeholder="Buscar por cliente o vendedor..." />
       <button id="btnSyncHoy" class="btn-secondary" title="Reenviar solo los de hoy">Hoy</button>
-      <button id="btnReintentarTodos" class="btn">Todos</button>
+      <button id="btnReintentarTodos" class="btn" title="Intentar enviar todo lo pendiente">Todos</button>
+    </div>
+    <div class="pend-legend">
+      <div>🔎 Escribí para <b>filtrar</b> por cliente o vendedor.</div>
+      <div>🔄 <b>Hoy</b>: reenvía solo los pedidos con fecha de hoy.</div>
+      <div>📤 <b>Todos</b>: intenta reenviar todos los pendientes.</div>
     </div>
     <div id="listaPendientes"></div>
   </main>
@@ -391,7 +449,6 @@
       <p style="opacity:.9;margin:6px 0 0 0;">Se guardó correctamente</p>
     </div>
   </div>
-
 
 <script>
   // ==== CONFIG ====
