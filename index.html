@@ -308,6 +308,29 @@
     margin: 6px 2px 14px;
   }
   .pend-legend b{ color: var(--text); font-weight: 600; }
+
+ /* Evita que el foco quede tapado por el botón fijo/nav inferior */
+html, body {
+  scroll-padding-bottom: 220px; /* altura de seguridad frente a UI fija */
+}
+
+/* Observaciones: scroll interno cómodo en móviles */
+#observaciones {
+  min-height: 140px;       /* un toque más alto de base */
+  max-height: 45vh;        /* limita para que no ocupe toda la pantalla */
+  overflow: auto;          /* permite scroll interno */
+  -webkit-overflow-scrolling: touch; /* scroll suave en iOS */
+  line-height: 1.35;
+}
+
+/* (Opcional) todos los inputs al enfocar dejan aire abajo para que el caret no quede tapado */
+input:focus,
+textarea:focus,
+select:focus {
+  scroll-margin-bottom: 220px;
+}
+
+  
 </style>
 </head>
 <body>
