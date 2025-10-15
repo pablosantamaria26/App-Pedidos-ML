@@ -10,14 +10,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-
 <style>
   :root{
     --primary: #4f46e5;
-    --primary-2: #4338ca;                 /* segundo tono para el gradiente */
+    --primary-2: #4338ca;
     --primary-light: rgba(79,70,229,.22);
 
-    /* RGB para halos / sombras teñidas */
     --primary-rgb: 79,70,229;
     --primary-2-rgb: 67,56,202;
 
@@ -28,7 +26,7 @@
     --border: #e5e7eb;
     --border-tint: #e5e7eb;
 
-    /* Gradientes temáticos (más notorios) */
+    /* Gradientes (más notorios) */
     --bg-grad-start: #f7f9ff;
     --bg-grad-end:   #eef2ff;
     --card-grad-start:#ffffff;
@@ -50,7 +48,6 @@
       --border: #30363d;
       --border-tint: #30363d;
 
-      /* Profundos en dark */
       --bg-grad-start: #0b0f1a;
       --bg-grad-end:   #0e1424;
       --card-grad-start:#151a23;
@@ -68,7 +65,6 @@
     font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
     margin: 0;
     padding: 0 0 180px 0;
-    /* Fondo con halos + degradé (más contraste) */
     background:
       radial-gradient(1200px 600px at 0% -10%, rgba(var(--primary-rgb), .18), transparent 60%),
       radial-gradient(900px 500px at 110% 0%, rgba(var(--primary-2-rgb), .24), transparent 55%),
@@ -84,7 +80,6 @@
     position: sticky; top: 0; z-index: 1000;
     display: flex; align-items: center; justify-content: space-between;
     gap: 12px;
-    /* Header acompaña el tema */
     background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -106,7 +101,7 @@
     text-align: center;
   }
 
-  /* Indicador de conexión + leyenda automática (sin JS extra) */
+  /* Indicador de conexión + leyenda */
   #connDot{
     width: 12px; height: 12px; border-radius: 50%;
     border: 2px solid transparent;
@@ -118,7 +113,6 @@
   .syncing{ background: #facc15; animation:pulse 0.8s ease-in-out infinite alternate; }
   @keyframes pulse{ from{ opacity: 1; } to{ opacity: 0.4; } }
 
-  /* Leyenda junto al círculo (cambia por CSS según clase del círculo) */
   .conn-label{
     margin-left: 8px;
     font-size: 12px;
@@ -128,7 +122,6 @@
     min-width: 96px;
     display: inline-block;
   }
-  /* contenido dinámico */
   #connDot.online  + .conn-label::before{ content: "en línea";      color:#22c55e; }
   #connDot.offline + .conn-label::before{ content: "sin conexión";  color:#ef4444; }
   #connDot.syncing + .conn-label::before{ content: "sincronizando…"; color:#f59e0b; }
@@ -154,14 +147,14 @@
     font-size: 16px; padding: 16px;
     border-radius: 12px;
     border: 1px solid var(--border-tint);
-    /* Campos en degradé */
     background: linear-gradient(180deg, var(--field-grad-start), var(--field-grad-end));
     color: var(--text);
     outline: none;
-    transition: border-color .2s ease, box-shadow .2s ease, background 300ms ease;
+    transition: border-color .2s ease, box-shadow .2s ease, background 300ms ease, color .2s ease;
     -webkit-appearance: none;
     background-clip: padding-box;
   }
+  input::placeholder, textarea::placeholder{ color: var(--muted); opacity:.8; }
   input:focus, textarea:focus, select:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px var(--primary-light);
@@ -171,9 +164,7 @@
   .row:has(#shareWA) { display: none; }
   #btnNuevoLote { display: none; }
 
-  /* ===========================
-     BOTONES (más gradiente + táctil)
-     =========================== */
+  /* Botones */
   .btn, .btn-secondary{
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -185,7 +176,6 @@
     cursor: pointer;
     transition: transform .12s ease, filter .15s ease, box-shadow .25s ease, background .25s ease, color .2s ease;
   }
-  /* Botón sólido en degradé con brillo */
   .btn{
     color: #fff;
     background:
@@ -200,7 +190,6 @@
   .btn:active{ transform: translateY(0) scale(.98); filter: brightness(1.06) saturate(120%); }
   .btn[disabled]{ opacity:.72; cursor:not-allowed; filter: grayscale(.25); box-shadow: var(--shadow); }
 
-  /* Botón secundario: borde en degradé, rellena al presionar */
   .btn-secondary{
     color: var(--text);
     background:
@@ -218,7 +207,7 @@
       0 3px 10px rgba(0,0,0,.10);
   }
 
-  /* Enviar (fijo) encima de nav, con super gradiente */
+  /* Enviar (fijo) */
   #btnEnviar {
     position: fixed;
     bottom: 90px;
@@ -233,7 +222,6 @@
     padding: 18px;
     font-size: 17px;
     border-radius: 16px;
-    /* Degradé MUY notorio + brillo */
     background:
       radial-gradient(120% 160% at 0% 0%, rgba(255,255,255,.25), rgba(255,255,255,0) 40%),
       linear-gradient(45deg, var(--primary) 0%, var(--primary) 8%, var(--primary-2) 55%, rgba(var(--primary-rgb),1) 100%);
@@ -243,14 +231,12 @@
       0 8px 18px rgba(0,0,0,.14);
   }
   #btnEnviar:active { transform: translateX(-50%) scale(0.98); filter: brightness(1.06) saturate(120%); }
-  /* antirrebote visual/bloqueo */
   #btnEnviar.cooldown{ pointer-events: none; filter: grayscale(.35) brightness(.95); }
 
   .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
   .btn[disabled] .btn-text { display: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Nav inferior acompaña el tema */
   .bottom-nav{
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 999;
     background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
@@ -263,7 +249,6 @@
   .bottom-nav button{ flex: 1; border-radius: 12px; padding: 14px 8px; font-weight: 600; border: none; background: transparent; color: var(--muted); transition: all .2s ease; }
   .bottom-nav button.active{ background: var(--primary); color: #fff; }
 
-  /* Cards con degradé */
   .pedido-card, .stat-card {
     background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
     border: 1px solid var(--border-tint);
@@ -273,7 +258,6 @@
   }
   .pedido-card hr { border: none; border-top: 1px solid var(--border-tint); margin: 12px 0; }
 
-  /* Toasts */
   .toast{
     position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
     color: #fff; padding: 14px 20px; border-radius: 12px;
@@ -283,7 +267,6 @@
   }
   @keyframes fadeInDown { from { top: -20px; opacity: 0; } to { top: 16px; opacity: 1; } }
 
-  /* Overlay de éxito */
   #confirmOverlay{ display: none; position: fixed; inset: 0; z-index: 1002; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center; animation: fadeIn .3s ease; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   .success-box{
@@ -316,7 +299,6 @@
   .search-row input{ flex:1; }
   .search-row .btn, .search-row .btn-secondary { width: auto; flex-shrink: 0; min-width: 72px; }
 
-  /* Mini leyenda en “Pendientes” */
   .pend-legend{
     font-size: 12px;
     color: var(--muted);
@@ -342,7 +324,6 @@
     <div id="helloBanner"></div>
     <div class="theme-row">
       <span>🎨</span>
-      <!-- Swatches en degradé + color extra -->
       <div class="swatch" data-color="#4f46e5" title="Indigo"  style="background:linear-gradient(135deg,#4f46e5,#4338ca)"></div>
       <div class="swatch" data-color="#16a34a" title="Verde"   style="background:linear-gradient(135deg,#16a34a,#3b82f6)"></div>
       <div class="swatch" data-color="#db2777" title="Rosa"    style="background:linear-gradient(135deg,#db2777,#f59e0b)"></div>
@@ -356,7 +337,8 @@
     </div>
     <div class="row" id="rowCliente">
       <label>🧾 Número de cliente</label>
-      <input type="number" inputmode="numeric" id="numeroCliente" placeholder="Ej: 10331" />
+      <!-- forzar teclado numérico fiable -->
+      <input type="tel" inputmode="numeric" pattern="[0-9]*" id="numeroCliente" placeholder="Ej: 10331" autocomplete="off" />
     </div>
     <div class="row" id="rowVendedor">
       <label>👤 Nombre del vendedor</label>
@@ -364,7 +346,8 @@
     </div>
     <div class="row" id="rowProductos">
       <label>📦 Productos solicitados</label>
-      <textarea id="productos" rows="4" placeholder="Detalle de productos..." autocapitalize="characters"></textarea>
+      <!-- mayúsculas + permitir números -->
+      <textarea id="productos" rows="4" placeholder="Detalle de productos..." autocapitalize="characters" autocorrect="off" inputmode="text" style="text-transform: uppercase;"></textarea>
     </div>
     <div class="row" id="rowObs">
       <label>🗒️ Observaciones (opcional)</label>
@@ -389,7 +372,7 @@
   <main id="pendientes" style="display:none;">
     <h3>📋 Pedidos pendientes</h3>
     <div class="search-row">
-      <input id="searchPend" type="search" placeholder="Buscar por cliente o vendedor..." />
+      <input id="searchPend" type="search" placeholder="Buscar por cliente..." />
       <button id="btnSyncHoy" class="btn-secondary" title="Reenviar solo los de hoy">Hoy</button>
       <button id="btnReintentarTodos" class="btn" title="Intentar enviar todo lo pendiente">Todos</button>
     </div>
@@ -466,15 +449,15 @@
     sig: "entry.1902043730"
   };
 
-  // === DEDUPE: helpers (SIN CAMBIOS EN LA LÓGICA) ===
+  // === DEDUPE helpers (misma lógica) ===
   function normalizeStr(s){
     return (s||"").toUpperCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-      .replace(/[^A-Z0-9\\s\\n]/g,"")
-      .replace(/\\s+/g," ").trim();
+      .replace(/[^A-Z0-9\s\n]/g,"")
+      .replace(/\s+/g," ").trim();
   }
   function normalizeProductos(s){
-    const lines = (s||"").split(/\\n+/).map(x=>normalizeStr(x)).filter(Boolean);
+    const lines = (s||"").split(/\n+/).map(x=>normalizeStr(x)).filter(Boolean);
     lines.sort();
     return lines.join("|");
   }
@@ -499,7 +482,7 @@
     if(changed) localStorage.setItem(SIG_KEY, JSON.stringify(m));
   })();
 
-  // Envío al Google Form (incluye SIG)
+  // Envío al Google Form
   function sendToGoogleForm(p){
     return new Promise((resolve)=>{
       const iframeName = "gform_iframe_" + Date.now();
@@ -589,8 +572,7 @@
     setTimeout(() => toast.remove(), 3500);
   }
 
-  // ===== THEME con degradé =====
-  // utils de color
+  // ===== THEME dinámico =====
   const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
   function hexToRgb(hex){
     let h = hex.replace('#','').trim();
@@ -605,13 +587,19 @@
   function mixRGB(a,b,t){ return { r:a.r+(b.r-a.r)*t, g:a.g+(b.g-a.g)*t, b:a.b+(b.b-a.b)*t }; }
   function darkenRGB(a,t){ return mixRGB(a,{r:0,g:0,b:0},t); }
   function lightenRGB(a,t){ return mixRGB(a,{r:255,g:255,b:255},t); }
+  function relLum({r,g,b}){ // luminancia relativa para decidir textos
+    const toLin = v => {
+      v/=255;
+      return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4);
+    };
+    return 0.2126*toLin(r)+0.7152*toLin(g)+0.0722*toLin(b);
+  }
 
   function setTheme(hex){
     const base = hexToRgb(hex);
-    const primary2 = rgbToHex(darkenRGB(base, 0.18));  // tono 2 para botón
-    const border   = rgbToHex(lightenRGB(base, 0.78)); // bordes sutiles
+    const primary2 = rgbToHex(darkenRGB(base, 0.18));
+    const border   = rgbToHex(lightenRGB(base, 0.78));
 
-    // Gradientes: mezclas suaves con blanco
     const bgStart   = rgbToHex(lightenRGB(base, 0.90));
     const bgEnd     = rgbToHex(lightenRGB(base, 0.97));
     const cardStart = rgbToHex(lightenRGB(base, 0.94));
@@ -623,6 +611,7 @@
     root.style.setProperty("--primary", hex);
     root.style.setProperty("--primary-2", primary2);
     root.style.setProperty("--primary-light", `rgba(${base.r},${base.g},${base.b},0.22)`);
+    root.style.setProperty("--primary-rgb", `${base.r},${base.g},${base.b}`);
 
     root.style.setProperty("--border-tint", border);
     root.style.setProperty("--bg-grad-start", bgStart);
@@ -632,11 +621,19 @@
     root.style.setProperty("--field-grad-start", fieldStart);
     root.style.setProperty("--field-grad-end", fieldEnd);
 
-    // Persistir
+    // Contraste de texto (solo en modo claro)
+    const isDarkPref = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if(!isDarkPref){
+      const l = relLum(lightenRGB(base, 0.96));
+      const text = l > 0.75 ? "#0f172a" : "#111827";
+      const muted = l > 0.75 ? "#6b7280" : "#6b7280";
+      root.style.setProperty("--text", text);
+      root.style.setProperty("--muted", muted);
+    }
+
     localStorage.setItem("themeColor", hex);
   }
 
-  // Inicial / swatches
   (()=>{
     const stored = localStorage.getItem("themeColor");
     setTheme(stored || getComputedStyle(document.documentElement).getPropertyValue("--primary") || "#4f46e5");
@@ -645,7 +642,7 @@
     });
   })();
 
-  // STORAGE (SIN CAMBIOS)
+  // STORAGE
   const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
   const setQueue = arr => localStorage.setItem("pedidosPendientes", JSON.stringify(arr));
   const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
@@ -659,7 +656,7 @@
     localStorage.setItem("idsEnviados", JSON.stringify(arr));
   }
 
-  // DRAFT (SIN CAMBIOS)
+  // DRAFT
   const DRAFT_KEY = "draftPedido";
   function saveDraft(){
     const d = {
@@ -685,7 +682,7 @@
   }
   [fechaEntrega,numeroCliente,nombreVendedor,productos,observaciones].forEach(el=> el.addEventListener("input", saveDraft));
 
-  // PREFILL (SIN CAMBIOS)
+  // PREFILL
   (function prefill(){
     const vend = localStorage.getItem("vendedorNombre");
     if(vend) nombreVendedor.value = vend;
@@ -694,7 +691,18 @@
     helloBanner.style.display = vend ? "block" : "none";
     if(vend) helloBanner.textContent = `Hola ${vend} 👋`;
   })();
-  numeroCliente.addEventListener("input", ()=> numeroCliente.value = numeroCliente.value.replace(/[^\\d]/g,""));
+
+  // Número de cliente: permitir SOLO dígitos (fix de regex)
+  numeroCliente.addEventListener("input", ()=>{
+    numeroCliente.value = numeroCliente.value.replace(/[^\d]/g,"");
+  });
+
+  // Productos: forzar UPPERCASE sin tocar números y manteniendo el cursor
+  productos.addEventListener("input", ()=>{
+    const s = productos.selectionStart, e = productos.selectionEnd;
+    productos.value = productos.value.toUpperCase();
+    try{ productos.setSelectionRange(s,e); }catch{}
+  });
 
   // CONTADOR DIARIO
   function actualizarContadorDiario(increment = false) {
@@ -710,7 +718,7 @@
     pedidoContador.textContent = data.count;
   }
 
-  // STATS (SIN CAMBIOS)
+  // STATS
   function renderStats(){
     const s = getStats();
     const pend = getQueue().length;
@@ -740,7 +748,7 @@
   }
   function incStat(k){ const s = getStats(); s[k]=(s[k]||0)+1; setStats(s); renderStats(); }
 
-  // CONEXIÓN (SIN CAMBIOS)
+  // CONEXIÓN
   function setOnlineStatus(on){
     netBanner.style.display = on ? "none" : "block";
     connDot.className = on ? "online" : "offline";
@@ -749,7 +757,7 @@
   window.addEventListener("offline", ()=> setOnlineStatus(false));
   setOnlineStatus(navigator.onLine);
 
-  // NOTIFICACIONES (SIN CAMBIOS)
+  // NOTIFICACIONES
   async function ensureNotiPerm(){
     try{
       if(!("Notification" in window)) return;
@@ -771,7 +779,7 @@
     return sendToGoogleForm(pedido);
   }
 
-  // ===== ANTIRREBOTE (nuevo) =====
+  // ANTIRREBOTE
   function startCooldown(el, ms = 1200){
     if (!el) return;
     el.classList.add('cooldown');
@@ -779,7 +787,7 @@
   }
   function isCooling(el){ return el && el.classList.contains('cooldown'); }
 
-  // QUEUE & RETRY (misma lógica + dedupe ya implementado)
+  // QUEUE & RETRY
   async function reenviarPedido(id){
     vib();
     const q = getQueue();
@@ -931,7 +939,7 @@
     setTimeout(()=> ov.style.display = "none", 1800);
   }
 
-  // === LISTENERS con ANTIRREBOTE ===
+  // LISTENERS con antirrebote
   btnEnviar.addEventListener("click", ()=>{
     vib();
     if (isCooling(btnEnviar)) return;
@@ -952,7 +960,7 @@
     enviarPedido(p, {mass:true});
   });
 
-  // AUTO-SYNC (SIN CAMBIOS)
+  // AUTO-SYNC
   async function syncPendientes(animate=false){
     if(!navigator.onLine) return;
     const q = getQueue(); if(!q.length) return;
@@ -973,7 +981,7 @@
     notify("Sincronizado","Se reenviaron pedidos pendientes");
   }
 
-  // TABS (SIN CAMBIOS)
+  // TABS
   const sections = {nuevo:$("nuevoPedido"), pend:$("pendientes"), stats:$("estadisticas")};
   const tabs = {nuevo:$("btnNuevo"), pend:$("btnVerPendientes"), stats:$("btnVerEstadisticas")};
   function setTab(name){
@@ -990,7 +998,36 @@
   tabs.pend.onclick = ()=> setTab("pend");
   tabs.stats.onclick = ()=> setTab("stats");
 
-  // INIT (SIN CAMBIOS)
+  // PENDIENTES
+  function cardHtml(p){
+    return `<div class="pedido-card">
+      <b>Cliente:</b> ${p.numeroCliente||"—"}<br>
+      <b>Vendedor:</b> ${p.nombreVendedor||"—"}<br>
+      <b>Fecha:</b> ${p.fechaEntrega||"—"}<br>
+      <hr>
+      <div class="toolbar" style="gap:8px; margin-top: 12px; display:flex;">
+        <button class="btn" onclick="reenviarPedido('${p.id}')">🔄 Reenviar</button>
+        <button class="btn-secondary" onclick="eliminarPendiente('${p.id}')">🗑️ Eliminar</button>
+      </div>
+    </div>`;
+  }
+  function cargarPendientes(){
+    const cont = $("listaPendientes");
+    const q = getQueue();
+    const qf = (searchPend?.value||"").trim().toLowerCase();
+    let filtered = q;
+    if(qf){
+      filtered = q.filter(p =>
+        String(p.numeroCliente||"").toLowerCase().includes(qf)
+      );
+    }
+    cont.innerHTML = filtered.length ? filtered.map(cardHtml).join("") : "<p>No hay pedidos pendientes.</p>";
+    renderStats();
+    if(q.length>10) showToast("⚠️ Hay muchos pendientes (>10). Recomendado sincronizar.", "info");
+  }
+  document.getElementById("searchPend")?.addEventListener("input", cargarPendientes);
+
+  // INIT
   window.addEventListener("beforeunload", (e)=>{
     if(getQueue().length>0){ e.preventDefault(); e.returnValue = ""; }
   });
