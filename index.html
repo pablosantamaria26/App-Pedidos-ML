@@ -1163,9 +1163,14 @@ if (SpeechRecognition) {
     }
 
     if (finalTranscript.trim()) {
-      dictadoPreview.value = procesarTextoDictado(finalTranscript);
-    }
-  };
+  const nuevo = procesarTextoDictado(finalTranscript);
+  const actual = dictadoPreview.value.trim();
+  dictadoPreview.value = (actual ? actual + "\n" : "") + nuevo.trim();
+
+
+}
+
+
 
 } else {
   btnMic.style.display = 'none';
