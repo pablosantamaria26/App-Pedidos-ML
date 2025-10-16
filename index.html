@@ -695,6 +695,26 @@
     setPredDB(db);
     prunePredDB();
   }
+
+
+  // === CARGAR BASE DE CLIENTES DESDE GITHUB ===
+let clientNames = {};
+
+async function loadClientNames() {
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/pablosantamaria26/App-Pedidos-ML/main/clientes.json');
+    clientNames = await res.json();
+    console.log("✅ Nombres de clientes cargados:", Object.keys(clientNames).length);
+  } catch (err) {
+    console.warn("⚠️ No se pudo cargar clientes.json:", err);
+    clientNames = {};
+  }
+}
+
+// Llamar al iniciar la app
+document.addEventListener("DOMContentLoaded", loadClientNames);
+
+  
   function computePredictions(){
     prunePredDB();
     const db = getPredDB();
@@ -744,7 +764,7 @@
     lp.innerHTML = upcoming.length
       ? upcoming.map(u => `
         <div class="pedido-card">
-          <b>Cliente ${u.cliente}</b> — en <b>${u.dias} día${u.dias===1?"":"s"}</b> (≈ ${u.fechaEstimada})
+          <b>Cliente ${u.cliente} ${clientNames[u.cliente] ? `— ${clientNames[u.cliente]}` : ""}</b> — en <b>${u.dias} día${u.dias===1?"":"s"}</b> (≈ ${u.fechaEstimada})
           ${u.itemsTop.length ? `<div style="margin-top:6px;font-size:13px;color:var(--muted)">Suele pedir: ${u.itemsTop.join(" · ")}</div>` : ""}
         </div>`).join("")
       : `<div class="pedido-card" style="color:var(--muted)">Sin sugerencias en los próximos 7 días.</div>`;
