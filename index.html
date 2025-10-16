@@ -1138,8 +1138,8 @@ const brandMap = {
   "bio ba":"BIO BAG","bio bah":"BIO BAG","bio bak":"BIO BAG",
   "desepla":"DESESPLAST","deseplast":"DESESPLAST",
   "diawara":"DIAWARA","diaguara":"DIAWARA",
-  "cotton":"COTTON","coton":"COTTON",
-  "fibran":"FIBRAN", "centimetros":"CM","centímetros":"CM"
+  "cotton":"COTTON","coton":"COTTON","se":"SET",
+  "fibra":"FIBRAN","fil":"FILM", "fin":"FILM","centímetros":"CM"
 };
 
 // 🔹 Limpieza y normalización
@@ -1157,11 +1157,30 @@ function aplicarDiccionarioMarcas(text){
   return text;
 }
 
+  // 🔹 Detecta y normaliza medidas tipo "45x60" aunque se digan "45 por 60" o "45 60"
+function normalizarMedidas(text) {
+  // 1. Unifica variantes verbales a formato numérico con "x"
+  text = text
+    .replace(/(\d{2,3})\s*(por|x|por\s+el\s+de)\s*(\d{2,3})/gi, "$1x$3") // "45 por 60" -> "45x60"
+    .replace(/(\d{2,3})\s+(\d{2,3})/g, "$1x$2"); // "45 60" -> "45x60"
+
+  // 2. Corrige medidas comunes reconocidas erróneamente
+  const medidas = ["45x60", "50x70", "60x80", "80x110", "90x120"];
+  for (const m of medidas) {
+    const r = new RegExp(m.replace("x", "\\s*x\\s*"), "gi");
+    text = text.replace(r, m.toUpperCase());
+  }
+
+  return text;
+}
+
+
 // 🔹 Interpreta cantidad donde esté
 function procesarLinea(linea){
   linea = limpiarTexto(linea.toLowerCase());
   if(!linea) return "";
   linea = aplicarDiccionarioMarcas(linea);
+  linea = normalizarMedidas(linea);
   const palabras = linea.split(" ");
   let cantidad = palabras.find(p=>!isNaN(p)) || palabras.find(p=>numMap[p]);
   if(numMap[cantidad]) cantidad = numMap[cantidad];
