@@ -1219,7 +1219,7 @@ function startRecognition(){
       }
     }
 
-    // 🕐 Si el usuario hace una pausa de >1.2 s, cortamos línea automáticamente
+    // 🕐 Si el usuario hace una pausa de >1.5 s, cortamos línea automáticamente
     clearTimeout(pausaTimer);
     pausaTimer = setTimeout(()=>{
       if(recogActive && dictadoPreview.value.trim() !== finalBuffer.trim()){
@@ -1227,7 +1227,7 @@ function startRecognition(){
         if(!finalBuffer.endsWith("\n")) finalBuffer += "\n";
         dictadoPreview.value = finalBuffer;
       }
-    }, 1200);
+    }, 1500);
   };
 
   recognition.onerror = err => {
