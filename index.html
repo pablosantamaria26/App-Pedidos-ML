@@ -1113,7 +1113,7 @@
   loadDraft();
 
 /* ======================= 
-   DICTADO POR VOZ (mejorado para Android)
+   DICTADO POR VOZ (versión robusta y práctica para la calle)
    ======================= */
 const btnMic = $("btnMic");
 const dictadoOverlay = $("dictadoOverlay");
@@ -1124,163 +1124,162 @@ const btnDictadoCancelar = $("btnDictadoCancelar");
 
 let recognition = null;
 let recogActive = false;
-let interimBuffer = "";
 let finalBuffer = "";
+let pausaTimer = null;
 
-// 🔹 Mapa de números en palabras → números
+// 🔹 Diccionarios
 const numMap = {
-  "un": 1, "uno": 1, "una": 1,
-  "dos": 2, "tres": 3, "cuatro": 4,
-  "cinco": 5, "seis": 6, "siete": 7,
-  "ocho": 8, "nueve": 9, "diez": 10,
-  "once": 11, "doce": 12, "trece": 13,
-  "catorce": 14, "quince": 15, "veinte": 20
+  un:1, uno:1, una:1, dos:2, tres:3, cuatro:4, cinco:5, seis:6, siete:7, ocho:8, nueve:9,
+  diez:10, once:11, doce:12, trece:13, catorce:14, quince:15, veinte:20, treinta:30, cuarenta:40
 };
-
-// 🔹 Diccionario de marcas comunes (corrige fonéticas)
 const brandMap = {
-  "make": "MAKE", "meik": "MAKE", "maque": "MAKE",
-  "romil": "ROMYL", "romyl": "ROMYL",
-  "bio bag": "BIO BAG", "bio bak": "BIO BAG", "biobag": "BIO BAG",
-  "deseplast": "DESESPLAST", "desepla": "DESESPLAST",
-  "diawara": "DIAWARA", "diaguara": "DIAWARA",
-  "cotton": "COTTON", "coton": "COTTON",
-  "fibran": "FIBRAN", "centimetros": "CM"
+  "make":"MAKE","meik":"MAKE","maque":"MAKE",
+  "romil":"ROMYL","romyl":"ROMYL",
+  "bio ba":"BIO BAG","bio bah":"BIO BAG","bio bak":"BIO BAG",
+  "desepla":"DESESPLAST","deseplast":"DESESPLAST",
+  "diawara":"DIAWARA","diaguara":"DIAWARA",
+  "cotton":"COTTON","coton":"COTTON",
+  "fibran":"FIBRAN", "centimetros":"CM","centímetros":"CM"
 };
 
-// 🔹 Aplica el diccionario de marcas dentro del texto
-function aplicarDiccionarioMarcas(text) {
-  for (const [clave, valor] of Object.entries(brandMap)) {
-    const regex = new RegExp(`\\b${clave}\\b`, "gi");
-    text = text.replace(regex, valor);
+// 🔹 Limpieza y normalización
+function limpiarTexto(text){
+  return text
+    .replace(/\b(eh+|mmm+|este|bueno)\b/gi,"")
+    .replace(/\s+/g," ")
+    .trim();
+}
+function aplicarDiccionarioMarcas(text){
+  for(const [k,v] of Object.entries(brandMap)){
+    const r = new RegExp("\\b"+k+"\\b","gi");
+    text = text.replace(r,v);
   }
   return text;
 }
 
-// 🔹 Procesa cada línea dictada → "1 PRODUCTO"
-function procesarDictadoTexto(texto) {
-  return texto
-    .toLowerCase()
-    .split(/[,.]/) // pausa o coma → nuevo ítem
-    .map(linea => {
-      linea = linea.trim();
-      if (!linea) return "";
+// 🔹 Interpreta cantidad donde esté
+function procesarLinea(linea){
+  linea = limpiarTexto(linea.toLowerCase());
+  if(!linea) return "";
+  linea = aplicarDiccionarioMarcas(linea);
+  const palabras = linea.split(" ");
+  let cantidad = palabras.find(p=>!isNaN(p)) || palabras.find(p=>numMap[p]);
+  if(numMap[cantidad]) cantidad = numMap[cantidad];
+  if(!cantidad) cantidad = 1;
+  const resto = palabras.filter(p=>p!=cantidad && numMap[p]!=cantidad).join(" ");
+  return `${cantidad} ${resto}`.toUpperCase();
+}
 
-      linea = aplicarDiccionarioMarcas(linea);
-      const palabras = linea.split(/\s+/);
-      let cantidad = "";
-      let resto = linea;
-
-      // Detectar número o palabra numérica al inicio
-      if (palabras.length) {
-        const primera = palabras[0];
-        if (!isNaN(primera)) {
-          cantidad = primera;
-          resto = palabras.slice(1).join(" ");
-        } else if (numMap[primera]) {
-          cantidad = numMap[primera];
-          resto = palabras.slice(1).join(" ");
-        }
-      }
-
-      // Si no hay número, se asume 1
-      if (!cantidad) cantidad = 1;
-
-      return `${cantidad} ${resto}`.toUpperCase();
-    })
+// 🔹 Procesa bloque → líneas
+function procesarDictadoTexto(text){
+  return text
+    .split(/[,.]/)
+    .map(l => procesarLinea(l))
     .filter(Boolean)
     .join("\n");
 }
 
-// 🔹 Cierra el dictado
-function closeDictado() {
-  dictadoOverlay.style.display = "none";
-  btnMic.classList.remove("rec");
-  if (recognition) {
-    try { recognition.stop(); } catch {}
-  }
-  recogActive = false;
-}
-
-// 🔹 Abre el modal de dictado
-function openDictado() {
+// 🔹 UI helpers
+function openDictado(){
   dictadoOverlay.style.display = "flex";
   dictadoPreview.value = "";
 }
+function closeDictado(){
+  dictadoOverlay.style.display = "none";
+  btnMic.classList.remove("rec");
+  if(recognition){ try{ recognition.stop(); }catch{} }
+  recogActive = false;
+  clearTimeout(pausaTimer);
+}
 
-// 🔹 Inicia el reconocimiento de voz
-btnMic.addEventListener("click", () => {
+// 🔹 Arranca reconocimiento (reinicia si se corta)
+function startRecognition(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    showToast("Dictado no soportado aquí. Usá el micrófono del teclado.", "error");
-    try { productos.focus(); } catch {}
+  if(!SR){
+    showToast("Dictado no soportado. Usá el micrófono del teclado.", "error");
     return;
   }
-
-  openDictado();
 
   recognition = new SR();
   recognition.lang = "es-AR";
   recognition.interimResults = true;
   recognition.continuous = true;
 
-  finalBuffer = ""; 
-  interimBuffer = "";
-  btnMic.classList.add("rec");
-  recogActive = true;
-
-  recognition.onresult = (e) => {
-    interimBuffer = "";
-    for (let i = e.resultIndex; i < e.results.length; i++) {
+  recognition.onresult = e => {
+    clearTimeout(pausaTimer);
+    for(let i=e.resultIndex; i<e.results.length; i++){
       const tr = e.results[i][0].transcript;
-      if (e.results[i].isFinal) {
-        const procesado = procesarDictadoTexto(tr);
-        finalBuffer += (finalBuffer ? "\n" : "") + procesado;
-      } else {
-        interimBuffer += tr;
+      if(e.results[i].isFinal){
+        const linea = procesarDictadoTexto(tr);
+        finalBuffer += (finalBuffer ? "\n" : "") + linea;
+        dictadoPreview.value = finalBuffer;
+      }else{
+        // modo live: muestra parcial
+        dictadoPreview.value = finalBuffer + "\n" + procesarDictadoTexto(tr);
       }
     }
 
-    const vista = procesarDictadoTexto(finalBuffer + (interimBuffer ? " " + interimBuffer : ""));
-    dictadoPreview.value = vista;
+    // 🕐 Si el usuario hace una pausa de >1.2 s, cortamos línea automáticamente
+    clearTimeout(pausaTimer);
+    pausaTimer = setTimeout(()=>{
+      if(recogActive && dictadoPreview.value.trim() !== finalBuffer.trim()){
+        finalBuffer = dictadoPreview.value.trim();
+        if(!finalBuffer.endsWith("\n")) finalBuffer += "\n";
+        dictadoPreview.value = finalBuffer;
+      }
+    }, 1200);
   };
 
-  recognition.onerror = (ev) => {
-    console.warn("SR error:", ev.error);
-    showToast("Error de dictado: " + ev.error, "error");
+  recognition.onerror = err => {
+    console.warn("SR error", err.error);
+    if(["no-speech","aborted","network"].includes(err.error)){
+      setTimeout(()=>{ if(recogActive) startRecognition(); }, 800);
+    }else{
+      showToast("Error de dictado: "+err.error, "error");
+    }
   };
 
-  recognition.onend = () => {
-    btnMic.classList.remove("rec");
-    recogActive = false;
+  recognition.onend = ()=>{
+    if(recogActive){
+      setTimeout(()=>startRecognition(),500);
+    }
   };
 
-  try { recognition.start(); } catch (e) {}
+  try{ recognition.start(); }catch{}
+}
+
+// 🔹 Botón 🎙️
+btnMic.addEventListener("click", ()=>{
+  if(recogActive){ closeDictado(); return; }
+  openDictado();
+  finalBuffer = "";
+  recogActive = true;
+  btnMic.classList.add("rec");
+  startRecognition();
 });
 
-// 🔹 Usar el texto dictado → agrega al textarea de productos
-btnDictadoUsar.addEventListener("click", () => {
-  const txt = (dictadoPreview.value || "").trim();
-  if (txt) {
-    productos.value = (productos.value ? productos.value.replace(/\s+$/, "") + "\n" : "") + txt;
+// 🔹 Usar texto → agrega sin pisar
+btnDictadoUsar.addEventListener("click", ()=>{
+  const txt = (dictadoPreview.value||"").trim();
+  if(txt){
+    productos.value = (productos.value ? productos.value.replace(/\s+$/,"") + "\n" : "") + txt;
     saveDraft();
   }
   closeDictado();
   productos.focus();
 });
 
-// 🔹 Dejar editando (detiene escucha pero deja abierto el modal)
-btnDictadoEditar.addEventListener("click", () => {
-  if (recogActive && recognition) {
-    try { recognition.stop(); } catch {}
-    recogActive = false;
-    btnMic.classList.remove("rec");
-  }
+// 🔹 Editar
+btnDictadoEditar.addEventListener("click", ()=>{
+  recogActive = false;
+  if(recognition){ try{ recognition.stop(); }catch{} }
+  btnMic.classList.remove("rec");
+  clearTimeout(pausaTimer);
   dictadoPreview.focus();
 });
 
-// 🔹 Cancelar dictado
-btnDictadoCancelar.addEventListener("click", () => closeDictado());
+// 🔹 Cancelar
+btnDictadoCancelar.addEventListener("click", ()=>closeDictado());
 
   
 </script>
