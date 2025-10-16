@@ -1206,29 +1206,35 @@ function startRecognition(){
   recognition.continuous = true;
 
   recognition.onresult = e => {
-    clearTimeout(pausaTimer);
-    for(let i=e.resultIndex; i<e.results.length; i++){
-      const tr = e.results[i][0].transcript;
-      if(e.results[i].isFinal){
-        const linea = procesarDictadoTexto(tr);
-        finalBuffer += (finalBuffer ? "\n" : "") + linea;
-        dictadoPreview.value = finalBuffer;
-      }else{
-        // modo live: muestra parcial
-        dictadoPreview.value = finalBuffer + "\n" + procesarDictadoTexto(tr);
-      }
-    }
+  clearTimeout(pausaTimer);
+  let textoNuevo = "";
 
-    // 🕐 Si el usuario hace una pausa de >1.5 s, cortamos línea automáticamente
-    clearTimeout(pausaTimer);
-    pausaTimer = setTimeout(()=>{
-      if(recogActive && dictadoPreview.value.trim() !== finalBuffer.trim()){
-        finalBuffer = dictadoPreview.value.trim();
-        if(!finalBuffer.endsWith("\n")) finalBuffer += "\n";
-        dictadoPreview.value = finalBuffer;
-      }
-    }, 1500);
-  };
+  for (let i = e.resultIndex; i < e.results.length; i++) {
+    const tr = e.results[i][0].transcript.trim();
+    if (!tr) continue;
+
+    if (e.results[i].isFinal) {
+      // 🔹 Solo procesamos lo final confirmado
+      const linea = procesarDictadoTexto(tr);
+      textoNuevo += (textoNuevo ? "\n" : "") + linea;
+    }
+  }
+
+  if (textoNuevo) {
+    finalBuffer += (finalBuffer ? "\n" : "") + textoNuevo.trim();
+    dictadoPreview.value = finalBuffer.trim();
+  }
+
+  // 🕐 Detecta pausa y fuerza salto si se queda hablando lento
+  clearTimeout(pausaTimer);
+  pausaTimer = setTimeout(() => {
+    if (recogActive && dictadoPreview.value.trim() !== finalBuffer.trim()) {
+      finalBuffer = dictadoPreview.value.trim();
+      if (!finalBuffer.endsWith("\n")) finalBuffer += "\n";
+      dictadoPreview.value = finalBuffer;
+    }
+  }, 1500);
+};
 
   recognition.onerror = err => {
     console.warn("SR error", err.error);
