@@ -987,22 +987,40 @@ document.addEventListener("DOMContentLoaded", loadClientNames);
     updateConnectionStatus();
     setInterval(syncQueue, 60000);
 
-    const h = new Date().getHours();
-    let saludo = "¡Buenas noches!";
-    if(h >= 6 && h < 13) saludo = "¡Buenos días!";
-    if(h >= 13 && h < 20) saludo = "¡Buenas tardes!";
-    const nombreGuardado = localStorage.getItem("nombreVendedor") || "";
-    if (nombreGuardado) {
-        helloBanner.innerHTML = `<h3 style="margin-top:0;margin-bottom:20px;">${saludo}, <b>${nombreGuardado.split(' ')[0]}</b></h3>`;
-    } else {
-      helloBanner.style.display = "none";
-    }
-    nombreVendedor.addEventListener('change', (e) => localStorage.setItem("nombreVendedor", e.target.value));
-    productos.addEventListener("input", ()=>{
-      const s = productos.selectionStart, e = productos.selectionEnd;
-      productos.value = productos.value.toUpperCase();
-      try{ productos.setSelectionRange(s,e); }catch{}
-    });
+// === BLOQUE DE SALUDO Y NOMBRE DEL VENDEDOR (versión final completa) ===
+
+// ⬅️ Primero: recuperar y precargar el nombre del vendedor guardado en este dispositivo
+const nombreGuardado = localStorage.getItem("nombreVendedor") || "";
+if (nombreGuardado) {
+  nombreVendedor.value = nombreGuardado;  // ✅ precarga el nombre guardado
+}
+
+// ⬅️ Luego: determinar el saludo según la hora del día
+const h = new Date().getHours();
+let saludo = "¡Buenas noches!";
+if (h >= 6 && h < 13) saludo = "¡Buenos días!";
+if (h >= 13 && h < 20) saludo = "¡Buenas tardes!";
+
+// ⬅️ Mostrar el saludo personalizado si hay nombre guardado
+if (nombreGuardado) {
+  helloBanner.innerHTML = `<h3 style="margin-top:0;margin-bottom:20px;">
+    ${saludo}, <b>${nombreGuardado.split(' ')[0]}</b>
+  </h3>`;
+} else {
+  helloBanner.style.display = "none";
+}
+
+// ⬅️ Guardar automáticamente el nombre cuando el usuario lo cambia
+nombreVendedor.addEventListener('change', (e) => 
+  localStorage.setItem("nombreVendedor", e.target.value)
+);
+
+// (esto ya estaba, no se toca)
+productos.addEventListener("input", () => {
+  const s = productos.selectionStart, e = productos.selectionEnd;
+  productos.value = productos.value.toUpperCase();
+  try { productos.setSelectionRange(s, e); } catch {}
+});
 
     // Cargar predicciones al abrir
     computePredictions();
