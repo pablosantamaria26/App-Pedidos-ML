@@ -1002,45 +1002,73 @@ document.addEventListener("DOMContentLoaded", loadClientNames);
     startCooldown(btnEnviar);
   }
 
-  // === MODIFICACIÓN: Enviar ahora abre MODAL en vez de enviar directo ===
+ // ============================================================
+  // LÓGICA DEL MODAL CON BÚSQUEDA EN VIVO (ACTUALIZADO)
+  // ============================================================
+  
+  // Función para actualizar el texto del modal según el ID
+  function updateModalPreview(id) {
+    const modalName = $("modalClientName");
+    const data = window.globalDbClientes ? window.globalDbClientes[id] : null;
+
+    if (data) {
+      // Si el cliente existe en la base
+      modalName.innerHTML = `${data.nom}<br><span style="font-size:13px;font-weight:400;opacity:0.8">${data.loc}</span>`;
+      modalName.style.color = "var(--primary)";
+      modalName.style.background = "linear-gradient(90deg, rgba(var(--primary-rgb),0.1), rgba(var(--primary-2-rgb),0.1))";
+    } else {
+      // Si no existe (o está vacío)
+      if(id.length > 0) {
+          modalName.innerHTML = `<span style="color:var(--error)">Cliente no encontrado</span>`;
+          modalName.style.background = "rgba(255,0,0,0.05)";
+      } else {
+          modalName.innerHTML = "Ingresá un número de cliente...";
+          modalName.style.background = "transparent";
+      }
+    }
+  }
+
+  // 1. Al hacer click en Enviar (Abrir Modal)
   btnEnviar.addEventListener("click", () => {
-    if(!validateForm()) return; // Validamos antes de abrir
+    if(!validateForm()) return; 
     
     const id = numeroCliente.value.trim();
-    // Intentamos buscar el nombre en la base global
-    const clienteData = window.globalDbClientes ? window.globalDbClientes[id] : null;
-
-    // Llenar datos del modal
-    const modalName = $("modalClientName");
     const modalInput = $("modalClientId");
     
-    modalInput.value = id; // Poner el ID actual en el input del modal
-
-    if(clienteData){
-        modalName.innerHTML = `${clienteData.nom}<br><span style="font-size:13px;font-weight:400;opacity:0.8">${clienteData.loc}</span>`;
-    } else {
-        modalName.innerHTML = `Cliente Nuevo / No registrado`;
-    }
+    // Cargar valor actual y actualizar vista
+    modalInput.value = id;
+    updateModalPreview(id); 
 
     // Mostrar modal
     $("preConfirmOverlay").style.display = "flex";
+    
+    // Enfocar el input chiquito por si quiere corregir rápido
+    setTimeout(() => modalInput.focus(), 100); 
   });
 
-  // Acciones del Modal
+  // 2. ESCUCHAR TECLADO EN EL MODAL (¡Esto es lo nuevo!)
+  $("modalClientId").addEventListener("input", (e) => {
+     updateModalPreview(e.target.value.trim());
+  });
+
+  // 3. Botón "Sí, enviar"
   $("btnConfirmYes").addEventListener("click", () => {
-     // Si cambiaron el ID en el modal, lo actualizamos en el formulario principal
      const newId = $("modalClientId").value.trim();
+     
+     // Si el usuario lo cambió, actualizamos el formulario principal
      if(newId && newId !== numeroCliente.value) {
         numeroCliente.value = newId;
-        saveDraft(); // Guardar el cambio
+        saveDraft(); 
      }
+     
      $("preConfirmOverlay").style.display = "none";
-     handleEnviar(); // LLAMAR AL ENVÍO ORIGINAL
+     handleEnviar(); // Ejecuta el envío real
   });
 
+  // 4. Botón "Cancelar"
   $("btnConfirmNo").addEventListener("click", () => {
      $("preConfirmOverlay").style.display = "none";
-     // Si cambiaron el ID pero cancelaron, actualizamos igual el input principal
+     // Si cambió el ID pero canceló, igual lo actualizamos por comodidad
      const newId = $("modalClientId").value.trim();
      if(newId) numeroCliente.value = newId;
   });
