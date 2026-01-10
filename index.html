@@ -358,26 +358,32 @@
 
     </div>
 
-    <div class="row" id="rowFecha">
+<div class="row" id="rowFecha">
       <label>📅 Fecha de entrega</label>
       <input type="date" id="fechaEntrega" />
     </div>
+
     <div class="row" id="rowCliente">
       <label>🧾 Número de cliente</label>
       <input type="tel" inputmode="numeric" pattern="[0-9]*" id="numeroCliente" placeholder="Ej: 10331" autocomplete="off" />
+      <div id="infoCliente" style="font-size: 13px; color: var(--primary); font-weight: 600; margin-top: 6px; min-height: 18px; transition: opacity 0.3s ease;"></div>
     </div>
+
     <div class="row" id="rowVendedor">
       <label>👤 Nombre del vendedor</label>
       <input type="text" id="nombreVendedor" placeholder="Ej: Josue" />
     </div>
+
     <div class="row" id="rowProductos">
       <label>📦 Productos solicitados</label>
       <textarea id="productos" rows="4" placeholder="Detalle de productos..." autocapitalize="characters" autocorrect="off" inputmode="text"></textarea>
     </div>
+
     <div class="row" id="rowObs">
       <label>🗒️ Observaciones (opcional)</label>
       <textarea id="observaciones" rows="5" placeholder="Notas adicionales..."></textarea>
     </div>
+
     <div class="row">
         <label style="flex-direction: row; align-items: center; gap: 8px; font-weight: normal; color: var(--text);">
             <input type="checkbox" id="shareWA" style="width: auto;" />
@@ -1362,6 +1368,59 @@ window.addEventListener('appinstalled', () => {
   if (b) b.remove();
   showToast('App instalada ✔️', 'ok');
 });
+</script>
+
+
+
+<script>
+// ==========================================================
+//  BUSCADOR DE CLIENTES EN VIVO (Lógica Paralela)
+// ==========================================================
+(function(){
+  
+  // ✅ TU ENLACE CORRECTO YA ESTÁ PUESTO AQUÍ:
+  const URL_CLIENTES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1GOcSwYF8WyIuH8NE0Nk8gEGfEvYghNEmjoW0bIOZRHSDAyJZiuYfmbtH77MI8RWBh2SPuoEY44UO/pub?gid=2117683454&single=true&output=csv"; 
+
+  let dbClientes = {};
+  const inputID = document.getElementById("numeroCliente");
+  const labelInfo = document.getElementById("infoCliente");
+
+  // Carga silenciosa de datos al iniciar
+  if(navigator.onLine) {
+    fetch(URL_CLIENTES).then(r => r.text()).then(txt => {
+      const lineas = txt.split("\n");
+      lineas.forEach(l => {
+        // Separa por coma. Asume columnas: A=ID, B=Nombre, C=Localidad
+        const p = l.split(","); 
+        
+        if(p.length >= 2) {
+             const id = p[0].trim();
+             // Limpieza de comillas por si el CSV las trae
+             const nombre = p[1].replace(/['"]+/g, '').trim(); 
+             // Si no hay localidad, dejar vacío
+             const loc = p[2] ? p[2].replace(/['"]+/g, '').trim() : "";
+             
+             dbClientes[id] = { nom: nombre, loc: loc };
+        }
+      });
+      console.log("✅ Base clientes cargada. Total: " + Object.keys(dbClientes).length);
+    }).catch(e => console.log("⚠️ Error cargando clientes", e));
+  }
+
+  // Escuchar lo que escribís
+  if(inputID && labelInfo) {
+    inputID.addEventListener("input", function() {
+      const id = this.value.trim();
+      const c = dbClientes[id];
+      if(c) {
+        // Muestra: ✅ Supermercado Luna — San Bernardo
+        labelInfo.innerHTML = `✅ ${c.nom} <span style="color:var(--primary);font-weight:700;">— ${c.loc}</span>`;
+      } else {
+        labelInfo.textContent = "";
+      }
+    });
+  }
+})();
 </script>
 
 </body>
