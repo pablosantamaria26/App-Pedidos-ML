@@ -1371,49 +1371,54 @@ window.addEventListener('appinstalled', () => {
 </script>
 
 
-
 <script>
 // ==========================================================
-//  BUSCADOR DE CLIENTES EN VIVO (Lógica Paralela)
+//  BUSCADOR DE CLIENTES (VERSIÓN ROBUSTA ESPAÑOL/INGLÉS)
 // ==========================================================
 (function(){
   
-  // ✅ TU ENLACE CORRECTO YA ESTÁ PUESTO AQUÍ:
+  // ✅ TU ENLACE CSV (Asegurate que sea el que termina en output=csv)
   const URL_CLIENTES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1GOcSwYF8WyIuH8NE0Nk8gEGfEvYghNEmjoW0bIOZRHSDAyJZiuYfmbtH77MI8RWBh2SPuoEY44UO/pub?gid=2117683454&single=true&output=csv"; 
 
   let dbClientes = {};
   const inputID = document.getElementById("numeroCliente");
   const labelInfo = document.getElementById("infoCliente");
 
-  // Carga silenciosa de datos al iniciar
+  // Carga de datos
   if(navigator.onLine) {
     fetch(URL_CLIENTES).then(r => r.text()).then(txt => {
+      // Detectamos si usa punto y coma o coma
+      const separador = txt.indexOf(";") > -1 ? ";" : ",";
+      console.log("Separador detectado:", separador === ";" ? "Punto y Coma (;)" : "Coma (,)");
+
       const lineas = txt.split("\n");
       lineas.forEach(l => {
-        // Separa por coma. Asume columnas: A=ID, B=Nombre, C=Localidad
-        const p = l.split(","); 
+        // Usamos el separador detectado
+        const p = l.split(separador); 
         
         if(p.length >= 2) {
              const id = p[0].trim();
-             // Limpieza de comillas por si el CSV las trae
+             // Limpieza de comillas
              const nombre = p[1].replace(/['"]+/g, '').trim(); 
-             // Si no hay localidad, dejar vacío
              const loc = p[2] ? p[2].replace(/['"]+/g, '').trim() : "";
              
              dbClientes[id] = { nom: nombre, loc: loc };
         }
       });
-      console.log("✅ Base clientes cargada. Total: " + Object.keys(dbClientes).length);
-    }).catch(e => console.log("⚠️ Error cargando clientes", e));
+      console.log("✅ Base cargada. Clientes en memoria:", Object.keys(dbClientes).length);
+      // Prueba rápida: ver si el 10001 existe
+      if(dbClientes["10001"]) console.log("Test 10001:", dbClientes["10001"]);
+      else console.warn("⚠️ El cliente 10001 NO se encontró en el CSV descargado.");
+
+    }).catch(e => console.log("⚠️ Error de conexión/URL", e));
   }
 
-  // Escuchar lo que escribís
+  // Escuchar teclado
   if(inputID && labelInfo) {
     inputID.addEventListener("input", function() {
       const id = this.value.trim();
       const c = dbClientes[id];
       if(c) {
-        // Muestra: ✅ Supermercado Luna — San Bernardo
         labelInfo.innerHTML = `✅ ${c.nom} <span style="color:var(--primary);font-weight:700;">— ${c.loc}</span>`;
       } else {
         labelInfo.textContent = "";
@@ -1422,6 +1427,7 @@ window.addEventListener('appinstalled', () => {
   }
 })();
 </script>
+
 
 </body>
 </html>
