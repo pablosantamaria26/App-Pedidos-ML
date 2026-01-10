@@ -325,6 +325,57 @@
     padding:14px; font-family:inherit; font-size:15px; line-height:1.35;
   }
   .dictado-actions{ display:flex; gap:10px; justify-content:flex-end; }
+
+
+/* === NUEVO: MODAL DE CONFIRMACIÓN (ESTILO MODERNO) === */
+  #preConfirmOverlay {
+    display: none; position: fixed; inset: 0; z-index: 2000;
+    background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
+    align-items: center; justify-content: center;
+    animation: fadeIn .2s ease;
+  }
+  .confirm-box {
+    background: linear-gradient(180deg, var(--card-grad-start), var(--card-grad-end));
+    width: min(88vw, 380px);
+    border-radius: 24px; padding: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-tint);
+    text-align: center;
+    animation: bounceIn .4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes bounceIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .confirm-emoji { font-size: 48px; margin-bottom: 10px; display:block; }
+  .confirm-title { font-size: 20px; font-weight: 800; margin: 0 0 8px 0; color: var(--text); }
+  .confirm-text { font-size: 15px; color: var(--muted); margin-bottom: 16px; line-height: 1.4; }
+  
+  .client-highlight {
+    background: linear-gradient(90deg, rgba(var(--primary-rgb),0.1), rgba(var(--primary-2-rgb),0.1));
+    color: var(--primary); padding: 10px; border-radius: 12px;
+    font-weight: 700; font-size: 16px; margin-bottom: 16px; border: 1px solid rgba(var(--primary-rgb),0.2);
+  }
+  
+  /* Input chiquito para corregir en el modal */
+  .mini-input {
+      width: 100px; padding: 8px; border-radius: 8px; border: 1px solid var(--border-tint);
+      text-align: center; font-weight: bold; font-size: 16px; margin-top: 5px;
+      background: var(--bg); color: var(--text);
+  }
+
+  .confirm-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .btn-confirm {
+      width: 100%; padding: 14px; font-size: 16px; border-radius: 14px;
+      border: none; cursor: pointer; font-weight: 700;
+      transition: transform .1s;
+  }
+  .btn-yes {
+      background: linear-gradient(90deg, var(--primary), var(--primary-2)); color: white;
+      box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.3);
+  }
+  .btn-yes:active { transform: scale(0.97); }
+  .btn-no { background: transparent; color: var(--muted); border: 1px solid transparent; }
+  .btn-no:hover { background: rgba(0,0,0,0.03); }
+  
 </style>
 </head>
 <body>
@@ -488,6 +539,25 @@
   </div>
 
   <div id="toast-container"></div>
+  <div id="preConfirmOverlay">
+    <div class="confirm-box">
+      <span class="confirm-emoji">🚀</span>
+      <h3 class="confirm-title">¡Casi listo!</h3>
+      <div class="confirm-text">¿Confirmamos el pedido para este cliente?</div>
+      
+      <div id="modalClientName" class="client-highlight">Buscando...</div>
+      
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+         <span style="font-size:13px;color:var(--muted)">Cliente N°:</span>
+         <input type="tel" id="modalClientId" class="mini-input" value="" />
+      </div>
+
+      <div class="confirm-actions">
+         <button id="btnConfirmYes" class="btn-confirm btn-yes">¡Sí, enviar ahora!</button>
+         <button id="btnConfirmNo" class="btn-confirm btn-no">Cancelar</button>
+      </div>
+    </div>
+  </div>
 
   <div id="confirmOverlay">
     <div class="success-box">
@@ -932,7 +1002,48 @@ document.addEventListener("DOMContentLoaded", loadClientNames);
     startCooldown(btnEnviar);
   }
 
-  btnEnviar.addEventListener("click", handleEnviar);
+  // === MODIFICACIÓN: Enviar ahora abre MODAL en vez de enviar directo ===
+  btnEnviar.addEventListener("click", () => {
+    if(!validateForm()) return; // Validamos antes de abrir
+    
+    const id = numeroCliente.value.trim();
+    // Intentamos buscar el nombre en la base global
+    const clienteData = window.globalDbClientes ? window.globalDbClientes[id] : null;
+
+    // Llenar datos del modal
+    const modalName = $("modalClientName");
+    const modalInput = $("modalClientId");
+    
+    modalInput.value = id; // Poner el ID actual en el input del modal
+
+    if(clienteData){
+        modalName.innerHTML = `${clienteData.nom}<br><span style="font-size:13px;font-weight:400;opacity:0.8">${clienteData.loc}</span>`;
+    } else {
+        modalName.innerHTML = `Cliente Nuevo / No registrado`;
+    }
+
+    // Mostrar modal
+    $("preConfirmOverlay").style.display = "flex";
+  });
+
+  // Acciones del Modal
+  $("btnConfirmYes").addEventListener("click", () => {
+     // Si cambiaron el ID en el modal, lo actualizamos en el formulario principal
+     const newId = $("modalClientId").value.trim();
+     if(newId && newId !== numeroCliente.value) {
+        numeroCliente.value = newId;
+        saveDraft(); // Guardar el cambio
+     }
+     $("preConfirmOverlay").style.display = "none";
+     handleEnviar(); // LLAMAR AL ENVÍO ORIGINAL
+  });
+
+  $("btnConfirmNo").addEventListener("click", () => {
+     $("preConfirmOverlay").style.display = "none";
+     // Si cambiaron el ID pero cancelaron, actualizamos igual el input principal
+     const newId = $("modalClientId").value.trim();
+     if(newId) numeroCliente.value = newId;
+  });
 
   // SINCRONIZACIÓN
   let isSyncing = false;
@@ -1373,11 +1484,11 @@ window.addEventListener('appinstalled', () => {
 
 <script>
 // ==========================================================
-//  BUSCADOR DE CLIENTES (VERSIÓN ROBUSTA ESPAÑOL/INGLÉS)
+//  BUSCADOR DE CLIENTES + CONEXIÓN AL MODAL
 // ==========================================================
 (function(){
   
-  // ✅ TU ENLACE CSV (Asegurate que sea el que termina en output=csv)
+  // ✅ TU ENLACE CSV
   const URL_CLIENTES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1GOcSwYF8WyIuH8NE0Nk8gEGfEvYghNEmjoW0bIOZRHSDAyJZiuYfmbtH77MI8RWBh2SPuoEY44UO/pub?gid=2117683454&single=true&output=csv"; 
 
   let dbClientes = {};
@@ -1387,30 +1498,25 @@ window.addEventListener('appinstalled', () => {
   // Carga de datos
   if(navigator.onLine) {
     fetch(URL_CLIENTES).then(r => r.text()).then(txt => {
-      // Detectamos si usa punto y coma o coma
       const separador = txt.indexOf(";") > -1 ? ";" : ",";
-      console.log("Separador detectado:", separador === ";" ? "Punto y Coma (;)" : "Coma (,)");
+      console.log("Separador detectado:", separador);
 
       const lineas = txt.split("\n");
       lineas.forEach(l => {
-        // Usamos el separador detectado
         const p = l.split(separador); 
-        
         if(p.length >= 2) {
              const id = p[0].trim();
-             // Limpieza de comillas
              const nombre = p[1].replace(/['"]+/g, '').trim(); 
              const loc = p[2] ? p[2].replace(/['"]+/g, '').trim() : "";
-             
              dbClientes[id] = { nom: nombre, loc: loc };
         }
       });
-      console.log("✅ Base cargada. Clientes en memoria:", Object.keys(dbClientes).length);
-      // Prueba rápida: ver si el 10001 existe
-      if(dbClientes["10001"]) console.log("Test 10001:", dbClientes["10001"]);
-      else console.warn("⚠️ El cliente 10001 NO se encontró en el CSV descargado.");
+      console.log("✅ Base cargada.");
+      
+      // *** ESTA ES LA LÍNEA MÁGICA NUEVA PARA EL MODAL ***
+      window.globalDbClientes = dbClientes;
 
-    }).catch(e => console.log("⚠️ Error de conexión/URL", e));
+    }).catch(e => console.log("⚠️ Error", e));
   }
 
   // Escuchar teclado
