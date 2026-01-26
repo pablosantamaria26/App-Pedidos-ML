@@ -108,7 +108,7 @@
   @keyframes pulse{ from{ opacity: 1; } to{ opacity: 0.4; } }
 
   .conn-label{ margin-left: 8px; font-size: 12px; font-style: italic; letter-spacing: .1px; opacity: .85; min-width: 96px; display: inline-block; }
-  #connDot.online  + .conn-label::before{ content: "en línea";      color:#22c55e; }
+  #connDot.online  + .conn-label::before{ content: "en línea";       color:#22c55e; }
   #connDot.offline + .conn-label::before{ content: "sin conexión";  color:#ef4444; }
   #connDot.syncing + .conn-label::before{ content: "sincronizando…"; color:#f59e0b; }
 
@@ -375,7 +375,43 @@
   .btn-yes:active { transform: scale(0.97); }
   .btn-no { background: transparent; color: var(--muted); border: 1px solid transparent; }
   .btn-no:hover { background: rgba(0,0,0,0.03); }
+
+/* === NUEVO CSS: Modal de Horario Límite === */
+  #lateModalOverlay {
+    display: none; position: fixed; inset: 0; z-index: 2005; /* Más alto que todo */
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center;
+    animation: fadeIn .3s ease;
+  }
+  .late-box {
+    background: linear-gradient(180deg, #fff, #fff9f9); /* Un tono apenas rojizo */
+    width: min(88vw, 360px);
+    border-radius: 24px; padding: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    border: 2px solid #ef4444; /* Borde rojo alerta */
+    text-align: center;
+    color: #111827;
+  }
+  .late-icon { font-size: 40px; margin-bottom: 12px; display:block; }
+  .late-title { font-size: 19px; font-weight: 800; color: #ef4444; margin: 0 0 10px 0; }
+  .late-text { font-size: 15px; line-height: 1.5; color: #374151; margin-bottom: 20px; }
   
+  .btn-late-wa {
+    background: #25D366; color: white;
+    width: 100%; padding: 18px; /* Más grande para ser target fácil */
+    border-radius: 14px; border:none;
+    font-weight: 800; font-size: 18px; margin-bottom: 0;
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    animation: pulseBtn 2s infinite;
+  }
+  @keyframes pulseBtn {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+  
+  /* Eliminado .btn-late-close para que no aparezca */
 </style>
 </head>
 <body>
@@ -392,7 +428,6 @@
   <main id="nuevoPedido">
     <div id="helloBanner"></div>
 
-    <!-- === Selector de tema (solo visual) === -->
     <div class="theme-row">
       <span>🎨 Tema:</span>
       <div class="swatch" data-color="#06b6d4,#22c55e"
@@ -496,7 +531,6 @@
     </div>
   </main>
 
-  <!-- === NUEVA PESTAÑA: Predicciones === -->
   <main id="predicciones" style="display:none;">
     <h3>🔮 Predicciones (últimos 60 días, local)</h3>
     <div class="stat-card">
@@ -513,13 +547,10 @@
     <button id="btnNuevo" class="tab-btn active">Nuevo</button>
     <button id="btnVerPendientes" class="tab-btn">Pendientes</button>
     <button id="btnVerEstadisticas" class="tab-btn">Estadísticas</button>
-    <button id="btnVerPredicciones" class="tab-btn">Predicciones</button> <!-- nuevo -->
-  </div>
+    <button id="btnVerPredicciones" class="tab-btn">Predicciones</button> </div>
 
-  <!-- FAB micrófono -->
   <button id="btnMic" title="Dictar productos" aria-label="Dictar productos">🎙️</button>
 
-  <!-- Modal de dictado -->
   <div id="dictadoOverlay" role="dialog" aria-modal="true">
     <div class="dictado-box">
       <div class="dictado-head">
@@ -567,6 +598,21 @@
         </svg>
       <h2 style="margin:10px 0 0 0;">¡Pedido enviado!</h2>
       <p style="opacity:.9;margin:6px 0 0 0;">Se guardó correctamente</p>
+    </div>
+  </div>
+
+  <div id="lateModalOverlay">
+    <div class="late-box">
+      <span class="late-icon">⚠️</span>
+      <h3 class="late-title">¡Atención: Horario Límite!</h3>
+      <div class="late-text">
+        Son pasadas las 20:30hs.<br>
+        Para que este pedido salga <b>mañana</b>, debés avisar al depósito ahora mismo.
+      </div>
+      <button id="btnLateWA" class="btn-late-wa">
+        📲 Avisar a depósito ahora
+      </button>
+      <!-- Se eliminó botón Cerrar -->
     </div>
   </div>
 
@@ -658,10 +704,16 @@
         connDot = $("connDot"), netBanner = $("netBanner"), helloBanner = $("helloBanner"),
         shareWA = $("shareWA"), searchPend = $("searchPend"), pedidoContador = $("pedidoContador");
 
-  // SONIDO & VIBRA
-  const sndOk = new Audio("data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA");
+  // SONIDO & VIBRA (BASE64 DE BIP CORTO VALIDO)
+  const sndOk = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"); 
   function vib(ms=70){ if('vibrate' in navigator) navigator.vibrate(ms); }
-  function playOk(){ try{ sndOk.currentTime=0; sndOk.play(); }catch{} }
+  function playOk(){ 
+    try{ 
+       sndOk.currentTime=0; 
+       const p = sndOk.play(); 
+       if(p !== undefined) p.catch(() => {}); // Ignora errores de autoplay
+    }catch(e){} 
+  }
 
   // TOAST
   function showToast(msg, type="info"){
@@ -986,6 +1038,11 @@ document.addEventListener("DOMContentLoaded", loadClientNames);
       logOrderForPrediction(pedido);
       computePredictions();
 
+      if (verificarHorarioLimite(pedido.fechaEntrega)) {
+         // AVISO INMEDIATO (100ms) para que salga enseguida
+         setTimeout(() => mostrarModalHorarioLimite(pedido.fechaEntrega), 100); 
+      }
+
     } else {
       showToast("Pedido guardado localmente.", "info");
     }
@@ -1019,11 +1076,11 @@ document.addEventListener("DOMContentLoaded", loadClientNames);
     } else {
       // Si no existe (o está vacío)
       if(id.length > 0) {
-          modalName.innerHTML = `<span style="color:var(--error)">Cliente no encontrado</span>`;
-          modalName.style.background = "rgba(255,0,0,0.05)";
+           modalName.innerHTML = `<span style="color:var(--error)">Cliente no encontrado</span>`;
+           modalName.style.background = "rgba(255,0,0,0.05)";
       } else {
-          modalName.innerHTML = "Ingresá un número de cliente...";
-          modalName.style.background = "transparent";
+           modalName.innerHTML = "Ingresá un número de cliente...";
+           modalName.style.background = "transparent";
       }
     }
   }
@@ -1057,8 +1114,8 @@ document.addEventListener("DOMContentLoaded", loadClientNames);
      
      // Si el usuario lo cambió, actualizamos el formulario principal
      if(newId && newId !== numeroCliente.value) {
-        numeroCliente.value = newId;
-        saveDraft(); 
+       numeroCliente.value = newId;
+       saveDraft(); 
      }
      
      $("preConfirmOverlay").style.display = "none";
@@ -1117,6 +1174,7 @@ document.addEventListener("DOMContentLoaded", loadClientNames);
   function updateConnectionStatus() {
     if (isSyncing) return;
     const online = navigator.onLine;
+    connDot.className = online ? "online" : "offline";
     connDot.className = online ? "online" : "offline";
     netBanner.style.display = online ? "none" : "block";
     if (online) { setTimeout(syncQueue, 500); }
@@ -1416,7 +1474,7 @@ function procesarTextoDictado(texto) {
   // --- 4️⃣ Conversión de números hablados ---
   const mapaNum = {
     uno:1, una:1, un:1, dos:2, tres:3, cuatro:4, cinco:5,
-    seis:6, siete:7, ocho:8, nueve:9, diez:10,
+    six:6, seis:6, siete:7, ocho:8, nueve:9, diez:10,
     once:11, doce:12, trece:13, catorce:14, quince:15,
     dieciseis:16, diecisiete:17, dieciocho:18, diecinueve:19,
     veinte:20, veintiuno:21, veintidos:22, veintitrés:23, veintitres:23,
@@ -1463,12 +1521,12 @@ btnDictadoUsar.addEventListener('click', () => {
   
 </script>
 
-  <!-- === Registro de Service Worker y botón de instalación PWA === -->
 <script>
 // ==========================================================
 //  1. AUTO-ACTUALIZADOR (Detecta cambios en v16, v17...)
 // ==========================================================
-if ('serviceWorker' in navigator) {
+// Nota: Se agrego validacion de protocolo para evitar errores en Canvas/Blob
+if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.protocol === 'http:')) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/App-Pedidos-ML/service-worker.js', { scope: '/App-Pedidos-ML/' })
       .then(reg => {
@@ -1487,7 +1545,7 @@ if ('serviceWorker' in navigator) {
           });
         });
       })
-      .catch(err => console.error('❌ Error SW:', err));
+      .catch(err => console.log('SW registration skipped or failed:', err)); // Changed to log instead of error to reduce noise
   });
 
   // Seguridad extra: si el navegador detecta cambio de control, recarga
@@ -1536,7 +1594,6 @@ window.addEventListener('appinstalled', () => {
   showToast('App instalada ✔️', 'ok');
 });
 </script>
-
 
 <script>
 // ==========================================================
@@ -1588,8 +1645,57 @@ window.addEventListener('appinstalled', () => {
     });
   }
 })();
-</script>
 
+// ==========================================================
+//  NUEVA FUNCIONALIDAD: AVISO DE HORARIO TARDÍO
+// ==========================================================
+
+function verificarHorarioLimite(fechaEntregaStr) {
+  // 1. Obtener fecha y hora actual
+  const ahora = new Date();
+  
+  // *** CONFIGURACIÓN FINAL: 20:30 ***
+  const HORA_LIMITE = 20; 
+  const MINUTO_LIMITE = 30;
+
+  // 2. Revisar si la hora actual supera el límite
+  const esTarde = (ahora.getHours() > HORA_LIMITE) || 
+                  (ahora.getHours() === HORA_LIMITE && ahora.getMinutes() >= MINUTO_LIMITE);
+  
+  if (!esTarde) return false;
+
+  // 3. Revisar si la fecha de entrega es "Mañana"
+  const manana = new Date();
+  manana.setDate(manana.getDate() + 1);
+  const mananaStr = manana.toISOString().split('T')[0];
+  
+  return (fechaEntregaStr === mananaStr);
+}
+
+function mostrarModalHorarioLimite(fechaEntregaStr) {
+  const modal = document.getElementById("lateModalOverlay");
+  const btnWA = document.getElementById("btnLateWA");
+  const vendedor = document.getElementById("nombreVendedor").value || "Vendedor";
+
+  // Formato de fecha DD-MM-YYYY
+  const parts = fechaEntregaStr.split('-'); 
+  const fechaArg = `${parts[2]}-${parts[1]}-${parts[0]}`; // Invierte a DD-MM-YYYY
+
+  // Nuevo Mensaje
+  const mensaje = `Hola, soy ${vendedor}. Acabo de cargar pedidos para mañana (${fechaArg}) fuera de horario. Por favor sacarlo con el reparto de mañana. Gracias!`;
+  const numero = "5491133395487";
+  const link = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+
+  // Asignamos acción al botón (única salida)
+  btnWA.onclick = () => {
+    window.open(link, '_blank');
+    modal.style.display = 'none'; // Cierra el modal solo al tocar el botón
+  };
+
+  // Mostrar
+  modal.style.display = 'flex';
+}
+</script>
 
 </body>
 </html>
