@@ -173,9 +173,10 @@
   /* INPUTS */
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
   
-  /* MEDIA QUERY: En celulares (menos de 480px) poner inputs uno arriba del otro */
+  /* CAMBIO: En celulares ahora se ven al 50% cada uno para mejor proporción */
   @media (max-width: 480px) {
-    .form-grid { grid-template-columns: 1fr; } /* Columna única */
+    /* .form-grid { grid-template-columns: 1fr; }  <-- ELIMINADO para que queden lado a lado */
+    .form-grid { gap: 8px; } /* Menos espacio en pantallas chicas */
   }
 
   .input-group { display: flex; flex-direction: column; margin-bottom: 16px; position: relative; }
@@ -196,12 +197,13 @@
   /* Estilo mejorado para fecha de entrega (match con numeroCliente) */
   #fechaEntrega { 
     height: var(--input-height); 
-    font-size: 18px; 
+    font-size: 16px; /* Un pelín más chico para que entre "dd/mm/aaaa" en pantallas chicas */
     font-weight: 700; 
     color: var(--primary);
     text-align: center;
+    padding-left: 4px; padding-right: 4px; /* Optimizar espacio lateral */
   }
-  #numeroCliente { font-size: 22px; font-weight: 800; height: var(--input-height); letter-spacing: 1.5px; color: var(--primary); }
+  #numeroCliente { font-size: 22px; font-weight: 800; height: var(--input-height); letter-spacing: 1.5px; color: var(--primary); text-align: center; }
   #productos { min-height: 180px; line-height: 1.6; font-family: 'Roboto Mono', monospace; font-size: 15px; }
 
   /* BOTONES MAGICOS */
@@ -689,13 +691,17 @@
           if(chk.checked) {
               const qtyInput = document.getElementById(`qty_${idx}`);
               const qty = qtyInput.value.trim() || "1"; 
-              textToAdd += (textToAdd || $("productos").value ? "\n" : "") + `${qty} ${chk.value}`;
+              // FIX: Se agrega newline SOLO si el texto anterior no termina en newline
+              textToAdd += (textToAdd ? "\n" : "") + `${qty} ${chk.value}`;
               addedCount++;
           }
       });
 
       if(addedCount > 0) {
-          $("productos").value += ($("productos").value && !$("productos").value.endsWith("\n") ? "\n" : "") + textToAdd;
+          let currentVal = $("productos").value.trimEnd(); // Sacar espacios/newlines del final
+          if (currentVal) currentVal += "\n"; // Si habia algo, agregar UN enter
+          $("productos").value = currentVal + textToAdd;
+          
           saveDraft();
           showToast(`Se agregaron ${addedCount} productos`);
           $("upsellOverlay").style.display = "none";
@@ -718,11 +724,35 @@
     } catch(e) { return null; }
   }
 
+  // Helper para sacar productos conocidos
+  function getKnownProducts() {
+     const allProds = new Set();
+     globalHistorial.forEach(h => {
+        const lines = h.productos.split('\n');
+        lines.forEach(l => {
+           // Limpiar numeros iniciales
+           let p = l.replace(/^\d+\s*/, '').trim().toUpperCase();
+           if(p.length > 3) allProds.add(p);
+        });
+     });
+     // Retornar solo los primeros 100 para no saturar el prompt
+     return Array.from(allProds).slice(0, 100).join(", ");
+  }
+
   $("btnAiOptimize").onclick = async () => {
     const txt = $("productos").value; 
     if(!txt) return showToast("Anotá algo antes...", "error");
     $("magicLoader").style.display = "flex";
-    const sys = "Actúa como corrector de listas de pedidos. Separa por renglón. Corrige ortografía agresivamente (ej: 'lav' -> 'LAVANDINA'). Pon cantidad al inicio. Salida solo texto limpio.";
+    
+    const known = getKnownProducts();
+    const sys = `Actúa como experto en logística. Tu tarea es organizar una lista de pedidos.
+    Reglas CRÍTICAS:
+    1. Detecta el patrón "CANTIDAD ARTÍCULO". Si el usuario escribe todo junto (ej: "12 lavandina 24 trapos"), SEPARALOS en líneas nuevas.
+    2. CUIDADO con los decimales: "2.5" NO se debe separar. "2.5L" es una unidad.
+    3. Si encuentras palabras que no conoces, NO las borres. Trata de corregir la ortografía basándote en esta lista de productos conocidos: [${known}]. Si no está en la lista, déjalo como está pero bien formateado.
+    4. Formato de salida: "CANTIDAD NOMBRE_DEL_ARTICULO" (un item por línea).
+    5. Solo devuelve la lista final, sin texto extra.`;
+
     const resp = await callMagic(txt, sys);
     $("magicLoader").style.display = "none";
     if(resp) { $("productos").value = resp.trim(); showToast("¡Lista acomodada! 🧹"); }
@@ -852,19 +882,34 @@
   // FIX 2: LOGICA DE HORARIO LÍMITE CORREGIDA
   function verificarHorarioLimite(fechaEntregaStr) {
     const ahora = new Date();
+    // Hora corte: 20:30
     const esTarde = (ahora.getHours() > 20) || (ahora.getHours() === 20 && ahora.getMinutes() >= 30);
+    
+    // Si es temprano, no pasa nada
     if (!esTarde) return false;
 
+    const hoyStr = ymdLocal(ahora);
+    
     const manana = new Date(ahora);
     manana.setDate(ahora.getDate() + 1);
-
     const mananaStr = ymdLocal(manana); 
-    return (fechaEntregaStr === mananaStr);
+    
+    // Disparar si la entrega es HOY (ya es tarde) o MAÑANA
+    return (fechaEntregaStr === mananaStr || fechaEntregaStr === hoyStr);
   }
 
   function mostrarModalHorarioLimite(fechaEntregaStr) {
-      const parts = fechaEntregaStr.split('-'); 
-      const fechaArg = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      // CALCULAR SIEMPRE FECHA DE MAÑANA PARA EL MENSAJE
+      const manana = new Date();
+      manana.setDate(manana.getDate() + 1);
+      
+      const dia = String(manana.getDate()).padStart(2, '0');
+      const mes = String(manana.getMonth() + 1).padStart(2, '0');
+      const anio = manana.getFullYear();
+      
+      // Fecha formateada para el mensaje (siempre es "mañana" real)
+      const fechaArg = `${dia}-${mes}-${anio}`;
+
       const vendedor = $("nombreVendedor").value || "Vendedor";
       const mensaje = `Hola, soy ${vendedor}. Acabo de cargar pedidos para mañana (${fechaArg}) fuera de horario. Por favor sacarlo con el reparto de mañana. Gracias!`;
       
@@ -880,7 +925,7 @@
       btn.parentNode.replaceChild(newBtn, btn);
       
       newBtn.onclick = () => {
-          window.open(`https://wa.me/5491133395487?text=${encodeURIComponent(mensaje)}`, '_blank');
+          window.open(`https://wa.me/5491125781293?text=${encodeURIComponent(mensaje)}`, '_blank');
           modal.style.display = 'none';
       };
       
