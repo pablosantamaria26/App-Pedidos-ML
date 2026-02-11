@@ -173,10 +173,12 @@
   /* INPUTS */
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
   
-  /* CAMBIO: En celulares ahora se ven al 50% cada uno para mejor proporción */
+  /* CAMBIO: En celulares ahora se ven uno abajo del otro (100% ancho) */
   @media (max-width: 480px) {
-    /* .form-grid { grid-template-columns: 1fr; }  <-- ELIMINADO para que queden lado a lado */
-    .form-grid { gap: 8px; } /* Menos espacio en pantallas chicas */
+    .form-grid { 
+        grid-template-columns: 1fr; /* Columna única para que ocupen todo el ancho */
+        gap: 12px; 
+    } 
   }
 
   .input-group { display: flex; flex-direction: column; margin-bottom: 16px; position: relative; }
@@ -197,11 +199,11 @@
   /* Estilo mejorado para fecha de entrega (match con numeroCliente) */
   #fechaEntrega { 
     height: var(--input-height); 
-    font-size: 16px; /* Un pelín más chico para que entre "dd/mm/aaaa" en pantallas chicas */
+    font-size: 18px; 
     font-weight: 700; 
     color: var(--primary);
     text-align: center;
-    padding-left: 4px; padding-right: 4px; /* Optimizar espacio lateral */
+    padding-left: 4px; padding-right: 4px; 
   }
   #numeroCliente { font-size: 22px; font-weight: 800; height: var(--input-height); letter-spacing: 1.5px; color: var(--primary); text-align: center; }
   #productos { min-height: 180px; line-height: 1.6; font-family: 'Roboto Mono', monospace; font-size: 15px; }
