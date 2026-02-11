@@ -510,7 +510,7 @@
   const GF_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfgUbkynVRveiW547pgX0AgvVDGnCd1GUoXooMTDXkiCWgdKA/formResponse";
   const GF = { vendedor: "entry.1003904475", fecha: "entry.171879298", fecha_day: "entry.171879298_day", fecha_month: "entry.171879298_month", fecha_year: "entry.171879298_year", cliente: "entry.1103049985", productos: "entry.1828255967", observaciones: "entry.897131524", sig: "entry.1902043730" };
   const $ = id => document.getElementById(id);
-  const apiKey = "AIzaSyDTJ9tK4YMl19H_Jc3nNXlvl2I5Hrl9ULw"; 
+  // LA API KEY YA NO ESTÁ AQUÍ. SE GESTIONA EN EL WORKER.
 
   // URL HISTORIAL
   const SHEET_KEY = "1ZwO_E94WfhKOgRO99fqW_-bM6WyVhvYNCvjfUb33JWI";
@@ -714,16 +714,27 @@
 
 
   // ==========================================
-  // IA & HERRAMIENTAS
+  // IA & HERRAMIENTAS - AHORA VÍA WORKER
   // ==========================================
   async function callMagic(prompt, sys) {
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-    const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sys }] } };
+    const workerUrl = "https://frosty-term-20ea.santamariapablodaniel.workers.dev/";
+    
     try {
-      const res = await fetch(geminiUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const res = await fetch(workerUrl, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ prompt, sys }) // Enviamos datos simples al worker
+      });
+      
+      if (!res.ok) throw new Error("Error en el Worker");
+
       const data = await res.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text;
-    } catch(e) { return null; }
+      return data.text; // El worker devuelve { text: "..." }
+
+    } catch(e) { 
+      console.error(e);
+      return null; 
+    }
   }
 
   // Helper para sacar productos conocidos
@@ -758,7 +769,7 @@
     const resp = await callMagic(txt, sys);
     $("magicLoader").style.display = "none";
     if(resp) { $("productos").value = resp.trim(); showToast("¡Lista acomodada! 🧹"); }
-    else showToast("Error al conectar (API Key)", "error");
+    else showToast("Error al procesar", "error");
   };
 
   // BOTÓN WHATSAPP
