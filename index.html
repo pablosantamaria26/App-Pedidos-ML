@@ -36,18 +36,25 @@
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body {
+  
+  html, body {
     margin: 0; padding: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden; /* Clave para que no se mueva a los costados */
+    overscroll-behavior: none; /* Evita el rebote elástico en móviles */
     font-family: 'Roboto', sans-serif;
     background: radial-gradient(circle at top right, #1e293b, #0f172a);
     background-attachment: fixed;
     color: var(--text-main);
+    min-height: 100vh;
+  }
+
+  body {
     /* Ajustamos padding para la nueva altura de la barra */
     padding-top: calc(var(--top-nav-height) + var(--header-height) + 15px);
     padding-bottom: 40px;
-    overflow-x: hidden;
     transition: background 0.5s ease;
-    min-height: 100vh;
   }
 
   .hidden { display: none !important; }
@@ -186,7 +193,14 @@
     border-color: var(--primary); outline: none;
     background: rgba(0,0,0,0.4); box-shadow: 0 0 0 2px var(--primary-dim);
   }
-  #fechaEntrega { height: var(--input-height); }
+  /* Estilo mejorado para fecha de entrega (match con numeroCliente) */
+  #fechaEntrega { 
+    height: var(--input-height); 
+    font-size: 18px; 
+    font-weight: 700; 
+    color: var(--primary);
+    text-align: center;
+  }
   #numeroCliente { font-size: 22px; font-weight: 800; height: var(--input-height); letter-spacing: 1.5px; color: var(--primary); }
   #productos { min-height: 180px; line-height: 1.6; font-family: 'Roboto Mono', monospace; font-size: 15px; }
 
@@ -492,7 +506,7 @@
   const GF_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfgUbkynVRveiW547pgX0AgvVDGnCd1GUoXooMTDXkiCWgdKA/formResponse";
   const GF = { vendedor: "entry.1003904475", fecha: "entry.171879298", fecha_day: "entry.171879298_day", fecha_month: "entry.171879298_month", fecha_year: "entry.171879298_year", cliente: "entry.1103049985", productos: "entry.1828255967", observaciones: "entry.897131524", sig: "entry.1902043730" };
   const $ = id => document.getElementById(id);
-  const apiKey = ""; 
+  const apiKey = "AIzaSyDTJ9tK4YMl19H_Jc3nNXlvl2I5Hrl9ULw"; 
 
   // URL HISTORIAL
   const SHEET_KEY = "1ZwO_E94WfhKOgRO99fqW_-bM6WyVhvYNCvjfUb33JWI";
