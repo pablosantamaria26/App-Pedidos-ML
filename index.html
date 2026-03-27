@@ -805,11 +805,24 @@
   const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
   const setStats = s => localStorage.setItem("statsPedidos", JSON.stringify(s));
 
-  async function sendToGoogleForm(p) {
+async function sendToGoogleForm(p) {
     const fd = new FormData();
     fd.append(GF.vendedor, p.nombreVendedor); fd.append(GF.cliente, p.numeroCliente); fd.append(GF.productos, p.productos); fd.append(GF.observaciones, p.observaciones || "");
     const f = (p.fechaEntrega || "").trim(); if(f){ fd.append(GF.fecha, f); const [y, m, d] = f.split("-"); if(GF.fecha_day) { fd.append(GF.fecha_day, d); fd.append(GF.fecha_month, m); fd.append(GF.fecha_year, y); } }
     fd.append(GF.sig, p.sig || "");
+
+    // =========================================================
+    // 🚀 AGREGADO QUIRÚRGICO: Envío paralelo al Worker (Supabase)
+    // =========================================================
+    try {
+      fetch("https://frosty-term-20ea.santamariapablodaniel.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(p)
+      }).catch(e => console.log("Worker paralelo:", e));
+    } catch(e) {}
+    // =========================================================
+
     try { await fetch(GF_ACTION, { method: "POST", mode: "no-cors", body: fd }); return { status: "ok" }; } 
     catch(e) { return { status: "error" }; }
   }
