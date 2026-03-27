@@ -958,16 +958,21 @@ async function sendToGoogleForm(p) {
       modal.style.display = 'flex';
   }
 
-  $("btnConfirmYes").onclick = () => {
+$("btnConfirmYes").onclick = () => {
     const finalId = $("modalClientId").value;
     $("numeroCliente").value = finalId; 
     updateClientUI(finalId);
     saveDraft();
 
+    // 🚀 ESTO ES LO NUEVO: Buscamos el nombre del cliente en la memoria
+    const cData = clientNames[finalId];
+    const nomCli = cData ? cData.name : "";
+
     const p = { 
         id: "p"+Date.now(), 
         fechaEntrega: $("fechaEntrega").value, 
         numeroCliente: finalId, 
+        clienteNombre: nomCli, // 🚀 ACÁ LO AGREGAMOS AL PAQUETE
         nombreVendedor: $("nombreVendedor").value.toUpperCase(), 
         productos: $("productos").value.toUpperCase(), 
         observaciones: $("observaciones").value, 
