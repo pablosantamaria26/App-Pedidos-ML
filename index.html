@@ -805,26 +805,39 @@
   const getStats = () => JSON.parse(localStorage.getItem("statsPedidos") || '{"enviados":0,"reenviados":0}');
   const setStats = s => localStorage.setItem("statsPedidos", JSON.stringify(s));
 
-async function sendToGoogleForm(p) {
-    const fd = new FormData();
-    fd.append(GF.vendedor, p.nombreVendedor); fd.append(GF.cliente, p.numeroCliente); fd.append(GF.productos, p.productos); fd.append(GF.observaciones, p.observaciones || "");
-    const f = (p.fechaEntrega || "").trim(); if(f){ fd.append(GF.fecha, f); const [y, m, d] = f.split("-"); if(GF.fecha_day) { fd.append(GF.fecha_day, d); fd.append(GF.fecha_month, m); fd.append(GF.fecha_year, y); } }
-    fd.append(GF.sig, p.sig || "");
+  const WORKER_URL = "https://frosty-term-20ea.santamariapablodaniel.workers.dev/";
 
-    // =========================================================
-    // 🚀 AGREGADO QUIRÚRGICO: Envío paralelo al Worker (Supabase)
-    // =========================================================
+  async function sendToGoogleForm(p) {
+    // Backup legacy: Google Forms fire-and-forget (no bloquea el éxito)
     try {
-      fetch("https://frosty-term-20ea.santamariapablodaniel.workers.dev/", {
+      const fd = new FormData();
+      fd.append(GF.vendedor, p.nombreVendedor); fd.append(GF.cliente, p.numeroCliente); fd.append(GF.productos, p.productos); fd.append(GF.observaciones, p.observaciones || "");
+      const f = (p.fechaEntrega || "").trim(); if(f){ fd.append(GF.fecha, f); const [y, m, d] = f.split("-"); if(GF.fecha_day) { fd.append(GF.fecha_day, d); fd.append(GF.fecha_month, m); fd.append(GF.fecha_year, y); } }
+      fd.append(GF.sig, p.sig || "");
+      fetch(GF_ACTION, { method: "POST", mode: "no-cors", body: fd }).catch(() => {});
+    } catch(e) {}
+
+    // Primario: Worker → Supabase (awaited — determina el éxito del envío)
+    try {
+      const res = await fetch(WORKER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(p)
-      }).catch(e => console.log("Worker paralelo:", e));
-    } catch(e) {}
-    // =========================================================
-
-    try { await fetch(GF_ACTION, { method: "POST", mode: "no-cors", body: fd }); return { status: "ok" }; } 
-    catch(e) { return { status: "error" }; }
+        body: JSON.stringify({
+          fechaEntrega:   p.fechaEntrega,
+          numeroCliente:  p.numeroCliente,
+          clienteNombre:  p.clienteNombre || "",
+          nombreVendedor: p.nombreVendedor,
+          productos:      p.productos,
+          observaciones:  p.observaciones || "",
+          sig:            p.sig || "",
+          timestamp:      p.timestamp || Date.now(),
+        }),
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return { status: "ok" };
+    } catch(e) {
+      return { status: "error" };
+    }
   }
 
   // ==========================================
