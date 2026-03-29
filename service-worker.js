@@ -1,6 +1,6 @@
-// === Service Worker v17 — Pedidos ML (final PWA GitHub) ===
+// === Service Worker v28 — Pedidos ML (final PWA GitHub) ===
 
-const CACHE_NAME = "pedidos-ml-v27";
+const CACHE_NAME = "pedidos-ml-v28";
 const OFFLINE_URLS = [
   "./",
   "./index.html",
