@@ -842,10 +842,14 @@
       if (data.status === "supabase_error") {
           console.error("Detalle del error de BD:", data.detail);
           showToast("Error en Servidor. Guardado en Cola.", "error");
-          throw new Error("Supabase rechazó el pedido"); // Esto hace que VAYA A PENDIENTES y no se borre
+          throw new Error("Supabase rechazó el pedido"); 
       }
       
       return { status: "ok" };
+      
+    } catch(e) {
+      // 🔥 ESTE ES EL CATCH QUE FALTABA PARA QUE NO TIRE ERROR DE SINTAXIS
+      return { status: "error" };
     }
   }
 
