@@ -833,10 +833,19 @@
           timestamp:      p.timestamp || Date.now(),
         }),
       });
+      
       if (!res.ok) throw new Error("HTTP " + res.status);
+      
+      const data = await res.json();
+      
+      // 🚀 ACA ESTA LA MAGIA: Si el worker avisa que falló Supabase, cortamos todo.
+      if (data.status === "supabase_error") {
+          console.error("Detalle del error de BD:", data.detail);
+          showToast("Error en Servidor. Guardado en Cola.", "error");
+          throw new Error("Supabase rechazó el pedido"); // Esto hace que VAYA A PENDIENTES y no se borre
+      }
+      
       return { status: "ok" };
-    } catch(e) {
-      return { status: "error" };
     }
   }
 
