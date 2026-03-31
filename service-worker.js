@@ -1,13 +1,12 @@
-// === Service Worker v28 — Pedidos ML (final PWA GitHub) ===
+// === Service Worker v51 — Pedidos ML (App-Pedidos-ML) ===
 
-const CACHE_NAME = "pedidos-ml-v29";
+const CACHE_NAME = "pedidos-ml-v51";
 const OFFLINE_URLS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  // Asegurate de tener estos íconos o comentá estas líneas si no existen
-  // "./icon-192.png", 
-  // "./icon-512.png"
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 // 🟢 INSTALACIÓN
@@ -23,12 +22,13 @@ self.addEventListener("install", (e) => {
 // 🟢 ACTIVACIÓN
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : null)))
-    )
+    caches.keys()
+      .then(keys => Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : null))))
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: "window" }))
+      .then(clients => clients.forEach(c => c.postMessage({ type: "SW_UPDATED", version: CACHE_NAME })))
   );
-  console.log("✅ Service Worker activado y limpio");
-  self.clients.claim();
+  console.log("✅ Service Worker activado y limpio —", CACHE_NAME);
 });
 
 // 🟢 FETCH — solo GET local (no intercepta Google Sheets ni scripts externos)
