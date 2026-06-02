@@ -2279,7 +2279,14 @@ $("btnConfirmYes").onclick = () => {
       box.innerHTML += `<div class="pedido-card"><div class="card-header"><strong>${p.numeroCliente}</strong><span style="font-size:10px; color:var(--primary)">EN COLA</span></div><div class="card-body">${p.productos}</div></div>`;
     });
   }
-  $("searchPend").oninput = renderPendientes; $("btnReintentarTodos").onclick = syncQueue;
+  $("searchPend").oninput = renderPendientes;
+  $("btnReintentarTodos").onclick = () => {
+    if (!navigator.onLine) {
+      showToast("Sin conexión. El pedido se enviará automáticamente cuando vuelva la red.", "error");
+      return;
+    }
+    syncQueue();
+  };
 
   function renderStats(){
     // ── Sesión actual ──
