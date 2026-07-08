@@ -1678,24 +1678,55 @@ input::placeholder, textarea::placeholder {
      return Array.from(allProds).slice(0, 100).join(", ");
   }
 
-  $("btnAiOptimize").onclick = async () => {
+  // Acomoda la lista al instante — sin IA ni red (funciona sin señal).
+  // Separa items pegados en un renglón cada uno, respeta decimales y
+  // tamaños (ej "2 litros" no se parte), limpia y pasa a MAYÚSCULAS.
+  function acomodarLocal(raw) {
+    let t = (raw || "").replace(/\r/g, " ").trim();
+    if (!t) return "";
+
+    // Número pegado a palabra: "12lavandina" -> "12 lavandina"
+    // (no toca decimales: el punto/coma va entre dígitos, sin letras al lado)
+    t = t.replace(/(\d)([a-záéíóúñ])/gi, "$1 $2");
+    // Aplanar a una sola línea con espacios simples
+    t = t.replace(/\s+/g, " ").trim();
+
+    // Palabras de medida: si un número las precede es un TAMAÑO, no un item nuevo
+    const UNIDAD = /^(l|lt|lts|litro|litros|kg|kilo|kilos|g|gr|grs|gramo|gramos|ml|cc|cm|mm|mt|mts|metro|metros|unidad|unidades)$/i;
+
+    const tokens = t.split(" ");
+    const items = [];
+    let cur = [];
+    for (let i = 0; i < tokens.length; i++) {
+      const tok = tokens[i];
+      const esCantidad = /^\d+(?:[.,]\d+)?$/.test(tok);
+      const sig = tokens[i + 1] || "";
+      // Arranca item nuevo: una cantidad, si ya hay algo acumulado y no la
+      // sigue una palabra de medida ("2 litros" queda en el mismo renglón).
+      if (esCantidad && cur.length > 0 && !UNIDAD.test(sig)) {
+        items.push(cur.join(" "));
+        cur = [tok];
+      } else {
+        cur.push(tok);
+      }
+    }
+    if (cur.length) items.push(cur.join(" "));
+
+    return items
+      .map(s => s.replace(/\s+/g, " ").trim().toUpperCase())
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  $("btnAiOptimize").onclick = () => {
     const txt = $("productos").value;
-    if(!txt) return showToast("Anotá algo antes...", "error");
-    $("magicLoader").style.display = "flex";
-
-    const known = getKnownProducts();
-    const sys = `Actúa como experto en logística. Tu tarea es organizar una lista de pedidos.
-    Reglas CRÍTICAS:
-    1. Detecta el patrón "CANTIDAD ARTÍCULO". Si el usuario escribe todo junto (ej: "12 lavandina 24 trapos"), SEPARALOS en líneas nuevas.
-    2. CUIDADO con los decimales: "2.5" NO se debe separar. "2.5L" es una unidad.
-    3. Si encuentras palabras que no conoces, NO las borres. Trata de corregir la ortografía basándote en esta lista de productos conocidos: [${known}]. Si no está en la lista, déjalo como está pero bien formateado.
-    4. Formato de salida: "CANTIDAD NOMBRE_DEL_ARTICULO" (un item por línea).
-    5. Solo devuelve la lista final, sin texto extra.`;
-
-    const resp = await callMagic(txt, sys);
-    $("magicLoader").style.display = "none";
-    if(resp) { $("productos").value = resp.trim(); autoGrowProductos(); showToast("¡Lista acomodada! 🧹"); }
-    else showToast("Error al procesar", "error");
+    if(!txt.trim()) return showToast("Anotá algo antes...", "error");
+    const antes = txt.trim();
+    const acomodado = acomodarLocal(txt);
+    $("productos").value = acomodado;
+    autoGrowProductos();
+    saveDraft();
+    showToast(acomodado === antes ? "Ya estaba prolijo ✨" : "¡Lista acomodada! 🧹");
   };
 
   // BOTÓN WHATSAPP
