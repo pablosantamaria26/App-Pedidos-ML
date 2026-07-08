@@ -2029,46 +2029,59 @@ main { max-width: 540px; }
   }
 
   // Acomoda la lista al instante — sin IA ni red (funciona sin señal).
-  // Separa items pegados en un renglón cada uno, respeta decimales y
-  // tamaños (ej "2 litros" no se parte), corrige typos y pasa a MAYÚSCULAS.
+  // Deja un item por renglón (CANTIDAD ARTICULO), despega números pegados
+  // a palabras, NO rompe los tamaños (20X30, X4, 10G, X10), corrige typos
+  // contra lo conocido y pasa todo a MAYÚSCULAS.
   function acomodarLocal(raw, vocab) {
-    let t = (raw || "").replace(/\r/g, " ").trim();
-    if (!t) return "";
+    let t = (raw || "").replace(/\r/g, " ").toUpperCase();
+    if (!t.trim()) return "";
 
-    // Número pegado a palabra: "12lavandina" -> "12 lavandina"
-    // (no toca decimales: el punto/coma va entre dígitos, sin letras al lado)
-    t = t.replace(/(\d)([a-záéíóúñ])/gi, "$1 $2");
-    // Aplanar a una sola línea con espacios simples
+    // Despegar números pegados a palabras en AMBOS sentidos:
+    //  "12ESPONJA" -> "12 ESPONJA" ; "STRELLITA24" -> "STRELLITA 24"
+    //  (los tamaños quedan espaciados: "20X30"->"20 X 30", "X4"->"X 4",
+    //   "10G"->"10 G" — y el separado de abajo los mantiene en el renglón)
+    t = t.replace(/(\d)([A-ZÁÉÍÓÚÑ])/g, "$1 $2").replace(/([A-ZÁÉÍÓÚÑ])(\d)/g, "$1 $2");
     t = t.replace(/\s+/g, " ").trim();
 
     // Palabras de medida: si un número las precede es un TAMAÑO, no un item nuevo
-    const UNIDAD = /^(l|lt|lts|litro|litros|kg|kilo|kilos|g|gr|grs|gramo|gramos|ml|cc|cm|mm|mt|mts|metro|metros|unidad|unidades)$/i;
+    const UNIDAD = /^(L|LT|LTS|LITRO|LITROS|KG|KILO|KILOS|G|GR|GRS|GRAMO|GRAMOS|ML|CC|CM|MM|MT|MTS|METRO|METROS|UNIDAD|UNIDADES)$/;
 
     const tokens = t.split(" ");
     const items = [];
     let cur = [];
     for (let i = 0; i < tokens.length; i++) {
       const tok = tokens[i];
-      // Cantidad = entero o decimal (2, 12, 2.5, 2,5) — el decimal queda intacto
-      const esCantidad = /^\d+(?:[.,]\d+)?$/.test(tok);
-      const sig = tokens[i + 1] || "";
-      // Arranca item nuevo: una cantidad, si ya hay algo acumulado y no la
-      // sigue una palabra de medida ("2 litros" queda en el mismo renglón).
-      if (esCantidad && cur.length > 0 && !UNIDAD.test(sig)) {
-        items.push(cur.join(" "));
-        cur = [tok];
-      } else {
-        cur.push(tok);
-      }
+      const esCantidad = /^\d+(?:[.,]\d+)?$/.test(tok);   // entero o decimal
+      const sig  = tokens[i + 1] || "";                   // token siguiente
+      const prev = cur.length ? cur[cur.length - 1] : ""; // token anterior
+      // Arranca item nuevo SOLO si el número es una cantidad de verdad:
+      //  - ya hay algo acumulado
+      //  - no lo sigue una unidad de medida  ("2 LITROS")
+      //  - no es una dimensión con X         ("20 X 30", "X 4")
+      //  - el anterior no es un número       (evita cortar dentro de un tamaño)
+      const nuevoItem = esCantidad && cur.length > 0 &&
+        !UNIDAD.test(sig) && sig !== "X" && prev !== "X" && !/^\d/.test(prev);
+      if (nuevoItem) { items.push(cur.join(" ")); cur = [tok]; }
+      else cur.push(tok);
     }
     if (cur.length) items.push(cur.join(" "));
 
     return items
       .map(s => {
-        let up = s.replace(/\s+/g, " ").trim().toUpperCase();
+        let words = s.split(" ");
         // Corregir ortografía palabra por palabra contra lo conocido
-        if (vocab && vocab.size) up = up.split(" ").map(w => corregirPalabra(w, vocab)).join(" ");
-        return up;
+        if (vocab && vocab.size) words = words.map(w => corregirPalabra(w, vocab));
+        let out = words.join(" ").replace(/\s+/g, " ").trim();
+        // Recompactar los tamaños al formato del ejemplo (20X30, X4, 10G).
+        // Solo la parte DESPUÉS de la cantidad, para no tocar el número de cantidad.
+        const qty = out.split(" ")[0];
+        let rest = out.slice(qty.length);
+        rest = rest
+          .replace(/(\d+)\s*X\s*(\d+)/g, "$1X$2")                                   // 20 X 30 -> 20X30
+          .replace(/\bX\s+(\d+)/g, "X$1")                                           // X 4 -> X4
+          .replace(/(\d+)\s+(G|KG|GR|GRS|ML|CC|CM|MM|MT|MTS|LT|LTS|L)\b/g, "$1$2")  // 10 G -> 10G
+          .replace(/\s+/g, " ").trim();
+        return rest ? qty + " " + rest : qty;
       })
       .filter(Boolean)
       .join("\n");
