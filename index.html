@@ -1971,10 +1971,67 @@ main { max-width: 540px; }
      return Array.from(allProds).slice(0, 100).join(", ");
   }
 
+  // ── Corrector ortográfico local (instantáneo, sin IA) ──
+  // Aprende los nombres de productos del historial de ventas + los modelos
+  // Vanela, y corrige cada palabra mal escrita por la más parecida (typos).
+  const _normTxt = s => (s || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  // Distancia de edición Damerau-OSA: como Levenshtein pero cuenta el "swap"
+  // de 2 letras adyacentes (typo muy común, ej "coche"→"coceh") como 1 edición.
+  function _lev(a, b) {
+    const m = a.length, n = b.length;
+    if (!m) return n; if (!n) return m;
+    const d = [];
+    for (let i = 0; i <= m; i++) d[i] = [i];
+    for (let j = 0; j <= n; j++) d[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+          d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);   // transposición
+        }
+      }
+    }
+    return d[m][n];
+  }
+
+  // Vocabulario: palabra normalizada -> forma canónica (con acentos). Cacheado.
+  let _vocabCache = null, _vocabLen = -1;
+  function getVocab() {
+    if (_vocabCache && _vocabLen === globalHistorial.length) return _vocabCache;
+    const vocab = new Map();
+    const add = (frase) => (frase || "").trim().split(/\s+/).forEach(w => {
+      const nw = _normTxt(w);
+      if (nw.length >= 3 && !vocab.has(nw)) vocab.set(nw, w.toUpperCase());
+    });
+    try { VANELA_PRODUCTOS.forEach(p => add(VANELA_MARCA + " " + p.desc)); } catch (e) {}
+    try { globalHistorial.forEach(h => (h.productos || "").split("\n").forEach(l => add(l.replace(/^\d+\s*/, "")))); } catch (e) {}
+    _vocabCache = vocab; _vocabLen = globalHistorial.length;
+    return vocab;
+  }
+
+  // Corrige una palabra si es un typo claro de alguna conocida
+  function corregirPalabra(w, vocab) {
+    const W = _normTxt(w);
+    if (vocab.has(W)) return vocab.get(W);            // ya es conocida → forma canónica (con acento)
+    if (W.length < 4 || /\d/.test(W)) return w;        // muy corta o con números → no arriesgar
+    if (W.endsWith("S") && vocab.has(W.slice(0, -1))) return w;  // plural de una conocida → no es typo
+    if (vocab.has(W + "S")) return w;                  // singular de una conocida → no es typo
+    let mejor = null, mejorD = Infinity;
+    for (const [v, canon] of vocab) {
+      if (Math.abs(v.length - W.length) > 2) continue; // poda rápida
+      const d = _lev(W, v);
+      if (d < mejorD) { mejorD = d; mejor = canon; if (d === 0) break; }
+    }
+    const umbral = W.length >= 7 ? 2 : 1;              // typos: 1 char (cortas), 2 (largas)
+    return (mejor && mejorD <= umbral) ? mejor : w;
+  }
+
   // Acomoda la lista al instante — sin IA ni red (funciona sin señal).
   // Separa items pegados en un renglón cada uno, respeta decimales y
-  // tamaños (ej "2 litros" no se parte), limpia y pasa a MAYÚSCULAS.
-  function acomodarLocal(raw) {
+  // tamaños (ej "2 litros" no se parte), corrige typos y pasa a MAYÚSCULAS.
+  function acomodarLocal(raw, vocab) {
     let t = (raw || "").replace(/\r/g, " ").trim();
     if (!t) return "";
 
@@ -2007,7 +2064,12 @@ main { max-width: 540px; }
     if (cur.length) items.push(cur.join(" "));
 
     return items
-      .map(s => s.replace(/\s+/g, " ").trim().toUpperCase())
+      .map(s => {
+        let up = s.replace(/\s+/g, " ").trim().toUpperCase();
+        // Corregir ortografía palabra por palabra contra lo conocido
+        if (vocab && vocab.size) up = up.split(" ").map(w => corregirPalabra(w, vocab)).join(" ");
+        return up;
+      })
       .filter(Boolean)
       .join("\n");
   }
@@ -2016,7 +2078,7 @@ main { max-width: 540px; }
     const txt = $("productos").value;
     if(!txt.trim()) return showToast("Anotá algo antes...", "error");
     const antes = txt.trim();
-    const acomodado = acomodarLocal(txt);
+    const acomodado = acomodarLocal(txt, getVocab());
     $("productos").value = acomodado;
     autoGrowProductos();
     saveDraft();
