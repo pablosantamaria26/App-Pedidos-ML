@@ -2801,8 +2801,13 @@ $("btnConfirmYes").onclick = () => {
     autoGrowProductos();
     $("fechaEntrega").value = d.f || nextBusinessDay();
 
-    const savedTheme = localStorage.getItem('themePref');
-    if(savedTheme) { $("themeSelector").value = savedTheme; changeTheme(savedTheme); }
+    // El color de marca es fijo (esmeralda, definido en CSS :root). Limpiamos
+    // cualquier preferencia de color vieja (ej "naranja") que pisaba --primary
+    // y dejaba la app naranja con la sombra verde del botón.
+    localStorage.removeItem('themePref');
+    document.documentElement.style.removeProperty('--primary');
+    document.documentElement.style.removeProperty('--primary-dark');
+    document.documentElement.style.removeProperty('--primary-dim');
 
     // Modo claro por defecto; se recuerda la elección del vendedor (uiMode).
     const uiMode = localStorage.getItem('uiMode') || 'light';
