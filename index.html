@@ -84,14 +84,6 @@ html, body {
   overscroll-behavior: none;
 }
 
-/* Scroll lock — position:fixed preserva la posición visual sin salto al top */
-body.no-scroll {
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
-  /* top se inyecta por JS con el scrollY actual */
-}
-
 body {
   font-family: 'Inter', 'Roboto', sans-serif;
   background: #0d1117;
@@ -922,7 +914,7 @@ input::placeholder, textarea::placeholder {
       <div class="nav-meta">
         <div id="connDot" class="dot offline"></div>
         <span class="conn-label">Red</span>
-        <input type="checkbox" id="themeToggle" />
+        <input type="checkbox" id="themeToggle" checked />
         <label for="themeToggle" class="theme-lbl" title="Modo claro / oscuro"></label>
       </div>
     </div>
@@ -1393,25 +1385,15 @@ input::placeholder, textarea::placeholder {
       html = matches.map(([id, c], i) => acItemHtml(id, c, i === 0)).join("");
     }
 
-    const wasHidden = drop.style.display === "none" || !drop.style.display;
     drop.innerHTML = html;
     drop.style.display = "block";
-    // Lock solo cuando el dropdown recién aparece — no en cada update por tecla
-    if (wasHidden && !document.body.classList.contains("no-scroll")) {
-      document.body.style.top = `-${window.scrollY}px`;
-      document.body.classList.add("no-scroll");
-    }
+    // Ya no se bloquea el scroll del body: el vendedor puede seguir
+    // bajando a Fecha/Vendedor/Observaciones con el dropdown abierto.
   }
 
   function hideAutocomplete() {
     const d = $("clienteDropdown");
     if (d) d.style.display = "none";
-    if (document.body.classList.contains("no-scroll")) {
-      const top = Math.abs(parseInt(document.body.style.top || "0", 10));
-      document.body.classList.remove("no-scroll");
-      document.body.style.top = "";
-      window.scrollTo(0, top);
-    }
   }
 
   // Calcula próxima fecha para un día de semana dado (0=Dom…6=Sáb)
@@ -2341,6 +2323,14 @@ $("btnConfirmYes").onclick = () => {
 
     const savedTheme = localStorage.getItem('themePref');
     if(savedTheme) { $("themeSelector").value = savedTheme; changeTheme(savedTheme); }
+
+    // Modo claro/oscuro: claro por defecto; se recuerda la elección del vendedor.
+    // 'uiMode' = 'light' (default) | 'dark'
+    const uiMode = localStorage.getItem('uiMode') || 'light';
+    $("themeToggle").checked = (uiMode === 'light');   // checked = claro (:has en CSS)
+    $("themeToggle").addEventListener('change', (e) => {
+      localStorage.setItem('uiMode', e.target.checked ? 'light' : 'dark');
+    });
 
     function buildGreeting(nombre) {
       const h = new Date().getHours();
