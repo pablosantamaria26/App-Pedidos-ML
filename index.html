@@ -2546,21 +2546,27 @@ $("btnConfirmYes").onclick = () => {
     });
     return set;
   }
-  // La línea donde está el cursor + su cantidad y su parte de producto
+  // La línea donde está el cursor + su cantidad y su parte de producto.
+  // La cantidad se reconoce con o sin espacio ("12 cab" y "12cab").
   function lineaActual(ta) {
     const pos = ta.selectionStart;
     const val = ta.value;
     const start = val.lastIndexOf("\n", pos - 1) + 1;
     let end = val.indexOf("\n", pos); if (end === -1) end = val.length;
     const linea = val.slice(start, end);
-    const m = linea.match(/^(\s*\d+(?:[.,]\d+)?\s+)?(.*)$/);
-    return { start, end, qtyPrefix: (m && m[1]) || "", prod: (m && m[2]) || "" };
+    const m = linea.match(/^(\s*\d+(?:[.,]\d+)?\s*)?(.*)$/);
+    return { start, end, qtyPrefix: (m && m[1]) || "", prod: (m && m[2]) || "", lineText: linea };
   }
+  // Contexto del renglón congelado al momento de mostrar las sugerencias.
+  // Al tocar un chip el textarea pierde el foco y el cursor puede resetearse
+  // (celulares): sin esto se perdía la cantidad tipeada (ej el "12").
+  let _sugCtx = null;
   function renderSugerencias() {
     const cont = $("prodSug"); if (!cont) return;
     const info = lineaActual($("productos"));
     const q = _normTxt(info.prod).trim();
-    if (q.length < 2) { cont.style.display = "none"; cont.innerHTML = ""; return; }
+    if (q.length < 2) { cont.style.display = "none"; cont.innerHTML = ""; _sugCtx = null; return; }
+    _sugCtx = info;
     const cat = getCatalogo();
     if (!cat.length) { cont.style.display = "none"; return; }
     const delCli = productosDelCliente(($("numeroCliente").value || "").trim());
@@ -2576,10 +2582,14 @@ $("btnConfirmYes").onclick = () => {
     ).join("");
     cont.style.display = "flex";
   }
-  // Al tocar un chip: completa el renglón actual con el producto correcto
+  // Al tocar un chip: completa el renglón actual con el producto correcto.
+  // Usa el contexto congelado en renderSugerencias (el toque hace perder el
+  // foco y el cursor puede resetearse); si el texto cambió, lo recalcula.
   function aplicarSugerencia(prodCanon) {
     const ta = $("productos");
-    const { start, end, qtyPrefix } = lineaActual(ta);
+    let ctx = _sugCtx;
+    if (!ctx || ta.value.slice(ctx.start, ctx.end) !== ctx.lineText) ctx = lineaActual(ta);
+    const { start, end, qtyPrefix } = ctx;
     const qty = (qtyPrefix || "").trim();
     const nueva = (qty ? qty + " " : "") + prodCanon;
     const val = ta.value;
@@ -2590,6 +2600,7 @@ $("btnConfirmYes").onclick = () => {
     ta.focus();
     try { ta.setSelectionRange(nuevoPos, nuevoPos); } catch (e) {}
     saveDraft(); autoGrowProductos();
+    _sugCtx = null;
     const cont = $("prodSug"); if (cont) { cont.style.display = "none"; cont.innerHTML = ""; }
   }
 
