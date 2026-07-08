@@ -297,9 +297,8 @@ main {
 
 #productos {
   width: 100%;
-  height: 40vh;
-  min-height: 190px;
-  max-height: 50vh;
+  min-height: 132px;      /* arranca compacta → deja pantalla libre para scrollear con un dedo */
+  overflow-y: hidden;     /* crece con el contenido (autoGrow); sin scroll interno que atrape el gesto */
   resize: none;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -1631,6 +1630,7 @@ input::placeholder, textarea::placeholder {
           $("productos").value = currentVal + textToAdd;
 
           saveDraft();
+          autoGrowProductos();
           showToast(`Se agregaron ${addedCount} productos`);
           $("upsellOverlay").style.display = "none";
       } else {
@@ -1694,7 +1694,7 @@ input::placeholder, textarea::placeholder {
 
     const resp = await callMagic(txt, sys);
     $("magicLoader").style.display = "none";
-    if(resp) { $("productos").value = resp.trim(); showToast("¡Lista acomodada! 🧹"); }
+    if(resp) { $("productos").value = resp.trim(); autoGrowProductos(); showToast("¡Lista acomodada! 🧹"); }
     else showToast("Error al procesar", "error");
   };
 
@@ -2077,9 +2077,11 @@ $("btnConfirmYes").onclick = () => {
   $("btnConfirmNo").onclick = () => $("preConfirmOverlay").style.display = "none";
   $("btnLateCerrar").onclick = () => $("lateModalOverlay").style.display = "none";
 
+  // Auto-crecer la textarea con el contenido (sin scroll interno que atrape el gesto de un dedo)
+  function autoGrowProductos(){ const t=$("productos"); if(!t) return; t.style.height="auto"; t.style.height=t.scrollHeight+"px"; }
   function saveDraft(){ localStorage.setItem("draft", JSON.stringify({f:$("fechaEntrega").value, c:$("numeroCliente").value, p:$("productos").value, o:$("observaciones").value})); }
-  function clearForm(){ $("productos").value=""; $("numeroCliente").value=""; $("observaciones").value=""; saveDraft(); $("numeroCliente").focus(); $("infoCliente").textContent=""; }
-  $("productos").oninput = saveDraft;
+  function clearForm(){ $("productos").value=""; $("numeroCliente").value=""; $("observaciones").value=""; saveDraft(); autoGrowProductos(); $("numeroCliente").focus(); $("infoCliente").textContent=""; }
+  $("productos").oninput = () => { saveDraft(); autoGrowProductos(); };
 
   // ==========================================
   // DICTADO — versión mejorada
@@ -2201,6 +2203,7 @@ $("btnConfirmYes").onclick = () => {
       $("productos").value = prev ? prev + "\n" + formatted : formatted;
       closeMic();
       saveDraft();
+      autoGrowProductos();
     };
 
     $("btnDictadoCancelar").onclick = () => {
@@ -2319,6 +2322,7 @@ $("btnConfirmYes").onclick = () => {
     if(d.c) { $("numeroCliente").value = d.c; updateClientUI(d.c); }
     if(d.p) $("productos").value = d.p;
     if(d.o) $("observaciones").value = d.o;
+    autoGrowProductos();
     $("fechaEntrega").value = d.f || nextBusinessDay();
 
     const savedTheme = localStorage.getItem('themePref');
