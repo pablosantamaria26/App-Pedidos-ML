@@ -508,7 +508,7 @@ input::placeholder, textarea::placeholder {
   border: 1px solid var(--border);
   border-radius: var(--radius-s);
   z-index: 500;
-  max-height: 50vh; overflow-y: auto; overflow-x: hidden;
+  max-height: 320px; overflow-y: auto; overflow-x: hidden;   /* px: los vh fallan dentro del iframe contenedor */
   box-shadow: 0 10px 28px rgba(0,0,0,0.35);
   display: none;
 }
@@ -527,6 +527,13 @@ input::placeholder, textarea::placeholder {
 .ac-item:active { background: var(--primary-dim); }
 .ac-id   { font-size: 10px; font-weight: 700; color: var(--primary); letter-spacing: 1px; }
 .ac-mio  { color: var(--accent); font-size: 12px; line-height: 1; flex-shrink: 0; }  /* ★ cliente de tu cartera */
+.ac-toggle {
+  padding: 11px 12px; text-align: center;
+  font-size: 11.5px; font-weight: 800; letter-spacing: 0.3px;
+  color: var(--primary); background: var(--primary-dim);
+  cursor: pointer; user-select: none;
+}
+.ac-toggle:active { background: var(--primary); color: var(--accent-ink); }
 
 /* ── Saludo contextual (hero): nombre + qué estás viendo + estado ── */
 .hero-card {
@@ -570,7 +577,7 @@ input::placeholder, textarea::placeholder {
 /* Guía rápida (coach) */
 .coach-list {
   display: flex; flex-direction: column; gap: 11px;
-  margin-bottom: 14px; max-height: 52vh; overflow-y: auto;
+  margin-bottom: 14px; max-height: 300px; overflow-y: auto;   /* px: los vh fallan dentro del iframe contenedor */
 }
 .coach-item {
   display: flex; gap: 10px; align-items: flex-start;
@@ -784,7 +791,7 @@ input::placeholder, textarea::placeholder {
   animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   flex-direction: column;
-  max-height: 88vh;
+  max-height: 88%;   /* % del overlay (alto real del iframe) — 88vh se cortaba embebida */
   transition: background 0.3s;
 }
 
@@ -908,7 +915,7 @@ input::placeholder, textarea::placeholder {
   display: none;
 }
 
-/* Toast */
+/* Toast — se destaca de la app y NUNCA se corta (los textos largos bajan de renglón) */
 .toast {
   position: fixed;
   top: calc(var(--nav-h) + 12px);
@@ -916,19 +923,22 @@ input::placeholder, textarea::placeholder {
   transform: translateX(-50%);
   background: var(--bg-modal);
   color: var(--text-main);
-  padding: 12px 24px;
-  border-radius: 99px;
-  font-size: 14px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-size: 13.5px;
   font-weight: 600;
+  line-height: 1.45;
   z-index: 4000;
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  border: 1.5px solid var(--primary);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.30), 0 0 0 4px var(--primary-dim);
   animation: toastIn 0.25s ease;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  white-space: nowrap;
-  max-width: 90vw;
+  white-space: normal;
+  width: max-content;
+  max-width: min(92vw, 420px);
+  text-align: left;
 }
 
 /* Animaciones */
@@ -1461,7 +1471,7 @@ main { max-width: 540px; }
 
   <!-- ═══ MODAL: SUGERENCIAS (UPSELL) ═══ -->
   <div id="upsellOverlay" class="overlay">
-    <div class="modal-box" style="max-height:90vh;">
+    <div class="modal-box" style="max-height:90%;">
       <h3 style="margin:0 0 4px 0; font-size:17px;">💡 Historial del Cliente</h3>
       <p style="font-size:12px; color:var(--text-muted); margin:0 0 10px 0;">Seleccioná lo que le falta pedir hoy:</p>
       <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
@@ -1506,6 +1516,16 @@ main { max-width: 540px; }
       <h3 style="color:var(--danger); margin:0; font-size:18px;">HORARIO LÍMITE</h3>
       <p style="margin:10px 0; font-size:14px; color:var(--text-muted);">Ya es tarde. Seguramente esto salga mañana.</p>
       <button id="btnLateCerrar" class="btn-modal btn-yes">ENTENDIDO</button>
+    </div>
+  </div>
+
+  <!-- ═══ CONFIRMACIÓN GENÉRICA (reemplaza los confirm() nativos) ═══ -->
+  <div id="confirmAppOverlay" class="overlay">
+    <div class="modal-box">
+      <div id="confirmAppTitle" style="font-size:17px; font-weight:800; margin-bottom:8px;"></div>
+      <div id="confirmAppMsg" style="font-size:13.5px; color:var(--text-muted); line-height:1.55; margin-bottom:6px;"></div>
+      <button id="confirmAppYes" class="btn-modal btn-yes"></button>
+      <button id="confirmAppNo" class="btn-modal btn-no"></button>
     </div>
   </div>
 
@@ -1767,6 +1787,15 @@ main { max-width: 540px; }
     </div>`;
   }
 
+  // Modo del buscador: false = solo la cartera del vendedor (default);
+  // true = todos los clientes (se alterna con el pie del desplegable)
+  let _verTodosCartera = false;
+  function toggleVerTodos(e) {
+    if (e) e.preventDefault();   // no perder el foco del input
+    _verTodosCartera = !_verTodosCartera;
+    showAutocomplete($("numeroCliente").value, { autoSelect: false });
+  }
+
   // autoSelect: solo true cuando el usuario está tipeando (oninput), nunca en focus
   function showAutocomplete(q, { autoSelect = false } = {}) {
     const drop = $("clienteDropdown");
@@ -1789,9 +1818,15 @@ main { max-width: 540px; }
       html  = `<div class="ac-header">Recientes</div>`;
       html += recent.map(({ id, c }, i) => acItemHtml(id, c, i === 0, esDeMiCartera(c))).join("");
     } else {
-      // Cartera primero: los clientes del vendedor cargado (columna vendedor,
-      // match difuso) van arriba con ★; el resto sigue accesible debajo.
-      const matches = Object.entries(clientNames)
+      // FILTRO DE CARTERA: con el nombre del vendedor cargado, el buscador
+      // muestra SOLO sus clientes. "Ver todos" (pie del desplegable) abre el
+      // resto para los casos borde (clientes sin asignar o de otro vendedor).
+      const todos = Object.entries(clientNames);
+      const propios = todos.filter(([id, c]) => esDeMiCartera(c));
+      const filtrando = propios.length > 0 && !_verTodosCartera;
+      const universo = filtrando ? propios : todos;
+
+      const matches = universo
         .filter(([id, c]) =>
           id.startsWith(query) ||
           c.name.toLowerCase().includes(query) ||
@@ -1800,7 +1835,22 @@ main { max-width: 540px; }
         .map(([id, c]) => [id, c, esDeMiCartera(c)])
         .sort((a, b) => (b[2] ? 1 : 0) - (a[2] ? 1 : 0))
         .slice(0, 7);
-      if (!matches.length) { hideAutocomplete(); return; }
+
+      const pie = propios.length > 0
+        ? (filtrando
+            ? `<div class="ac-toggle" onmousedown="toggleVerTodos(event)">🔓 Ver todos los clientes</div>`
+            : `<div class="ac-toggle" onmousedown="toggleVerTodos(event)">★ Ver solo mi cartera</div>`)
+        : "";
+
+      if (!matches.length) {
+        if (filtrando) {
+          // No está en SU cartera: avisar en vez de desaparecer en silencio
+          drop.innerHTML = `<div class="ac-header" style="padding:10px 12px;">Sin resultados en tu cartera</div>` + pie;
+          drop.style.display = "block";
+          return;
+        }
+        hideAutocomplete(); return;
+      }
 
       // Auto-selección solo cuando el usuario está escribiendo activamente
       if (autoSelect && matches.length === 1) {
@@ -1808,7 +1858,8 @@ main { max-width: 540px; }
         return;
       }
 
-      html = matches.map(([id, c, mio], i) => acItemHtml(id, c, i === 0, mio)).join("");
+      html = (filtrando ? `<div class="ac-header">★ Tu cartera</div>` : "") +
+             matches.map(([id, c, mio], i) => acItemHtml(id, c, i === 0, mio)).join("") + pie;
     }
 
     drop.innerHTML = html;
@@ -2300,9 +2351,9 @@ async function sendToGoogleForm(p) {
   //    viendo y qué puede hacer en cada pestaña ──
   let _tabActual = "nuevo";
   const TAB_GUIA = {
-    nuevo:      { icono: "📝", titulo: "CARGAR", texto: `Escribí o dictá el pedido (un producto por renglón) y tocá <b>ENVIAR</b>. Todo se guarda solo: sin señal no se pierde nada.` },
+    nuevo:      { icono: "📝", titulo: "CARGAR", texto: "" },   // sin explicación: acá se trabaja
     pendientes: { icono: "📤", titulo: "COLA",   texto: `Pedidos esperando señal. <b>Se mandan solos</b> cuando vuelve internet.` },
-    pred:       { icono: "🔮", titulo: "IDEAS",  texto: `Tus clientes que hace días no compran. Tocá <b>📦 Armar pedido</b> y te lo dejo listo con su última compra.` },
+    pred:       { icono: "🔮", titulo: "IDEAS",  texto: `Ordenados por urgencia: <b>arriba los que hace más días no te compran</b> (entre 7 y 90 días). Visitá primero los de arriba antes de que se enfríen. <b>📦 Armar pedido</b> te deja su última compra lista para ajustar y enviar.` },
     stats:      { icono: "📊", titulo: "STATS",  texto: `Tu día de un vistazo: enviados, en cola y tus clientes.` }
   };
   function buildGreeting(tab) {
@@ -2323,7 +2374,7 @@ async function sendToGoogleForm(p) {
     el.innerHTML = cap
       ? `<div class="hero-card">
            <div class="hero-hi">${saludo}, <b>${escHtml(cap)}</b> 👋 ${chips}</div>
-           <div class="hero-what"><span class="hero-tab">${g.icono} ${g.titulo}</span>${g.texto}</div>
+           ${g.texto ? `<div class="hero-what"><span class="hero-tab">${g.icono} ${g.titulo}</span>${g.texto}</div>` : ""}
          </div>`
       : `<div class="hero-card">
            <div class="hero-hi">¡Hola! 👋</div>
@@ -2359,8 +2410,13 @@ async function sendToGoogleForm(p) {
     const na = norm(a), nb = norm(b);
     if (na === nb) return true;
     const [shorter, longer] = na.length <= nb.length ? [na, nb] : [nb, na];
-    // Requiere mínimo 3 chars para evitar falsos positivos ("ra" matcheando todo)
-    return shorter.length >= 3 && longer.startsWith(shorter);
+    // Prefijo: minimo 3 chars para evitar falsos positivos ("ra" matchearia todo)
+    if (shorter.length >= 3 && longer.startsWith(shorter)) return true;
+    // Typo de 1 edicion (letra cambiada, faltante o dada vuelta) en nombres 4+ (rodrifo=RODRIGO)
+    if (shorter.length >= 4 && _lev(na, nb) <= 1) return true;
+    // Typo dentro de una abreviatura: "rodrif" ~ prefijo de "rodrigo"
+    if (shorter.length >= 4 && _lev(shorter, longer.slice(0, shorter.length)) <= 1) return true;
+    return false;
   }
 
   function computePredictions() {
@@ -2497,6 +2553,17 @@ async function sendToGoogleForm(p) {
     div.style.display = "block";
   }
 
+  // Confirmación con estilo de la app (nunca el confirm() nativo del celular)
+  function confirmApp(op, onYes, onNo) {
+    $("confirmAppTitle").textContent = op.titulo || "¿Confirmás?";
+    $("confirmAppMsg").innerHTML = op.mensaje || "";
+    $("confirmAppYes").textContent = op.si || "SÍ";
+    $("confirmAppNo").textContent  = op.no || "NO";
+    $("confirmAppYes").onclick = () => { $("confirmAppOverlay").style.display = "none"; if (onYes) onYes(); };
+    $("confirmAppNo").onclick  = () => { $("confirmAppOverlay").style.display = "none"; if (onNo) onNo(); };
+    $("confirmAppOverlay").style.display = "flex";
+  }
+
   // Ideas → CARGAR: arma el pedido COMPLETO (cliente + fecha predictiva +
   // su última compra ya acomodada, lista para ajustar cantidades y enviar)
   function precargarCliente(id) {
@@ -2514,15 +2581,23 @@ async function sendToGoogleForm(p) {
       return;
     }
     const ta = $("productos");
-    if (ta.value.trim() && !confirm("Hay un pedido a medio cargar. ¿Lo reemplazo con la última compra de este cliente?")) {
+    const aplicar = () => {
+      ta.value = acomodarLocal(ult.productos, getVocab());
+      saveDraft(); autoGrowProductos();
+      const n = ta.value.split("\n").filter(Boolean).length;
+      showToast(`📦 Pedido armado con su última compra (${n} renglones) — ajustá y ENVIÁ`);
       window.scrollTo(0, 0);
+    };
+    if (ta.value.trim()) {
+      const nom = (clientNames[id] && clientNames[id].name) || id;
+      confirmApp({
+        titulo: "Hay un pedido a medio cargar",
+        mensaje: `¿Lo reemplazo con la última compra de <b>${escHtml(nom)}</b>?`,
+        si: "SÍ, REEMPLAZAR", no: "NO, DEJAR LO MÍO"
+      }, aplicar, () => window.scrollTo(0, 0));
       return;
     }
-    ta.value = acomodarLocal(ult.productos, getVocab());
-    saveDraft(); autoGrowProductos();
-    const n = ta.value.split("\n").filter(Boolean).length;
-    showToast(`📦 Pedido armado con su última compra (${n} renglones) — ajustá y ENVIÁ`);
-    window.scrollTo(0, 0);
+    aplicar();
   }
 
   // ==========================================
@@ -3128,9 +3203,13 @@ $("btnConfirmYes").onclick = () => {
     };
     $("nombreVendedor").onchange = (e) => localStorage.setItem("nombreVendedor", e.target.value.toUpperCase());
 
-    // Guía rápida: la primera vez se muestra sola; después vive en el botón "?"
-    if (!localStorage.getItem("coachVisto_v1")) $("coachOverlay").style.display = "flex";
-    $("btnCoachOk").onclick = () => { localStorage.setItem("coachVisto_v1", "1"); $("coachOverlay").style.display = "none"; };
+    // Guía rápida: aparece sola UNA sola vez en la vida (se marca vista al
+    // mostrarse, pase lo que pase); después vive solo en el botón "?"
+    if (!localStorage.getItem("coachVisto_v1")) {
+      $("coachOverlay").style.display = "flex";
+      localStorage.setItem("coachVisto_v1", "1");
+    }
+    $("btnCoachOk").onclick = () => { $("coachOverlay").style.display = "none"; };
     $("btnAyuda").onclick = () => { $("coachOverlay").style.display = "flex"; };
 
     switchTab("nuevo");   // pinta también el saludo contextual
