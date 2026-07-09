@@ -529,6 +529,7 @@ input::placeholder, textarea::placeholder {
 .ac-item:last-child { border-bottom: none; }
 .ac-item:active { background: var(--primary-dim); }
 .ac-id   { font-size: 10px; font-weight: 700; color: var(--primary); letter-spacing: 1px; }
+.ac-mio  { color: var(--accent); font-size: 12px; line-height: 1; flex-shrink: 0; }  /* ★ cliente de tu cartera */
 .ac-name { font-size: 14px; font-weight: 700; color: var(--text-main); line-height: 1.2;
            word-break: break-word; overflow-wrap: break-word; }
 .ac-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px;
@@ -1070,13 +1071,31 @@ input::placeholder, textarea::placeholder {
 
 /* ── Fila 2: CTA Enviar ── */
 .nav-send-row { padding: 6px 12px 10px; }
+/* ENVIAR: identidad propia (distinto del "Agregar" esmeralda de Vanela).
+   Oscuro "tinta" con borde + avión esmeralda; al PRESIONAR se invierte
+   a esmeralda pleno — feedback de color inconfundible. */
 #btnEnviar {
   height: 50px; border-radius: 13px;
-  background: linear-gradient(145deg, var(--primary), var(--primary-dark));
-  color: var(--accent-ink); box-shadow: var(--shadow-accent);
-  letter-spacing: 0.6px; font-weight: 800; text-transform: uppercase;
+  background: linear-gradient(150deg, #1C2A3A, #0E1826);
+  color: #fff;
+  border: 1.5px solid var(--primary);
+  box-shadow: 0 8px 22px rgba(14, 22, 32, 0.30), inset 0 0 14px rgba(18, 226, 155, 0.10);
+  letter-spacing: 1.4px; font-weight: 800; text-transform: uppercase;
+  transition: background 0.12s, color 0.12s, transform 0.1s, box-shadow 0.12s;
 }
-#btnEnviar:active { background: var(--primary-dark); transform: scale(0.99); }
+#btnEnviar .send-ico {
+  width: 19px; height: 19px; flex-shrink: 0;
+  stroke: var(--primary); fill: none; stroke-width: 2.2;
+  stroke-linecap: round; stroke-linejoin: round;
+  transition: stroke 0.12s, transform 0.12s;
+}
+#btnEnviar:active {
+  background: linear-gradient(145deg, var(--primary), var(--primary-dark));
+  color: var(--accent-ink);
+  box-shadow: var(--shadow-accent);
+  transform: scale(0.98);
+}
+#btnEnviar:active .send-ico { stroke: var(--accent-ink); transform: translateX(3px); }
 
 /* ── Fila 3: tabs segmentadas ── */
 .nav-tabs-row {
@@ -1211,6 +1230,7 @@ main { max-width: 540px; }
     <!-- Fila 2: botón ENVIAR PEDIDO -->
     <div class="nav-send-row">
       <button id="btnEnviar">
+        <svg class="send-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
         <span>ENVIAR PEDIDO</span>
         <div class="spinner" style="display:none; font-size:16px;">⏳</div>
       </button>
@@ -1520,7 +1540,7 @@ main { max-width: 540px; }
   let clientNames = {};
 
   // ══ CACHÉ LOCAL Y CLIENTES RECIENTES ══
-  const CLIENTS_CACHE_KEY = "clientNamesCache_v2";
+  const CLIENTS_CACHE_KEY = "clientNamesCache_v3";   // v3: incluye columna vendedor (cartera)
   const CLIENTS_CACHE_TTL = 60 * 60 * 1000; // 1 hora
   const RECENT_KEY        = "clientesRecientes_v2";
 
@@ -1565,7 +1585,7 @@ main { max-width: 540px; }
   }
 
   async function loadCliFromSupabase() {
-    const res = await fetch(`${SB_URL}/rest/v1/clientes?activo=eq.true&select=id,nombre,apellido,domicilio,localidad,dia_entrega_frecuente&order=id.asc&limit=3000`, {
+    const res = await fetch(`${SB_URL}/rest/v1/clientes?activo=eq.true&select=id,nombre,apellido,domicilio,localidad,dia_entrega_frecuente,vendedor&order=id.asc&limit=3000`, {
       headers: { "apikey": SB_ANON, "Authorization": `Bearer ${SB_ANON}` }
     });
     if (!res.ok) throw new Error("Supabase clientes " + res.status);
@@ -1588,6 +1608,7 @@ main { max-width: 540px; }
         name: `${nombre} ${apellido}`.trim(),
         desc: `${domicilio}, ${localidad}`.replace(/, *$/, "").trim(),
         diaEntrega: r.dia_entrega_frecuente != null ? r.dia_entrega_frecuente : null,
+        vendedor: safeStr(r.vendedor).trim(),   // cartera: a qué vendedor pertenece
         corrupted
       };
     });
@@ -1654,14 +1675,24 @@ main { max-width: 540px; }
   }
 
   // ══ AUTOCOMPLETE ══
-  function acItemHtml(id, c, isFirst) {
+  // ¿El cliente pertenece a la cartera del vendedor cargado en el campo Vendedor?
+  // Usa vendedorMatch (difuso): "rodri" matchea "RODRIGO".
+  function esDeMiCartera(c) {
+    const v = ($("nombreVendedor").value || "").trim();
+    return !!(v && c && c.vendedor && vendedorMatch(c.vendedor, v));
+  }
+
+  function acItemHtml(id, c, isFirst, mio) {
     const activeClass = isFirst ? " active" : "";
+    const mioStar = mio
+      ? `<span class="ac-mio" title="Cliente de tu cartera">★</span>`
+      : "";
     const corruptWarn = c.corrupted
       ? `<span style="color:var(--danger);font-size:10px;font-weight:700;margin-left:4px;" title="Datos con formato incorrecto en la base">⚠️ DATO</span>`
       : "";
     return `<div class="ac-item${activeClass}" data-id="${escHtml(id)}" onmousedown="selectCliente('${escHtml(id)}')">
       <div style="display:flex;align-items:baseline;gap:6px;">
-        <span class="ac-id">${escHtml(id)}</span>
+        ${mioStar}<span class="ac-id">${escHtml(id)}</span>
         <span class="ac-name">${escHtml(c.name)}</span>
         ${corruptWarn}
       </div>
@@ -1689,14 +1720,18 @@ main { max-width: 540px; }
         .filter(x => x.c);
       if (!recent.length) { hideAutocomplete(); return; }
       html  = `<div class="ac-header">Recientes</div>`;
-      html += recent.map(({ id, c }, i) => acItemHtml(id, c, i === 0)).join("");
+      html += recent.map(({ id, c }, i) => acItemHtml(id, c, i === 0, esDeMiCartera(c))).join("");
     } else {
+      // Cartera primero: los clientes del vendedor cargado (columna vendedor,
+      // match difuso) van arriba con ★; el resto sigue accesible debajo.
       const matches = Object.entries(clientNames)
         .filter(([id, c]) =>
           id.startsWith(query) ||
           c.name.toLowerCase().includes(query) ||
           c.desc.toLowerCase().includes(query)
         )
+        .map(([id, c]) => [id, c, esDeMiCartera(c)])
+        .sort((a, b) => (b[2] ? 1 : 0) - (a[2] ? 1 : 0))
         .slice(0, 7);
       if (!matches.length) { hideAutocomplete(); return; }
 
@@ -1706,7 +1741,7 @@ main { max-width: 540px; }
         return;
       }
 
-      html = matches.map(([id, c], i) => acItemHtml(id, c, i === 0)).join("");
+      html = matches.map(([id, c, mio], i) => acItemHtml(id, c, i === 0, mio)).join("");
     }
 
     drop.innerHTML = html;
@@ -2852,7 +2887,6 @@ $("btnConfirmYes").onclick = () => {
     { g:"g120", desc:"Rejilla Coche" },
     { g:"g120", desc:"Rejilla Nido de Abeja" },
     { g:"g120", desc:"Repasador Gastronómico" },
-    { g:"g120", desc:"Repasador Estampado" },
     { g:"g120", desc:"Secavajilla" },
     { g:"g120", desc:"Rejilla Hogar" },
     { g:"g120", desc:"Rejilla Color" },
