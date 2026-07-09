@@ -273,16 +273,13 @@ main {
   padding: 16px 14px 0;
 }
 
-/* Banner de bienvenida */
+/* Banner de bienvenida — fuera de las pestañas: visible en todas */
 #helloBanner {
-  margin-bottom: 14px;
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 14px 14px 0;
   font-size: 15px;
   color: var(--text-main);
-}
-#helloBanner h3 {
-  font-size: 15px;
-  font-weight: 500;
-  margin: 0;
 }
 
 /* ── BLOQUE HÉROE: productos ── */
@@ -530,6 +527,57 @@ input::placeholder, textarea::placeholder {
 .ac-item:active { background: var(--primary-dim); }
 .ac-id   { font-size: 10px; font-weight: 700; color: var(--primary); letter-spacing: 1px; }
 .ac-mio  { color: var(--accent); font-size: 12px; line-height: 1; flex-shrink: 0; }  /* ★ cliente de tu cartera */
+
+/* ── Saludo contextual (hero): nombre + qué estás viendo + estado ── */
+.hero-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.hero-hi {
+  font-size: 16px; font-weight: 500; color: var(--text-main);
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+.hero-hi b { font-weight: 800; }
+.hero-chip {
+  font-size: 10px; font-weight: 800; padding: 3px 9px;
+  border-radius: 99px; letter-spacing: 0.3px; white-space: nowrap;
+}
+.chip-ok      { background: rgba(18, 226, 155, 0.12); color: var(--success); }
+.chip-cola    { background: rgba(255, 93, 93, 0.14);  color: var(--danger); }
+.chip-cartera { background: rgba(255, 176, 32, 0.14); color: var(--accent); }
+.hero-what {
+  margin-top: 7px; font-size: 12.5px; line-height: 1.55; color: var(--text-muted);
+}
+.hero-what b { color: var(--text-main); }
+.hero-tab {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.6px;
+  color: var(--primary); background: var(--primary-dim);
+  padding: 2px 8px; border-radius: 6px; margin-right: 7px;
+  vertical-align: 1px;
+}
+
+/* Botón de ayuda "?" en el header */
+.help-btn {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text-muted); font-weight: 800; font-size: 12px;
+  cursor: pointer; font-family: inherit; line-height: 1; flex-shrink: 0;
+}
+.help-btn:active { background: var(--primary-dim); color: var(--primary); }
+
+/* Guía rápida (coach) */
+.coach-list {
+  display: flex; flex-direction: column; gap: 11px;
+  margin-bottom: 14px; max-height: 52vh; overflow-y: auto;
+}
+.coach-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 12.5px; line-height: 1.5; color: var(--text-muted);
+}
+.coach-item > span { font-size: 18px; flex-shrink: 0; line-height: 1.2; }
+.coach-item b { color: var(--text-main); }
 .ac-name { font-size: 14px; font-weight: 700; color: var(--text-main); line-height: 1.2;
            word-break: break-word; overflow-wrap: break-word; }
 .ac-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px;
@@ -1222,6 +1270,7 @@ main { max-width: 540px; }
       <div class="nav-meta">
         <div id="connDot" class="dot offline"></div>
         <span class="conn-label">Red</span>
+        <button id="btnAyuda" class="help-btn" title="¿Cómo funciona la app?">?</button>
         <input type="checkbox" id="themeToggle" checked />
         <label for="themeToggle" class="theme-lbl" title="Modo claro / oscuro"></label>
       </div>
@@ -1257,10 +1306,11 @@ main { max-width: 540px; }
   <!-- Banner sin conexión -->
   <div id="netBanner">⚠️ MODO SIN CONEXIÓN</div>
 
+  <!-- Saludo contextual: nombre + qué estás viendo (visible en TODAS las pestañas) -->
+  <div id="helloBanner"></div>
+
   <!-- ═══ PESTAÑA 1: NUEVO PEDIDO ═══ -->
   <main id="nuevoPedido">
-
-    <div id="helloBanner"></div>
 
     <!-- ATAJO RÁPIDO: Rejillas Vanela -->
     <div class="vanela-block">
@@ -1459,6 +1509,22 @@ main { max-width: 540px; }
     </div>
   </div>
 
+  <!-- ═══ GUÍA RÁPIDA (primera vez / botón ?) ═══ -->
+  <div id="coachOverlay" class="overlay">
+    <div class="modal-box" style="text-align:left; max-width:400px;">
+      <h3 style="margin:0 0 4px; font-size:18px;">¿Cómo funciona? 🧭</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin:0 0 12px;">30 segundos y salís vendiendo:</p>
+      <div class="coach-list">
+        <div class="coach-item"><span>⌨️</span><div><b>Escribí el pedido</b> — un renglón por producto: "12 esponja acero". Tocá las <b>sugerencias verdes</b> que aparecen abajo y se completa solo, sin errores.</div></div>
+        <div class="coach-item"><span>🧽</span><div><b>Rejillas Vanela</b> — elegí el modelo, poné la cantidad y AGREGAR. Se suma al pedido.</div></div>
+        <div class="coach-item"><span>✨</span><div><b>Acomodar</b> — ordena la lista y corrige palabras mal escritas al instante. <b>🎙 Dictar</b> — hablá y lo escribe. <b>💡 Sugeridos</b> — lo que este cliente suele llevar.</div></div>
+        <div class="coach-item"><span>🔮</span><div><b>Ideas</b> — tus clientes que hace días no compran. <b>📦 Armar pedido</b> te deja el pedido listo con su última compra: ajustás y enviás.</div></div>
+        <div class="coach-item"><span>📤</span><div><b>Cola</b> — ¿sin señal? El pedido espera ahí y <b>se manda solo</b> cuando vuelve internet. Nunca se pierde nada.</div></div>
+      </div>
+      <button id="btnCoachOk" class="btn-modal btn-yes">¡Entendido, a vender!</button>
+    </div>
+  </div>
+
   <!-- ═══ MODAL: DICTADO ═══ -->
   <div id="dictadoOverlay" class="overlay">
     <div class="modal-box">
@@ -1581,7 +1647,8 @@ main { max-width: 540px; }
   }
 
   function updateClientBadge() {
-    // Badge de conteo removido — el label queda limpio
+    // Al terminar de cargar los clientes, refresca el chip "★ N clientes tuyos"
+    try { buildGreeting(); } catch (e) {}
   }
 
   async function loadCliFromSupabase() {
@@ -2229,10 +2296,46 @@ async function sendToGoogleForm(p) {
     pred: { main: $("predicciones"), btn: $("btnVerPredicciones"), init: computePredictions }
   };
 
+  // ── Saludo contextual: le dice al vendedor POR SU NOMBRE qué está
+  //    viendo y qué puede hacer en cada pestaña ──
+  let _tabActual = "nuevo";
+  const TAB_GUIA = {
+    nuevo:      { icono: "📝", titulo: "CARGAR", texto: `Escribí o dictá el pedido (un producto por renglón) y tocá <b>ENVIAR</b>. Todo se guarda solo: sin señal no se pierde nada.` },
+    pendientes: { icono: "📤", titulo: "COLA",   texto: `Pedidos esperando señal. <b>Se mandan solos</b> cuando vuelve internet.` },
+    pred:       { icono: "🔮", titulo: "IDEAS",  texto: `Tus clientes que hace días no compran. Tocá <b>📦 Armar pedido</b> y te lo dejo listo con su última compra.` },
+    stats:      { icono: "📊", titulo: "STATS",  texto: `Tu día de un vistazo: enviados, en cola y tus clientes.` }
+  };
+  function buildGreeting(tab) {
+    const el = $("helloBanner"); if (!el) return;
+    if (tab) _tabActual = tab;
+    const g = TAB_GUIA[_tabActual] || TAB_GUIA.nuevo;
+    const nombre = ($("nombreVendedor").value || localStorage.getItem("nombreVendedor") || "").trim();
+    const n = nombre.split(" ")[0];
+    const cap = n ? n.charAt(0).toUpperCase() + n.slice(1).toLowerCase() : "";
+    const h = new Date().getHours();
+    const saludo = h < 12 ? "Buen día" : h < 19 ? "Buenas tardes" : "Buenas noches";
+    const enCola = getQueue().length;
+    let cartera = 0;
+    try { Object.values(clientNames).forEach(c => { if (esDeMiCartera(c)) cartera++; }); } catch (e) {}
+    const chips =
+      (enCola > 0 ? `<span class="hero-chip chip-cola">📤 ${enCola} en cola</span>` : `<span class="hero-chip chip-ok">Al día ✓</span>`) +
+      (cartera > 0 ? `<span class="hero-chip chip-cartera">★ ${cartera} clientes tuyos</span>` : "");
+    el.innerHTML = cap
+      ? `<div class="hero-card">
+           <div class="hero-hi">${saludo}, <b>${escHtml(cap)}</b> 👋 ${chips}</div>
+           <div class="hero-what"><span class="hero-tab">${g.icono} ${g.titulo}</span>${g.texto}</div>
+         </div>`
+      : `<div class="hero-card">
+           <div class="hero-hi">¡Hola! 👋</div>
+           <div class="hero-what">Escribí tu nombre en el campo <b>Vendedor</b> ↓ y la app se arma para vos: tu cartera marcada con ★, tus sugerencias y tus stats.</div>
+         </div>`;
+  }
+
   function switchTab(target) {
     Object.values(tabs).forEach(t => { t.main.classList.add("hidden"); t.btn.classList.remove("active"); });
     const t = tabs[target]; t.main.classList.remove("hidden"); t.btn.classList.add("active");
     if(t.init) t.init();
+    buildGreeting(target);
   }
 
   $("btnNuevo").onclick = () => switchTab("nuevo");
@@ -2361,9 +2464,9 @@ async function sendToGoogleForm(p) {
         <span style="color:${color};font-size:13px;font-weight:800;white-space:nowrap;">${diasLabel}</span>
       </div>
       ${resumen ? `<div class="card-body" style="font-size:11px;line-height:1.5;">${escHtml(resumen)}</div>` : ''}
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button onclick="precargarCliente('${escHtml(c.id)}')" style="flex:1;padding:6px;background:var(--primary-dim);color:var(--primary);border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">↗ Cargar pedido</button>
-        <button onclick="toggleUltimoPedido('${escHtml(c.id)}','${cardId}')" style="flex:1;padding:6px;background:transparent;color:var(--text-muted);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">📋 Último pedido</button>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="precargarCliente('${escHtml(c.id)}')" style="flex:1.5;padding:10px 6px;background:linear-gradient(145deg,var(--primary),var(--primary-dark));color:var(--accent-ink);border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.2px;">📦 Armar pedido</button>
+        <button onclick="toggleUltimoPedido('${escHtml(c.id)}','${cardId}')" style="flex:1;padding:10px 6px;background:transparent;color:var(--text-muted);border:1px solid var(--border);border-radius:9px;font-size:11px;font-weight:600;cursor:pointer;">👁 Ver último</button>
       </div>
       <div id="${cardId}" style="display:none;margin-top:10px;padding:10px;background:var(--bg-input);border-radius:8px;font-size:11px;line-height:1.7;white-space:pre-wrap;color:var(--text-main);"></div>
     </div>`;
@@ -2394,13 +2497,32 @@ async function sendToGoogleForm(p) {
     div.style.display = "block";
   }
 
-  // Pre-carga un cliente en la pestaña Cargar al tocar una card de Tendencias
+  // Ideas → CARGAR: arma el pedido COMPLETO (cliente + fecha predictiva +
+  // su última compra ya acomodada, lista para ajustar cantidades y enviar)
   function precargarCliente(id) {
     switchTab("nuevo");
-    $("numeroCliente").value = id;
     _prevClienteId = id;
-    updateClientUI(id);
-    addRecentClient(id);
+    selectCliente(id);   // nº, nombre, fecha habitual del cliente y recientes
+
+    // Última compra del cliente (la más reciente con fecha)
+    const pedidos = globalHistorial.filter(h => h.cliente === id);
+    const conFecha = pedidos.filter(p => p.fecha).sort((a, b) => b.fecha.localeCompare(a.fecha));
+    const ult = conFecha[0] || pedidos[0];
+    if (!ult || !ult.productos || !ult.productos.trim()) {
+      showToast("Cliente cargado — sin compras previas para copiar", "info");
+      window.scrollTo(0, 0);
+      return;
+    }
+    const ta = $("productos");
+    if (ta.value.trim() && !confirm("Hay un pedido a medio cargar. ¿Lo reemplazo con la última compra de este cliente?")) {
+      window.scrollTo(0, 0);
+      return;
+    }
+    ta.value = acomodarLocal(ult.productos, getVocab());
+    saveDraft(); autoGrowProductos();
+    const n = ta.value.split("\n").filter(Boolean).length;
+    showToast(`📦 Pedido armado con su última compra (${n} renglones) — ajustá y ENVIÁ`);
+    window.scrollTo(0, 0);
   }
 
   // ==========================================
@@ -2995,33 +3117,23 @@ $("btnConfirmYes").onclick = () => {
       localStorage.setItem('uiMode', e.target.checked ? 'light' : 'dark');
     });
 
-    function buildGreeting(nombre) {
-      const h = new Date().getHours();
-      const saludo = h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches";
-      const n = (nombre || "").split(" ")[0];
-      const cap = n ? n.charAt(0).toUpperCase() + n.slice(1).toLowerCase() : "";
-      const enCola = getQueue().length;
-      const badgeHtml = enCola > 0
-        ? `<span class="greeting-badge">${enCola} en cola</span>`
-        : `<span class="greeting-badge" style="background:rgba(63,185,80,0.12);color:var(--success);">Al día ✓</span>`;
-      $("helloBanner").innerHTML = cap
-        ? `<div class="greeting"><span class="greeting-text">${saludo}, <strong>${cap}</strong> 👋</span>${badgeHtml}</div>`
-        : `<div class="greeting"><span class="greeting-text" style="font-size:13px;">Escribí tu nombre en el campo <strong>Vendedor</strong> ↓</span></div>`;
-    }
-
     const v = localStorage.getItem("nombreVendedor");
     if (v) $("nombreVendedor").value = v;
-    buildGreeting(v || "");
 
-    // Guardar nombre del vendedor en tiempo real y actualizar saludo
+    // Guardar nombre en tiempo real y refrescar el saludo contextual
     $("nombreVendedor").oninput  = (e) => {
       const val = e.target.value.toUpperCase();
       localStorage.setItem("nombreVendedor", val);
-      buildGreeting(val);
+      buildGreeting();
     };
     $("nombreVendedor").onchange = (e) => localStorage.setItem("nombreVendedor", e.target.value.toUpperCase());
 
-    switchTab("nuevo");
+    // Guía rápida: la primera vez se muestra sola; después vive en el botón "?"
+    if (!localStorage.getItem("coachVisto_v1")) $("coachOverlay").style.display = "flex";
+    $("btnCoachOk").onclick = () => { localStorage.setItem("coachVisto_v1", "1"); $("coachOverlay").style.display = "none"; };
+    $("btnAyuda").onclick = () => { $("coachOverlay").style.display = "flex"; };
+
+    switchTab("nuevo");   // pinta también el saludo contextual
   };
 
   if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.protocol === 'http:')) {
