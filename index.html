@@ -440,6 +440,12 @@ input::placeholder, textarea::placeholder {
   opacity: 0.6;
 }
 
+/* Campo con dato faltante/incorrecto: marcado en rojo hasta que se corrija */
+.field-error {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px rgba(255, 93, 93, 0.20) !important;
+}
+
 /* Labels de fecha y cliente: sin uppercase, color primario */
 #lblFecha, #lblCliente {
   text-transform: none;
@@ -2051,7 +2057,7 @@ main { max-width: 540px; }
   // ==========================================
   $("btnSuggestHistory").onclick = () => {
     const cli = $("numeroCliente").value.trim();
-    if(!cli) return showToast("Poné el número de cliente primero", "error");
+    if(!cli) return marcarCampo($("numeroCliente"), "Para ver sus SUGERIDOS primero elegí el cliente en el campo marcado");
 
     const ventasCliente = globalHistorial.filter(v => v.cliente === cli);
     if(ventasCliente.length === 0) return showToast("No encontré historial para este cliente.", "info");
@@ -2284,7 +2290,7 @@ main { max-width: 540px; }
 
   $("btnAiOptimize").onclick = () => {
     const txt = $("productos").value;
-    if(!txt.trim()) return showToast("Anotá algo antes...", "error");
+    if(!txt.trim()) return marcarCampo($("productos"), "El pedido está vacío: escribí o dictá algún producto y después tocá Acomodar");
     const antes = txt.trim();
     const acomodado = acomodarLocal(txt, getVocab());
     $("productos").value = acomodado;
@@ -2614,8 +2620,36 @@ async function sendToGoogleForm(p) {
   // ==========================================
   // FLUJO DE ENVÍO Y CONFIRMACIÓN
   // ==========================================
+
+  // Marca en rojo el campo con problema, lo trae a la vista y avisa qué
+  // falta. La marca se borra sola apenas el vendedor lo toca/escribe.
+  // Liviano a propósito: solo corre al tocar un botón, cero costo en uso normal.
+  function marcarCampo(el, msg, conFoco = true) {
+    if (!el) return;
+    el.classList.add("field-error");
+    const limpiar = () => el.classList.remove("field-error");
+    el.addEventListener("input",  limpiar, { once: true });
+    el.addEventListener("change", limpiar, { once: true });
+    try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) { el.scrollIntoView(); }
+    if (conFoco) { try { el.focus({ preventScroll: true }); } catch (e) {} }
+    if (msg) showToast(msg, "error");
+  }
+
   $("btnEnviar").onclick = () => {
-    if(!$("numeroCliente").value || !$("productos").value) return showToast("Faltan datos che...", "error");
+    const prod  = $("productos").value.trim();
+    const cli   = $("numeroCliente").value.trim();
+    const fecha = $("fechaEntrega").value;
+
+    // Validación con mensajes exactos + campo marcado
+    if (!prod && !cli) {
+      marcarCampo($("numeroCliente"), null, false);
+      marcarCampo($("productos"), "Faltan el PEDIDO y el CLIENTE: escribí los productos (ej: 12 esponja acero) y elegí el N° de cliente");
+      return;
+    }
+    if (!prod)  return marcarCampo($("productos"), "Falta el PEDIDO: escribí al menos un producto, un renglón por artículo (ej: 12 esponja acero)");
+    if (!cli)   return marcarCampo($("numeroCliente"), "Falta el CLIENTE: buscalo por N°, nombre o dirección en el campo marcado");
+    if (!fecha) return marcarCampo($("fechaEntrega"), "Falta la FECHA DE ENTREGA: tocá el campo marcado y elegí el día");
+
     const currentId = $("numeroCliente").value;
 
     // Preparar el modal con los datos ricos
@@ -2711,7 +2745,8 @@ async function sendToGoogleForm(p) {
   }
 
 $("btnConfirmYes").onclick = () => {
-    const finalId = $("modalClientId").value;
+    const finalId = $("modalClientId").value.trim();
+    if (!finalId) { marcarCampo($("modalClientId"), "Falta el N° de cliente: escribilo en el campo marcado"); return; }
     $("numeroCliente").value = finalId;
     updateClientUI(finalId);
     addRecentClient(finalId);
@@ -2733,7 +2768,7 @@ $("btnConfirmYes").onclick = () => {
     };
 
     p.sig = makeSignature(p);
-    if(seenSig(p.sig)) { showToast("¡Ese ya lo mandaste!", "error"); $("preConfirmOverlay").style.display="none"; return; }
+    if(seenSig(p.sig)) { showToast("Este pedido YA se envió antes (mismo cliente, fecha y productos). Si es un pedido nuevo, cambiá alguna cantidad o la fecha.", "error"); $("preConfirmOverlay").style.display="none"; return; }
 
     const q = getQueue(); q.push(p); setQueue(q); logOrder(p);
 
@@ -3121,7 +3156,7 @@ $("btnConfirmYes").onclick = () => {
   // mismo modelo, suma las cantidades en vez de duplicar la línea.
   function vanelaAgregar() {
     const desc = $("vanelaSelect").value;
-    if (!desc) { showToast("Elegí un modelo primero", "error"); $("vanelaSelect").focus(); return; }
+    if (!desc) { marcarCampo($("vanelaSelect"), "Elegí el MODELO de rejilla en la lista marcada y después tocá Agregar"); return; }
     let qty = vanelaQtyGet();
     if (qty <= 0) qty = 1;
 
