@@ -86,12 +86,22 @@
   padding: 0;
 }
 
-html, body {
+html {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
-  overscroll-behavior: none;
-  touch-action: pan-y;   /* refuerzo: el arrastre vertical SIEMPRE debe scrollear */
+  overflow-x: hidden;            /* corta el scroll lateral a nivel viewport */
+  overscroll-behavior-y: none;   /* sin pull-to-refresh */
+  touch-action: pan-y;           /* el arrastre vertical siempre scrollea */
+}
+body {
+  width: 100%;
+  max-width: 100%;
+  /* OJO: nada de overflow ni overscroll-behavior acá. Cuando html y body
+     tienen overflow a la vez, el body pasa a ser su PROPIO contenedor de
+     scroll (sin recorrido: crece con el contenido) y overscroll:none le
+     prohibía pasarle el gesto al viewport → la rueda (PC) y el dedo
+     (Android/iOS) morían en el body y la app quedaba congelada, sobre
+     todo embebida en el shell. Verificado con contraprueba A/B en vivo. */
 }
 
 
