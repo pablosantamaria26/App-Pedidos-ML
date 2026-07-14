@@ -3121,7 +3121,7 @@ $("btnConfirmYes").onclick = () => {
     { g:"g120", desc:"Rejilla Coche" },
     { g:"g120", desc:"Rejilla Nido de Abeja" },
     { g:"g120", desc:"Repasador Gastronómico" },
-    { g:"g120", desc:"Secavajilla" },
+    { g:"g120", desc:"Secavajilla", sinStock:true },
     { g:"g120", desc:"Rejilla Hogar" },
     { g:"g120", desc:"Rejilla Color" },
     { g:"g120", desc:"Rejilla Pabilo" },
@@ -3129,7 +3129,7 @@ $("btnConfirmYes").onclick = () => {
     { g:"g120", desc:"Rejilla Lavacoche" },
     { g:"g60",  desc:"Trapo de Piso Gris" },
     { g:"g60",  desc:"Rejilla Lavacoche Super Pesada" },
-    { g:"g60",  desc:"Rejilla Premium" }
+    { g:"g60",  desc:"Rejilla Premium", sinStock:true }
   ];
 
   function vanelaQtyGet() {
@@ -3185,7 +3185,13 @@ $("btnConfirmYes").onclick = () => {
       VANELA_PRODUCTOS.filter(p => p.g === gid).forEach(p => {
         const o = document.createElement("option");
         o.value = p.desc;
-        o.textContent = p.desc;
+        if (p.sinStock) {
+          o.disabled = true;
+          o.textContent = p.desc + "  —  SIN STOCK";
+          o.style.color = "#8b949e";
+        } else {
+          o.textContent = p.desc;
+        }
         og.appendChild(o);
       });
       sel.appendChild(og);
