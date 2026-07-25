@@ -1680,7 +1680,7 @@ main { max-width: 540px; }
   }
 
   async function loadCliFromSupabase() {
-    const res = await fetch(`${SB_URL}/rest/v1/clientes?activo=eq.true&select=id,nombre,apellido,domicilio,localidad,dia_entrega_frecuente,vendedor&order=id.asc&limit=3000`, {
+    const res = await fetch(`${SB_URL}/rest/v1/clientes?activo=eq.true&select=id,nombre,apellido,domicilio,localidad,dia_entrega_frecuente,vendedor,descuento&order=id.asc&limit=3000`, {
       headers: { "apikey": SB_ANON, "Authorization": `Bearer ${SB_ANON}` }
     });
     if (!res.ok) throw new Error("Supabase clientes " + res.status);
@@ -1704,6 +1704,7 @@ main { max-width: 540px; }
         desc: `${domicilio}, ${localidad}`.replace(/, *$/, "").trim(),
         diaEntrega: r.dia_entrega_frecuente != null ? r.dia_entrega_frecuente : null,
         vendedor: safeStr(r.vendedor).trim(),   // cartera: a qué vendedor pertenece
+        descuento: r.descuento != null && r.descuento !== "" ? Number(r.descuento) : null,
         corrupted
       };
     });
@@ -2467,7 +2468,8 @@ async function sendToGoogleForm(p) {
         dias,
         totalPedidos: pedidos.length,
         ultimoProductos: ultimo?.productos || "",
-        ultimaFecha: ultimo?.fecha || ""
+        ultimaFecha: ultimo?.fecha || "",
+        descuento: clientNames[id]?.descuento ?? null
       };
     }).filter(Boolean);
 
@@ -2519,10 +2521,13 @@ async function sendToGoogleForm(p) {
     const diasLabel = c.dias != null ? `${c.dias}d sin pedir` : "sin fecha";
     const resumen = c.ultimoProductos.split('\n').filter(Boolean).slice(0, 3).join(' · ');
     const cardId = "up_" + c.id.replace(/[^a-z0-9]/gi, "_");
+    const descuentoBadge = (c.descuento != null)
+      ? `<span style="display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:2px 7px;background:#111827;color:#fff;border-radius:99px;font-size:10px;font-weight:800;vertical-align:middle;">💲 ${escHtml(String(c.descuento))}%</span>`
+      : '';
     return `<div class="pedido-card" style="margin-bottom:8px;">
       <div class="card-header" style="cursor:pointer;" onclick="precargarCliente('${escHtml(c.id)}')">
         <div>
-          <div>${escHtml(c.nombre || c.id)}</div>
+          <div>${escHtml(c.nombre || c.id)}${descuentoBadge}</div>
           ${c.nombre ? `<div style="font-size:10px;color:var(--text-muted);font-weight:400;">#${escHtml(c.id)}</div>` : ''}
         </div>
         <span style="color:${color};font-size:13px;font-weight:800;white-space:nowrap;">${diasLabel}</span>
