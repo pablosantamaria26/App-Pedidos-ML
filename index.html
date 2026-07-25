@@ -567,6 +567,10 @@ input::placeholder, textarea::placeholder {
 .chip-ok      { background: rgba(18, 226, 155, 0.12); color: var(--success); }
 .chip-cola    { background: rgba(255, 93, 93, 0.14);  color: var(--danger); }
 .chip-cartera { background: rgba(255, 176, 32, 0.14); color: var(--accent); }
+.chip-descuento {
+  background: #111827; color: #fff; white-space: normal;
+  max-width: 100%; line-height: 1.35;
+}
 .hero-what {
   margin-top: 7px; font-size: 12.5px; line-height: 1.55; color: var(--text-muted);
 }
@@ -1923,6 +1927,9 @@ main { max-width: 540px; }
     // Fecha predictiva basada en día habitual del cliente
     const c = clientNames[id];
     applyFechaPredictiva(c ? c.diaEntrega : null);
+    // Saludo dinámico: si este cliente tiene descuento, reemplaza el chip de cartera
+    _clienteActivoSaludo = id;
+    try { buildGreeting(); } catch (e) {}
     // Sin auto-foco — el vendedor navega manualmente entre campos
   }
 
@@ -1937,6 +1944,9 @@ main { max-width: 540px; }
 
   // Guarda el ID antes de limpiar — se restaura si el usuario sale sin elegir
   let _prevClienteId = "";
+
+  // Último cliente seleccionado — usado para el saludo dinámico de descuento
+  let _clienteActivoSaludo = null;
 
   $("numeroCliente").addEventListener("focus", () => {
     _prevClienteId = $("numeroCliente").value;
@@ -2384,9 +2394,17 @@ async function sendToGoogleForm(p) {
     const enCola = getQueue().length;
     let cartera = 0;
     try { Object.values(clientNames).forEach(c => { if (esDeMiCartera(c)) cartera++; }); } catch (e) {}
+
+    // Chip de cartera: se reemplaza por el descuento del cliente activo
+    // (el último buscado/seleccionado), si es que tiene uno cargado.
+    const cActivo = _clienteActivoSaludo ? clientNames[_clienteActivoSaludo] : null;
+    const chipCarteraODescuento = (cActivo && cActivo.descuento != null)
+      ? `<span class="hero-chip chip-descuento">💲 El ${escHtml(cActivo.name)} tiene ${escHtml(String(cActivo.descuento))}% de descuento</span>`
+      : (cartera > 0 ? `<span class="hero-chip chip-cartera">★ ${cartera} clientes tuyos</span>` : "");
+
     const chips =
       (enCola > 0 ? `<span class="hero-chip chip-cola">📤 ${enCola} en cola</span>` : `<span class="hero-chip chip-ok">Al día ✓</span>`) +
-      (cartera > 0 ? `<span class="hero-chip chip-cartera">★ ${cartera} clientes tuyos</span>` : "");
+      chipCarteraODescuento;
     el.innerHTML = cap
       ? `<div class="hero-card">
            <div class="hero-hi">${saludo}, <b>${escHtml(cap)}</b> 👋 ${chips}</div>
