@@ -1,7 +1,7 @@
 {
   "name": "Pedidos ML",
   "short_name": "Pedidos ML",
-  "id": "./",
+  "id": "https://pablosantamaria26.github.io/App-Pedidos-ML/",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
