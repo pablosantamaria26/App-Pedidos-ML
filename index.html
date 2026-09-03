@@ -533,6 +533,97 @@ input::placeholder, textarea::placeholder {
   letter-spacing: 0.3px; flex-shrink: 0;
 }
 
+/* ── SELECTOR DE VENDEDOR (se fija al celular) ── */
+/* Panel contenido: respeta el ancho y el ritmo del resto del formulario */
+.vend-pick {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  transition: border-color .15s;
+}
+.vend-pick-hint { font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 2px; }
+.vend-opts { display: flex; flex-direction: column; gap: 6px; }
+.vend-opt {
+  display: flex; align-items: center; gap: 11px;
+  width: 100%;
+  padding: 10px 12px; min-height: 48px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--text-main);
+  font-family: inherit; font-size: 14px; font-weight: 700;
+  text-align: left; cursor: pointer;
+  transition: border-color .15s, background .15s, transform .1s;
+  animation: vendOptIn .3s cubic-bezier(.175,.885,.32,1.275) backwards;
+}
+.vend-opt:active { transform: scale(.98); border-color: var(--primary); background: var(--primary-dim); }
+@media (hover:hover) { .vend-opt:hover { border-color: var(--primary); } }
+.vend-opt-ava {
+  width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--primary-dim); color: var(--primary);
+  font-size: 13px; font-weight: 900;
+}
+.vend-opt-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.vend-opt-go {
+  flex-shrink: 0; width: 7px; height: 7px;
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
+  transform: rotate(-45deg); opacity: .45;
+}
+@keyframes vendOptIn {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.vend-locked {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, var(--primary-dim), transparent 72%), var(--bg-card);
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-s);
+  animation: vendLockIn .32s cubic-bezier(.175,.885,.32,1.275);
+}
+.vend-ava {
+  width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--primary); color: var(--accent-ink);
+  font-size: 19px; font-weight: 900;
+}
+.vend-ava-lg { width: 62px; height: 62px; font-size: 27px; margin: 0 auto; }
+.vend-locked-info { flex: 1; min-width: 0; }
+.vend-locked-name {
+  font-size: 16px; font-weight: 900; color: var(--text-main); letter-spacing: .3px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.vend-locked-sub { font-size: 11px; color: var(--primary); font-weight: 700; margin-top: 2px; }
+.vend-change {
+  flex-shrink: 0; background: transparent;
+  border: 1px solid var(--border-2); color: var(--text-muted);
+  font-family: inherit; font-size: 11px; font-weight: 700;
+  padding: 7px 11px; border-radius: 99px; cursor: pointer;
+  text-transform: uppercase; letter-spacing: .4px; transition: background .15s;
+}
+.vend-change:active { background: var(--bg-elev); }
+@keyframes vendLockIn {
+  from { opacity: 0; transform: scale(.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Al intentar enviar sin haber elegido vendedor */
+.vend-pick.needs-vend {
+  animation: vendShake .4s;
+  border-left: 3px solid var(--danger);
+  padding-left: 9px;
+}
+@keyframes vendShake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-5px); }
+  40%,80% { transform: translateX(5px); }
+}
+
 /* ── AUTOCOMPLETE DE CLIENTE ── */
 .ac-wrap { position: relative; }
 
@@ -1417,9 +1508,27 @@ main { max-width: 540px; }
 
       <div id="infoCliente"></div>
 
-      <div class="input-group">
+      <div class="input-group" id="vendGroup">
         <label>Vendedor</label>
-        <input type="text" id="nombreVendedor" placeholder="Tu nombre..." />
+
+        <!-- Estado BLOQUEADO: ya registrado en este celular -->
+        <div id="vendLocked" class="vend-locked hidden">
+          <div class="vend-ava" id="vendAva">?</div>
+          <div class="vend-locked-info">
+            <div class="vend-locked-name" id="vendLockedName"></div>
+            <div class="vend-locked-sub">✓ Registrado en este celular</div>
+          </div>
+          <button type="button" id="vendChange" class="vend-change">Cambiar</button>
+        </div>
+
+        <!-- Estado ELEGIR: selector de nombres -->
+        <div id="vendPick" class="vend-pick hidden">
+          <div class="vend-pick-hint">Tocá tu nombre. Queda guardado en este celular y viaja con cada pedido.</div>
+          <div class="vend-opts" id="vendOpts"></div>
+        </div>
+
+        <!-- Input real (oculto): lo usa todo el JS existente -->
+        <input type="text" id="nombreVendedor" class="hidden" tabindex="-1" aria-hidden="true" autocomplete="off" />
       </div>
 
       <!-- Observaciones: revelación progresiva nativa, sin JS -->
@@ -1563,6 +1672,20 @@ main { max-width: 540px; }
       <div id="confirmAppMsg" style="font-size:13.5px; color:var(--text-muted); line-height:1.55; margin-bottom:6px;"></div>
       <button id="confirmAppYes" class="btn-modal btn-yes"></button>
       <button id="confirmAppNo" class="btn-modal btn-no"></button>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: CONFIRMAR VENDEDOR ═══ -->
+  <div id="vendConfirmOverlay" class="overlay">
+    <div class="modal-box" style="border-color:var(--primary);">
+      <div class="vend-ava vend-ava-lg" id="vendConfirmAva">?</div>
+      <h3 style="margin:14px 0 2px; font-size:18px;">¿Sos vos?</h3>
+      <div id="vendConfirmName" style="font-size:22px; font-weight:900; color:var(--primary); letter-spacing:.5px;"></div>
+      <p style="font-size:13px; color:var(--text-muted); margin:12px 0 2px; line-height:1.5;">
+        Vas a quedar registrado en <b>este celular</b>. Tu nombre viaja con cada pedido que mandes.
+      </p>
+      <button id="vendConfirmYes" class="btn-modal btn-yes">SÍ, SOY YO</button>
+      <button id="vendConfirmNo" class="btn-modal btn-no">VOLVER</button>
     </div>
   </div>
 
@@ -2456,7 +2579,7 @@ async function sendToGoogleForm(p) {
          </div>`
       : `<div class="hero-card">
            <div class="hero-hi">¡Hola! 👋</div>
-           <div class="hero-what">Escribí tu nombre en el campo <b>Vendedor</b> ↓ y la app se arma para vos: tu cartera marcada con ★, tus sugerencias y tus stats.</div>
+           <div class="hero-what">Elegí tu nombre en <b>Vendedor</b> ↓ y la app se arma para vos: tu cartera marcada con ★, tus sugerencias y tus stats.</div>
          </div>`;
   }
 
@@ -2646,6 +2769,115 @@ async function sendToGoogleForm(p) {
     $("confirmAppOverlay").style.display = "flex";
   }
 
+  // ==========================================
+  // VENDEDOR — selector que se fija al celular
+  // ==========================================
+  // El nombre se elige una vez, se guarda en localStorage y se "bloquea":
+  // queda registrado en ESE celular y viaja con cada pedido. La lista sale
+  // de Supabase (tabla vendedores, activo=true) con fallback offline.
+  const VEND_FALLBACK = ["MARTIN", "NAHUEL", "MAXIMILIANO", "MERCADO LIMPIO"];
+  let _vendList = [];
+  let _vendPendiente = null;
+
+  const vendInicial = n => (String(n || "?").trim().charAt(0).toUpperCase() || "?");
+
+  async function cargarVendedores() {
+    // 1) pintar YA con caché / fallback
+    try {
+      const c = JSON.parse(localStorage.getItem("vendedoresCache_v1") || "null");
+      if (Array.isArray(c) && c.length) _vendList = c;
+    } catch (e) {}
+    if (!_vendList.length) _vendList = VEND_FALLBACK.slice();
+    renderVendUI();
+
+    // 2) refrescar desde Supabase si hay señal
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/vendedores?select=nombre&activo=eq.true&order=nombre.asc`, {
+        headers: { "apikey": SB_ANON, "Authorization": `Bearer ${SB_ANON}` }
+      });
+      if (r.ok) {
+        const lista = (await r.json())
+          .map(x => String(x.nombre || "").trim().toUpperCase())
+          .filter(n => n && n !== "TODOS");
+        if (lista.length) {
+          _vendList = lista;
+          localStorage.setItem("vendedoresCache_v1", JSON.stringify(lista));
+          renderVendUI();
+        }
+      }
+    } catch (e) { /* sin señal: seguimos con caché/fallback */ }
+  }
+
+  function renderVendUI() {
+    const nombre = (localStorage.getItem("nombreVendedor") || "").trim();
+    const locked = localStorage.getItem("vendedorLocked") === "1" && !!nombre;
+    $("nombreVendedor").value = nombre;   // compat con todo el JS
+
+    if (locked) {
+      $("vendLocked").classList.remove("hidden");
+      $("vendPick").classList.add("hidden");
+      $("vendAva").textContent = vendInicial(nombre);
+      $("vendLockedName").textContent = nombre;
+      return;
+    }
+
+    $("vendLocked").classList.add("hidden");
+    $("vendPick").classList.remove("hidden");
+    const cont = $("vendOpts");
+    cont.innerHTML = "";
+    _vendList.forEach((n, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "vend-opt";
+      b.style.animationDelay = (i * 45) + "ms";
+      b.innerHTML = `<span class="vend-opt-ava">${escHtml(vendInicial(n))}</span><span class="vend-opt-name">${escHtml(n)}</span>`;
+      b.onclick = () => pedirConfirmVend(n);
+      cont.appendChild(b);
+    });
+  }
+
+  function pedirConfirmVend(n) {
+    _vendPendiente = n;
+    $("vendConfirmAva").textContent = vendInicial(n);
+    $("vendConfirmName").textContent = n;
+    $("vendConfirmOverlay").style.display = "flex";
+  }
+
+  function confirmarVend() {
+    const n = String(_vendPendiente || "").toUpperCase();
+    $("vendConfirmOverlay").style.display = "none";
+    _vendPendiente = null;
+    if (!n) return;
+    localStorage.setItem("nombreVendedor", n);
+    localStorage.setItem("vendedorLocked", "1");
+    $("nombreVendedor").value = n;
+    $("vendPick").classList.remove("needs-vend");
+    renderVendUI();
+    buildGreeting();
+    try { if (typeof computePredictions === "function") computePredictions(); } catch (e) {}
+    try { if (typeof renderStats === "function") renderStats(); } catch (e) {}
+    try { if ($("numeroCliente").value) updateClientUI($("numeroCliente").value); } catch (e) {}
+    showToast("Registrado como " + n, "ok");
+  }
+
+  function initVendedor() {
+    $("vendConfirmYes").onclick = confirmarVend;
+    $("vendConfirmNo").onclick  = () => { $("vendConfirmOverlay").style.display = "none"; _vendPendiente = null; };
+    $("vendChange").onclick = () => confirmApp(
+      { titulo: "¿Cambiar de vendedor?",
+        mensaje: "Hacelo solo si te equivocaste o este no es tu celular. El nombre viaja con cada pedido que mandás.",
+        si: "CAMBIAR", no: "DEJAR ASÍ" },
+      () => {
+        localStorage.removeItem("vendedorLocked");
+        localStorage.removeItem("nombreVendedor");
+        $("nombreVendedor").value = "";
+        renderVendUI();
+        buildGreeting();
+      }
+    );
+    cargarVendedores();
+  }
+
   // Ideas → CARGAR: arma el pedido COMPLETO (cliente + fecha predictiva +
   // su última compra ya acomodada, lista para ajustar cantidades y enviar)
   function precargarCliente(id) {
@@ -2714,6 +2946,14 @@ async function sendToGoogleForm(p) {
     if (!prod)  return marcarCampo($("productos"), "Falta el PEDIDO: escribí al menos un producto, un renglón por artículo (ej: 12 esponja acero)");
     if (!cli)   return marcarCampo($("numeroCliente"), "Falta el CLIENTE: buscalo por N°, nombre o dirección en el campo marcado");
     if (!fecha) return marcarCampo($("fechaEntrega"), "Falta la FECHA DE ENTREGA: tocá el campo marcado y elegí el día");
+    if (!(localStorage.getItem("nombreVendedor") || "").trim()) {
+      const vp = $("vendPick");
+      vp.classList.remove("hidden");
+      vp.classList.remove("needs-vend"); void vp.offsetWidth; vp.classList.add("needs-vend");
+      try { $("vendGroup").scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {}
+      showToast("Elegí tu nombre de vendedor antes de enviar", "error");
+      return;
+    }
 
     const currentId = $("numeroCliente").value;
 
@@ -3177,16 +3417,8 @@ $("btnConfirmYes").onclick = () => {
       localStorage.setItem('uiMode', e.target.checked ? 'light' : 'dark');
     });
 
-    const v = localStorage.getItem("nombreVendedor");
-    if (v) $("nombreVendedor").value = v;
-
-    // Guardar nombre en tiempo real y refrescar el saludo contextual
-    $("nombreVendedor").oninput  = (e) => {
-      const val = e.target.value.toUpperCase();
-      localStorage.setItem("nombreVendedor", val);
-      buildGreeting();
-    };
-    $("nombreVendedor").onchange = (e) => localStorage.setItem("nombreVendedor", e.target.value.toUpperCase());
+    // Vendedor: selector fijado al celular (reemplaza el campo de texto libre)
+    initVendedor();
 
     // Guía rápida: aparece sola UNA sola vez en la vida (se marca vista al
     // mostrarse, pase lo que pase); después vive solo en el botón "?"

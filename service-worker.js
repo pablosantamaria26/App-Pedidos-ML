@@ -1,9 +1,9 @@
-// === Service Worker v71 — Pedidos ML (App-Pedidos-ML) ===
+// === Service Worker v73 — Pedidos ML (App-Pedidos-ML) ===
 // HTML: NETWORK-FIRST con timeout → la app se actualiza sola al abrirla
 // con internet, y cae al caché si no hay señal (sigue andando offline).
 // Estáticos (íconos/manifest): CACHE-FIRST (casi no cambian).
 
-const CACHE_NAME = "pedidos-ml-v72";
+const CACHE_NAME = "pedidos-ml-v73";
 const HTML_TIMEOUT_MS = 2500;   // si la red tarda más que esto, servimos el caché
 const OFFLINE_URLS = [
   "./",
