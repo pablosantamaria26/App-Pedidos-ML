@@ -1374,6 +1374,217 @@ main { max-width: 540px; }
   -webkit-appearance: none;
 }
 .sug-chip:active { background: var(--primary); color: var(--accent-ink); }
+
+/* ═══════════════════════════════════════════
+   CATÁLOGO VISUAL (pestaña "Fotos") — todo clase
+   con prefijo cv- para no chocar con nada existente.
+   Reutiliza los mismos tokens de color/forma de la app.
+   ═══════════════════════════════════════════ */
+.cv-topbar { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+/* Buscador: queda como opción secundaria — las marcas/categorías de abajo
+   son ahora la forma principal de navegar (se acomodan solas con el uso),
+   así que este campo se ve más chico y discreto, sin borde hasta que se
+   lo toca, para no competir con los chips. */
+.cv-search { position:relative; }
+.cv-search input {
+  width:100%; padding:8px 12px 8px 32px; border-radius:var(--radius-s);
+  border:1px solid transparent; background:var(--bg-elev); color:var(--text-main);
+  font-size:12.5px; font-family:inherit; outline:none; transition:background .15s, border-color .15s;
+}
+.cv-search input:focus { border-color:var(--primary); background:var(--bg-input); }
+.cv-search::before {
+  content:"🔍"; position:absolute; left:11px; top:50%; transform:translateY(-50%);
+  font-size:11px; opacity:.55; pointer-events:none;
+}
+.cv-chiprow {
+  display:flex; gap:7px; overflow-x:auto; padding:2px 2px 4px; scrollbar-width:none;
+}
+.cv-chiprow::-webkit-scrollbar { display:none; }
+.cv-chip {
+  flex-shrink:0; padding:7px 13px; border-radius:18px; border:1px solid var(--border);
+  background:var(--bg-elev); color:var(--text-muted); font-size:12.5px; font-weight:700;
+  font-family:inherit; cursor:pointer; white-space:nowrap;
+}
+.cv-chip.active { background:var(--primary); border-color:var(--primary); color:var(--accent-ink); }
+.cv-cat { padding:5px 11px; border-radius:14px; font-size:11.5px; font-weight:600; background:transparent; }
+.cv-cat.active { background:var(--primary-dim); border-color:var(--primary); color:var(--primary); }
+.cv-counter { font-size:11.5px; color:var(--text-muted); font-weight:600; margin:2px 2px 6px; }
+/* "Todas": una marca no es un proveedor, va en un estilo aparte (punteado)
+   para no competir visualmente con las marcas reales. */
+.cv-chip-ghost { background:transparent; border-style:dashed; }
+.cv-chip-ghost.active { background:var(--primary); border-style:solid; }
+/* Cantidad de productos al lado del nombre — así el vendedor sabe si vale
+   la pena tocar el chip antes de tocarlo. */
+.cv-chip-n { font-family:'Roboto Mono', monospace; font-size:10px; opacity:.7; margin-left:1px; }
+.cv-chip.active .cv-chip-n { opacity:.8; }
+/* Chip para volver a "Todas" en categoría — solo aparece si hay una
+   categoría puntual elegida, para salir de ahí en un solo toque. */
+.cv-chip-clear { background:transparent; border:1.5px dashed var(--border-2); color:var(--text-muted); }
+/* Chip para abrir la hoja con las marcas que no entraron en la fila fija. */
+.cv-chip-mas { flex-shrink:0; background:transparent; border:1.5px dashed var(--border-2); color:var(--text-muted);
+  padding:7px 13px; border-radius:18px; font-size:12.5px; font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap; }
+
+/* ── Hoja "Elegí una marca" ── */
+.cv-marca-sheet-body { padding:4px 14px 14px; }
+.cv-marca-row {
+  display:flex; align-items:center; justify-content:space-between; padding:12px 10px; border-radius:10px;
+  cursor:pointer; font-size:13.5px; font-weight:700; color:var(--text-main);
+}
+.cv-marca-row:active { background:var(--bg-elev); }
+.cv-marca-row.active { background:var(--primary); color:var(--accent-ink); }
+.cv-marca-row .n { font-family:'Roboto Mono',monospace; font-size:11.5px; color:var(--text-muted); font-weight:600; }
+.cv-marca-row.active .n { color:var(--accent-ink); opacity:.75; }
+
+.cv-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(128px,1fr));
+  gap:9px; padding-bottom:100px;
+}
+.cv-card {
+  background:var(--bg-card); border-radius:var(--radius-s); overflow:hidden;
+  border:1px solid var(--border-2); display:flex; flex-direction:column;
+  text-align:left; color:inherit; width:100%; cursor:pointer; padding:0; margin:0;
+  font-family:inherit; -webkit-appearance:none; appearance:none;
+}
+.cv-card:active { transform:scale(.97); }
+.cv-card.en-pedido { box-shadow:0 0 0 2px var(--primary); }
+.cv-imgw { position:relative; padding-top:100%; background:#fff; overflow:hidden; }
+.cv-img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; padding:7px; }
+.cv-brand {
+  position:absolute; top:5px; left:5px; background:rgba(10,14,20,.75); color:#fff;
+  font-size:8.5px; font-weight:800; padding:2px 6px; border-radius:5px; letter-spacing:.3px;
+}
+.cv-qtybadge {
+  position:absolute; top:4px; right:4px; background:var(--primary); color:var(--accent-ink);
+  font-size:10.5px; font-weight:900; min-width:20px; height:20px; padding:0 5px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+/* Productos de stock eventual (bazar de flyer): el vendedor tiene que
+   confirmar stock antes de prometerlo. */
+.cv-eventual {
+  position:absolute; bottom:4px; left:4px; right:4px;
+  background:rgba(224,138,30,.94); color:#241800;
+  font-size:8.5px; font-weight:800; letter-spacing:.2px; text-align:center;
+  padding:2px 4px; border-radius:5px;
+}
+.cv-info { padding:6px 7px 7px; }
+.cv-name {
+  font-size:11px; font-weight:700; line-height:1.28; color:var(--text-main);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:28px;
+}
+.cv-price { font-size:12px; font-weight:800; color:var(--primary); margin-top:3px; display:block; }
+.cv-price.sin { color:var(--text-muted); font-weight:600; font-size:9.5px; }
+.cv-empty { grid-column:1/-1; text-align:center; padding:50px 16px; color:var(--text-muted); }
+
+/* Sheet inferior de agregado rápido (usa .overlay como fondo, ver HTML) */
+.cv-sheet {
+  width:100%; max-width:440px; background:var(--bg-modal); border-radius:20px 20px 0 0;
+  max-height:92vh; overflow-y:auto; margin-top:auto; box-shadow:0 -10px 30px rgba(0,0,0,.4);
+}
+#cvOverlay { align-items:flex-end; }
+.cv-sheet-head {
+  position:sticky; top:0; background:var(--bg-modal); z-index:2;
+  padding:10px 14px 8px; display:flex; align-items:center; justify-content:space-between;
+  font-size:11px; font-weight:700; color:var(--text-muted); border-bottom:1px solid var(--border);
+}
+.cv-sheet-close {
+  width:30px; height:30px; border-radius:50%; background:var(--bg-elev); color:var(--text-main);
+  border:none; font-size:15px; cursor:pointer;
+}
+.cv-sheet-imgw { background:#fff; padding:16px; display:flex; align-items:center; justify-content:center; }
+.cv-sheet-imgw img { max-width:100%; max-height:30vh; object-fit:contain; }
+.cv-sheet-body { padding:2px 18px 4px; }
+.cv-sheet-name { font-size:16.5px; font-weight:800; color:var(--text-main); }
+.cv-sheet-meta { font-size:11.5px; color:var(--text-muted); margin-top:3px; font-family:'Roboto Mono',monospace; }
+.cv-sheet-price { font-size:22px; font-weight:900; color:var(--primary); margin-top:8px; }
+.cv-sheet-price.sin { font-size:14px; font-weight:700; color:var(--text-muted); }
+.cv-toggle { display:flex; gap:8px; margin-top:12px; }
+.cv-toggle button {
+  flex:1; padding:9px 4px; border-radius:10px; border:1.5px solid var(--border);
+  background:var(--bg-input); color:var(--text-main); font-size:12px; font-weight:700;
+  font-family:inherit; cursor:pointer;
+}
+.cv-toggle button.active { background:var(--primary); border-color:var(--primary); color:var(--accent-ink); }
+.cv-qbtns { display:flex; gap:7px; margin-top:12px; }
+.cv-qbtns button {
+  flex:1; padding:13px 0; border-radius:11px; border:1.5px solid var(--border);
+  background:var(--bg-input); color:var(--text-main); font-size:15px; font-weight:800;
+  font-family:inherit; cursor:pointer;
+}
+.cv-qbtns button.active { background:var(--primary); border-color:var(--primary); color:var(--accent-ink); }
+.cv-stepper {
+  display:flex; align-items:center; margin-top:9px; border:1.5px solid var(--border);
+  border-radius:10px; overflow:hidden;
+}
+.cv-stepper button {
+  flex:1; background:var(--bg-elev); border:none; color:var(--text-main); font-size:18px;
+  font-weight:800; padding:10px 0; cursor:pointer; font-family:inherit;
+}
+.cv-stepper .qty { flex:1.4; text-align:center; font-size:14px; font-weight:800; color:var(--text-main); }
+.cv-sheet-nav { display:flex; gap:9px; padding:14px 18px 18px; }
+.cv-sheet-nav button {
+  flex:1; padding:13px 0; border-radius:11px; border:none; font-size:13.5px; font-weight:800;
+  cursor:pointer; font-family:inherit;
+}
+.cv-nav-prev { background:var(--bg-elev); color:var(--text-main); }
+.cv-nav-next { background:var(--primary); color:var(--accent-ink); }
+.cv-nav-prev:disabled, .cv-nav-next:disabled { opacity:.35; cursor:default; }
+/* Contador de renglones del pedido, montado sobre la pestaña CARGAR.
+   Reemplaza a la barra flotante: el progreso se ve desde cualquier
+   pestaña y tocarlo lleva justo a donde se revisa el pedido. */
+.tab-badge {
+  display:none; min-width:17px; height:17px; padding:0 5px; border-radius:9px;
+  background:var(--primary); color:var(--accent-ink);
+  font-size:10.5px; font-weight:900; font-style:normal; line-height:17px;
+  text-align:center; margin-left:5px; font-variant-numeric:tabular-nums;
+}
+.tab-badge.show { display:inline-block; }
+@keyframes tabBadgePulse {
+  0% { transform:scale(1); }
+  40% { transform:scale(1.35); }
+  100% { transform:scale(1); }
+}
+.tab-badge.pulse { animation:tabBadgePulse .35s ease; }
+@media (prefers-reduced-motion: reduce){ .tab-badge.pulse { animation:none; } }
+
+/* aviso de mínimo / múltiplo en la ficha */
+.cv-nota-min {
+  margin-top:10px; padding:7px 10px; border-radius:9px; background:var(--primary-dim);
+  color:var(--text-main); font-size:11.5px; font-weight:700; line-height:1.4;
+}
+#vistaFotos { padding-bottom:20px; }
+
+/* Selector Escribir / Elegir por foto — vive arriba de todo en Cargar,
+   reemplaza lo que antes era una pestaña propia en la barra superior. */
+.carga-modos {
+  display:flex; gap:6px; margin-bottom:14px; background:var(--bg-input);
+  border-radius:var(--radius-s); padding:4px;
+}
+.carga-modo-btn {
+  flex:1; padding:11px 8px; border:none; border-radius:9px; background:transparent;
+  color:var(--text-muted); font-family:inherit; font-size:13px; font-weight:800; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:6px; transition:background .15s, color .15s;
+}
+.carga-modo-btn.active { background:var(--bg-card); color:var(--text-main); box-shadow:0 1px 4px rgba(0,0,0,.18); }
+.carga-modo-btn .cico { font-size:15px; line-height:1; }
+
+/* Botón flotante "Ver pedido" — solo visible mientras se eligen fotos.
+   Vuelve a la vista de escribir, donde está todo (cliente, fecha, ENVIAR). */
+/* Barra inferior fija (no una píldora flotante): así nunca "tapa" una
+   tarjeta por accidente — se ve como una barra de resumen a propósito,
+   mismo patrón que "ver carrito" en apps de venta. Vive solo en el modo
+   Fotos, mientras hay algo cargado. */
+.fab-verpedido {
+  position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom, 0px)); z-index:120;
+  background:var(--primary); color:var(--accent-ink); border:none; border-radius:16px;
+  padding:14px 18px; font-size:14px; font-weight:800; box-shadow:0 10px 28px rgba(0,0,0,.24);
+  display:none; align-items:center; justify-content:center; gap:8px; cursor:pointer; font-family:inherit;
+}
+.fab-verpedido.show { display:flex; }
+.fab-verpedido .badge {
+  background:var(--accent-ink); color:var(--primary); border-radius:50%; min-width:20px; height:20px;
+  display:flex; align-items:center; justify-content:center; font-size:11px; padding:0 5px;
+  font-variant-numeric:tabular-nums;
+}
 </style>
 </head>
 <body>
@@ -1424,7 +1635,7 @@ main { max-width: 540px; }
     <!-- Fila 3: pestañas de navegación -->
     <div class="nav-tabs-row">
       <button id="btnNuevo" class="tab-btn active">
-        <span><svg class="tico" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>Cargar
+        <span><svg class="tico" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>Cargar<i class="tab-badge" id="badgeRenglones" title="Renglones en el pedido">0</i>
       </button>
       <button id="btnVerPendientes" class="tab-btn">
         <span><svg class="tico" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></span>Cola
@@ -1447,6 +1658,19 @@ main { max-width: 540px; }
 
   <!-- ═══ PESTAÑA 1: NUEVO PEDIDO ═══ -->
   <main id="nuevoPedido">
+
+    <!-- Escribir a mano vs. elegir por foto: las dos formas de armar el
+         mismo pedido, sin ocupar una pestaña propia arriba. -->
+    <div class="carga-modos">
+      <button type="button" id="modoEscribir" class="carga-modo-btn active">
+        <span class="cico">✍️</span>Escribir pedido
+      </button>
+      <button type="button" id="modoFotos" class="carga-modo-btn">
+        <span class="cico">🖼️</span>Elegir por foto
+      </button>
+    </div>
+
+    <div id="vistaEscribir">
 
     <!-- ATAJO RÁPIDO: Rejillas Vanela -->
     <div class="vanela-block">
@@ -1489,8 +1713,25 @@ main { max-width: 540px; }
       </label>
     </div>
 
+    </div><!-- /vistaEscribir -->
+
+    <!-- Elegir por foto: mismo pedido, se escribe solo con el nombre del
+         catálogo. Al terminar, "Ver pedido" vuelve a Escribir con todo cargado. -->
+    <div id="vistaFotos" class="hidden">
+      <p style="font-size:12px; color:var(--text-muted); margin:0 0 12px;">
+        Elegí productos por foto: se suman al pedido con el nombre del catálogo (el precio es orientativo, no viaja a depósito). Cuando termines, tocá <b>Ver pedido</b> para revisar y enviar como siempre.
+      </p>
+      <div class="cv-topbar">
+        <div class="cv-search"><input type="text" id="cvBuscador" placeholder="Buscar producto en todas las marcas..." autocomplete="off" /></div>
+        <div class="cv-chiprow" id="cvMarcas"></div>
+        <div class="cv-chiprow" id="cvCats"></div>
+        <div class="cv-counter" id="cvCounter">— productos</div>
+      </div>
+      <div class="cv-grid" id="cvGrid"></div>
+    </div>
+
     <!-- Datos operativos -->
-    <section class="ops-section">
+    <section class="ops-section" id="opsSection">
 
       <div class="form-grid">
         <div class="input-group">
@@ -1556,6 +1797,11 @@ main { max-width: 540px; }
     </section>
   </main>
 
+  <!-- Flotante: solo visible en "Elegir por foto", vuelve a Escribir -->
+  <button type="button" class="fab-verpedido" id="fabVerPedido">
+    ✅ Ver pedido <span class="badge" id="fabVerPedidoBadge">0</span>
+  </button>
+
   <!-- ═══ PESTAÑA 2: EN COLA ═══ -->
   <main id="pendientes" class="hidden">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -1613,7 +1859,6 @@ main { max-width: 540px; }
     </div>
     <div id="listaPredicciones"></div>
   </main>
-
 
   <!-- ═══ MODAL: SUGERENCIAS (UPSELL) ═══ -->
   <div id="upsellOverlay" class="overlay">
@@ -1696,6 +1941,7 @@ main { max-width: 540px; }
       <p style="font-size:12px; color:var(--text-muted); margin:0 0 12px;">30 segundos y salís vendiendo:</p>
       <div class="coach-list">
         <div class="coach-item"><span>⌨️</span><div><b>Escribí el pedido</b> — un renglón por producto: "12 esponja acero". Tocá las <b>sugerencias verdes</b> que aparecen abajo y se completa solo, sin errores.</div></div>
+        <div class="coach-item"><span>🖼️</span><div><b>Elegí por foto</b> — arriba de todo, tocá "Elegir por foto" para armar el mismo pedido tocando fotos en vez de escribir. Al terminar, "✅ Ver pedido" te vuelve acá con todo cargado.</div></div>
         <div class="coach-item"><span>🧽</span><div><b>Rejillas Vanela</b> — elegí el modelo, poné la cantidad y AGREGAR. Se suma al pedido.</div></div>
         <div class="coach-item"><span>✨</span><div><b>Acomodar</b> — ordena la lista y corrige palabras mal escritas al instante. <b>🎙 Dictar</b> — hablá y lo escribe. <b>💡 Sugeridos</b> — lo que este cliente suele llevar.</div></div>
         <div class="coach-item"><span>🔮</span><div><b>Ideas</b> — tus clientes que hace días no compran. <b>📦 Armar pedido</b> te deja el pedido listo con su última compra: ajustás y enviás.</div></div>
@@ -1705,7 +1951,44 @@ main { max-width: 540px; }
     </div>
   </div>
 
+  <!-- ═══ SHEET: AGREGAR RÁPIDO DESDE EL CATÁLOGO VISUAL ═══ -->
+  <!-- Hoja de marcas: solo se abre desde "Más marcas" cuando la que buscás
+       no está entre las fijas (las más usadas por este vendedor). -->
+  <div id="cvMarcaOverlay" class="overlay">
+    <div class="cv-sheet">
+      <div class="cv-sheet-head">
+        <span>Elegí una marca</span>
+        <button type="button" class="cv-sheet-close" id="cvMarcaSheetClose">✕</button>
+      </div>
+      <div class="cv-marca-sheet-body">
+        <div class="cv-search"><input type="text" id="cvMarcaSheetBuscar" placeholder="Buscar marca..." autocomplete="off" /></div>
+        <div id="cvMarcaLista"></div>
+      </div>
+    </div>
+  </div>
 
+  <div id="cvOverlay" class="overlay">
+    <div class="cv-sheet">
+      <div class="cv-sheet-head">
+        <span id="cvSheetProgress">Producto 1 de 1</span>
+        <button type="button" class="cv-sheet-close" id="cvSheetClose" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="cv-sheet-imgw"><img id="cvSheetImg" src="" alt="" /></div>
+      <div class="cv-sheet-body">
+        <div class="cv-sheet-name" id="cvSheetName"></div>
+        <div class="cv-sheet-meta"><span id="cvSheetBrand"></span> · <span id="cvSheetCode"></span></div>
+        <div class="cv-sheet-price" id="cvSheetPrice"></div>
+        <div id="cvSheetToggle"></div>
+        <div id="cvSheetNota"></div>
+        <div class="cv-qbtns" id="cvSheetQuick"></div>
+        <div id="cvSheetStepper"></div>
+      </div>
+      <div class="cv-sheet-nav">
+        <button type="button" class="cv-nav-prev" id="cvNavPrev">‹ Anterior</button>
+        <button type="button" class="cv-nav-next" id="cvNavNext">Siguiente ›</button>
+      </div>
+    </div>
+  </div>
 
 <script>
   // ==========================================
@@ -2500,7 +2783,16 @@ main { max-width: 540px; }
 
   const SIG_KEY = "signaturesEnviadas";
   function getSigMap(){ try{return JSON.parse(localStorage.getItem(SIG_KEY)||"{}")}catch{return{}} }
-  function seenSig(sig){ return !!getSigMap()[sig]; }
+  // Un pedido es "ya visto" si se mandó con éxito ANTES (signaturesEnviadas)
+  // O si ya está esperando turno en la cola offline (mismo cliente/fecha/
+  // productos). Sin este segundo chequeo, un pedido cargado sin señal se
+  // podía volver a cargar entero por las dudas y terminaba duplicado en
+  // depósito apenas volvía la conexión, porque el primero todavía no
+  // contaba como "enviado".
+  function seenSig(sig){
+    if (getSigMap()[sig]) return true;
+    try { return getQueue().some(p => p.sig === sig); } catch (e) { return false; }
+  }
   function markSig(sig){ const m=getSigMap(); m[sig]=Date.now(); localStorage.setItem(SIG_KEY, JSON.stringify(m)); }
 
   const getQueue = () => JSON.parse(localStorage.getItem("pedidosPendientes") || "[]");
@@ -2579,7 +2871,9 @@ async function sendToGoogleForm(p) {
          </div>`
       : `<div class="hero-card">
            <div class="hero-hi">¡Hola! 👋</div>
-           <div class="hero-what">Elegí tu nombre en <b>Vendedor</b> ↓ y la app se arma para vos: tu cartera marcada con ★, tus sugerencias y tus stats.</div>
+           <div class="hero-what">${_tabActual === "nuevo"
+             ? `Elegí tu nombre en <b>Vendedor</b> ↓ y la app se arma para vos: tu cartera marcada con ★, tus sugerencias y tus stats.`
+             : `Andá a <b>Cargar</b> y elegí tu nombre en Vendedor: así la app se arma para vos en todas las pestañas.`}</div>
          </div>`;
   }
 
@@ -2594,6 +2888,27 @@ async function sendToGoogleForm(p) {
   $("btnVerPendientes").onclick = () => switchTab("pendientes");
   $("btnVerEstadisticas").onclick = () => switchTab("stats");
   $("btnVerPredicciones").onclick = () => switchTab("pred");
+
+  // ── Escribir / Elegir por foto: dos formas de armar el MISMO pedido,
+  //    conviven dentro de la pestaña Cargar (no ocupan un botón propio
+  //    en la barra superior). "Elegir por foto" solo escribe renglones
+  //    en el mismo textarea #productos — todo lo demás (cliente, fecha,
+  //    ENVIAR, cola offline) sigue siendo exactamente lo de siempre. ──
+  let cargaModo = localStorage.getItem("cargaModoPref") || "escribir";
+  function setCargaModo(m){
+    cargaModo = m;
+    localStorage.setItem("cargaModoPref", m);
+    $("modoEscribir").classList.toggle("active", m === "escribir");
+    $("modoFotos").classList.toggle("active", m === "fotos");
+    $("vistaEscribir").classList.toggle("hidden", m !== "escribir");
+    $("vistaFotos").classList.toggle("hidden", m !== "fotos");
+    $("opsSection").classList.toggle("hidden", m === "fotos");
+    $("fabVerPedido").classList.toggle("show", m === "fotos");
+    if (m === "fotos") cvInit();
+  }
+  $("modoEscribir").onclick = () => setCargaModo("escribir");
+  $("modoFotos").onclick = () => setCargaModo("fotos");
+  $("fabVerPedido").onclick = () => setCargaModo("escribir");
 
   // Filtro en tiempo real dentro de la pestaña Tendencias
   $("filtroIdeas").oninput = () => computePredictions();
@@ -2610,6 +2925,10 @@ async function sendToGoogleForm(p) {
     const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
     const na = norm(a), nb = norm(b);
     if (na === nb) return true;
+    // Dos vendedores activos distintos nunca coinciden (MARTIN no es MARTIN LOPEZ).
+    let activos = [];
+    try { activos = _vendList.map(n => norm(String(n))); } catch (e) {}
+    if (activos.includes(na) && activos.includes(nb)) return false;
     const [shorter, longer] = na.length <= nb.length ? [na, nb] : [nb, na];
     // Prefijo: minimo 3 chars para evitar falsos positivos ("ra" matchearia todo)
     if (shorter.length >= 3 && longer.startsWith(shorter)) return true;
@@ -2775,7 +3094,7 @@ async function sendToGoogleForm(p) {
   // El nombre se elige una vez, se guarda en localStorage y se "bloquea":
   // queda registrado en ESE celular y viaja con cada pedido. La lista sale
   // de Supabase (tabla vendedores, activo=true) con fallback offline.
-  const VEND_FALLBACK = ["MARTIN", "NAHUEL", "MARIANO", "MERCADO LIMPIO"];
+  const VEND_FALLBACK = ["MARTIN", "MARTIN LOPEZ", "MERCADO LIMPIO"];
   let _vendList = [];
   let _vendPendiente = null;
 
@@ -2802,6 +3121,13 @@ async function sendToGoogleForm(p) {
         if (lista.length) {
           _vendList = lista;
           localStorage.setItem("vendedoresCache_v1", JSON.stringify(lista));
+          const fijado = (localStorage.getItem("nombreVendedor") || "").trim().toUpperCase();
+          if (fijado && !lista.includes(fijado)) {
+            // Vendedor renombrado o dado de baja: este celular vuelve a elegir su nombre.
+            localStorage.removeItem("vendedorLocked");
+            localStorage.removeItem("nombreVendedor");
+            showToast(`${fijado} ya no está activo. Elegí tu nombre para seguir.`, "info");
+          }
           renderVendUI();
         }
       }
@@ -2933,6 +3259,13 @@ async function sendToGoogleForm(p) {
   }
 
   $("btnEnviar").onclick = () => {
+    // El pedido se puede armar desde cualquier pestaña, y desde la vista
+    // "Elegir por foto". Antes de validar volvemos a Cargar / Escribir:
+    // ahí están cliente y fecha, y ahí se marcan en rojo los campos que
+    // falten (ocultos, no se verían).
+    if (_tabActual !== "nuevo") switchTab("nuevo");
+    if (cargaModo !== "escribir") setCargaModo("escribir");
+
     const prod  = $("productos").value.trim();
     const cli   = $("numeroCliente").value.trim();
     const fecha = $("fechaEntrega").value;
@@ -3098,7 +3431,7 @@ $("btnConfirmYes").onclick = () => {
   // Auto-crecer la textarea con el contenido (sin scroll interno que atrape el gesto de un dedo)
   function autoGrowProductos(){ const t=$("productos"); if(!t) return; t.style.height="auto"; t.style.height=t.scrollHeight+"px"; }
   function saveDraft(){ localStorage.setItem("draft", JSON.stringify({f:$("fechaEntrega").value, c:$("numeroCliente").value, p:$("productos").value, o:$("observaciones").value})); }
-  function clearForm(){ $("productos").value=""; $("numeroCliente").value=""; $("observaciones").value=""; saveDraft(); autoGrowProductos(); $("numeroCliente").focus(); $("infoCliente").textContent=""; mostrarCheckReactivar(null); }
+  function clearForm(){ $("productos").value=""; $("numeroCliente").value=""; $("observaciones").value=""; saveDraft(); autoGrowProductos(); $("numeroCliente").focus(); $("infoCliente").textContent=""; mostrarCheckReactivar(null); actualizarBadgeRenglones(); }
   // ==========================================
   // TEXTO PREDICTIVO — barra de sugerencias de productos
   // Sugiere productos del historial (priorizando los del cliente actual)
@@ -3191,7 +3524,7 @@ $("btnConfirmYes").onclick = () => {
     const cont = $("prodSug"); if (cont) { cont.style.display = "none"; cont.innerHTML = ""; }
   }
 
-  $("productos").oninput = () => { saveDraft(); autoGrowProductos(); renderSugerencias(); };
+  $("productos").oninput = () => { saveDraft(); autoGrowProductos(); renderSugerencias(); actualizarBadgeRenglones(); };
   $("productos").addEventListener("focus", renderSugerencias);
   $("productos").addEventListener("click", renderSugerencias);
   $("productos").addEventListener("blur", () => setTimeout(() => {
@@ -3352,6 +3685,7 @@ $("btnConfirmYes").onclick = () => {
 
     saveDraft();
     autoGrowProductos();
+    actualizarBadgeRenglones(true);
     // Reset para el próximo modelo — sin abrir teclados de golpe
     $("vanelaSelect").value = "";
     vanelaQtySet(0);
@@ -3388,18 +3722,465 @@ $("btnConfirmYes").onclick = () => {
     $("vanelaAdd").onclick = vanelaAgregar;
   }
 
+  // ==========================================
+  // CATÁLOGO VISUAL (pestaña "Fotos") — atajo por foto para armar el
+  // pedido en vez de escribirlo. Mismo principio que Rejillas Vanela:
+  // solo ESCRIBE renglones "CANTIDAD NOMBRE" en el textarea #productos
+  // (nombres del catálogo, SIN precio) y listo — hereda gratis la firma
+  // anti-duplicados, la cola offline y el envío, porque usa el mismo
+  // campo y el mismo botón ENVIAR PEDIDO que el resto de la app.
+  // Todo con prefijo cv para no chocar con nada existente.
+  // ==========================================
+  let CV_CATALOGO = [];
+  let cvCargado = false, cvWired = false;
+  let cvMarcaActiva = "TODAS", cvCatActiva = "TODAS", cvBusq = "";
+  let cvModalLista = [], cvModalIdx = 0;
+  let cvUnidadSel = {}; // codigo -> 'un' | 'caja' (elegido en la ficha, dura la sesión)
+
+  function cvFmt(n){ return n ? '$' + Number(n).toLocaleString('es-AR',{maximumFractionDigits:0}) : ''; }
+
+  // "Make vela blanca parafina" ya trae la marca; "Cabo de metal" (Accesorios) no.
+  // Siempre devolvemos el renglón CON marca adelante, sin duplicarla.
+  // Marcas que son solo una etiqueta interna nuestra (de dónde salió la
+  // foto/el flyer), no un proveedor real que depósito/facturación necesite
+  // leer en el renglón — para esas escribimos SOLO el nombre del artículo,
+  // más corto y directo. El resto de las marcas (proveedores de verdad,
+  // o con nombre propio como La Gauchita/La Americana) siempre van con
+  // marca + nombre para que el armador no le pifie.
+  const CV_MARCAS_SIN_PREFIJO = new Set(["ACCESORIOS", "ESPACIO BAZAR", "SOIFER"]);
+  function cvNombreConMarca(p){
+    const n = (p.nombre||"").toUpperCase();
+    const m = (p.marca||"").toUpperCase();
+    if (CV_MARCAS_SIN_PREFIJO.has(m)) return n;
+    return n.startsWith(m) ? n : (m + " " + n);
+  }
+  // ── Presentaciones de venta ──────────────────────────────────────────
+  // Cada producto trae en `venta` cómo se vende de verdad: por unidad, por
+  // docena (traperío), por caja, por paquete (bolsas, fibra esponja x3), y
+  // con qué cantidades arranca (mínimo / múltiplo). Todo eso decide qué
+  // botones se muestran y cómo se escribe el renglón en el pedido.
+  function cvPresDe(p){
+    return (p.venta && p.venta.pres && p.venta.pres.length)
+      ? p.venta.pres
+      : [{ id:"un", label:"Unidad", factor:1, sug:[1,6,12] }];
+  }
+  function cvGetPres(p){
+    const lista = cvPresDe(p);
+    const id = cvUnidadSel[p.codigo];
+    return lista.find(x => x.id === id) || lista[0];
+  }
+  function cvPaso(p){ return (p.venta && p.venta.paso) || 1; }
+  function cvMinimo(p){ return (p.venta && p.venta.min) || 0; }
+
+  // Cómo queda escrito el renglón en el pedido (sin precio, nombre de catálogo)
+  function cvDescriptor(p, pres){
+    const base = cvNombreConMarca(p);
+    if (!pres || pres.id === "un") return base;
+    if (pres.id === "caja")  return "CAJA X" + pres.factor + " " + base;
+    if (pres.id === "paq")   return "PAQUETE X" + pres.factor + " " + base;
+    if (pres.id === "bulto") return "BULTO" + (pres.factor ? " X" + pres.factor : "") + " " + base;
+    return base;
+  }
+
+  async function cvCargarCatalogo(){
+    try {
+      const acc = [];
+      let desde = 0; const PAGE = 1000;
+      while (true) {
+        const r = await fetch(`${SB_URL}/rest/v1/catalogo_visual_productos?select=*&order=marca.asc,nombre.asc`, {
+          headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}`, Range: `${desde}-${desde + PAGE - 1}` }
+        });
+        if (!r.ok) throw new Error("supabase " + r.status);
+        const rows = await r.json();
+        if (!Array.isArray(rows)) throw new Error("respuesta inesperada");
+        acc.push(...rows);
+        if (rows.length < PAGE) break;
+        desde += PAGE;
+      }
+      if (!acc.length) throw new Error("tabla vacía");
+      CV_CATALOGO = acc;
+    } catch (e) {
+      // Fallback: si Supabase falla o todavía no tiene datos, usamos el JSON estático.
+      try {
+        const r = await fetch("./catalogo-productos.json");
+        CV_CATALOGO = await r.json();
+      } catch (e2) {
+        CV_CATALOGO = [];
+        showToast("No se pudo cargar el catálogo de fotos. Revisá la conexión.", "error");
+      }
+    }
+  }
+
+  async function cvInit(){
+    if (!cvCargado) { await cvCargarCatalogo(); cvCargado = true; }
+    if (!cvWired) { cvWireEvents(); cvWired = true; }
+    cvRenderMarcas();
+    cvRenderCats();
+    cvRenderGrid();
+    actualizarBadgeRenglones();
+  }
+
+  function cvItemsPorMarca(){
+    return cvMarcaActiva === "TODAS" ? CV_CATALOGO : CV_CATALOGO.filter(p => p.marca === cvMarcaActiva);
+  }
+  function cvItemsFiltrados(){
+    let items = cvBusq ? CV_CATALOGO.slice() : cvItemsPorMarca();
+    if (!cvBusq && cvCatActiva !== "TODAS") items = items.filter(p => p.categoria === cvCatActiva);
+    if (cvBusq) {
+      const q = cvBusq;
+      items = items.filter(p =>
+        p.nombre.toLowerCase().includes(q) || p.marca.toLowerCase().includes(q) ||
+        String(p.codigo).toLowerCase().includes(q) || p.categoria.toLowerCase().includes(q));
+    }
+    return items;
+  }
+
+  // ── Aprendizaje por vendedor (por celular): cada vez que se agrega un
+  // producto de verdad al pedido, sumamos un punto a esa marca y a esa
+  // combinación marca+categoría. Con eso, las que más usa ESTE vendedor
+  // se van adelantando solas en la fila de chips — nadie tiene que
+  // configurar nada, se acomoda con el uso. Solo sumamos cuando se AGREGA
+  // (cant>0), nunca al sacar, para no "castigar" un error de tipeo.
+  const CV_USO_MARCA_KEY = "cvUsoMarcas";
+  const CV_USO_CAT_KEY = "cvUsoCategorias";
+  function cvUsoGet(key){ try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { return {}; } }
+  function cvUsoSumar(key, id){
+    const m = cvUsoGet(key);
+    m[id] = (m[id] || 0) + 1;
+    localStorage.setItem(key, JSON.stringify(m));
+  }
+  function cvRegistrarUso(p){
+    cvUsoSumar(CV_USO_MARCA_KEY, p.marca);
+    cvUsoSumar(CV_USO_CAT_KEY, p.marca + "||" + p.categoria);
+  }
+  // Orden: primero por uso de ESTE vendedor (más usado primero); las que
+  // todavía no usó quedan después, en su orden de siempre (más productos
+  // primero) — así el primer día se ve igual que hoy, y se va acomodando solo.
+  function cvOrdenarPorUso(items, usoMap, idDe){
+    return items
+      .map((item, i) => ({ item, i, uso: usoMap[idDe(item)] || 0 }))
+      .sort((a, b) => (b.uso - a.uso) || (a.i - b.i))
+      .map(x => x.item);
+  }
+
+  const CV_TOP_MARCAS_N = 5;
+  function cvConteoMarcas(){
+    const conteo = {};
+    CV_CATALOGO.forEach(p => { conteo[p.marca] = (conteo[p.marca] || 0) + 1; });
+    return conteo;
+  }
+  // Marcas ordenadas: primero las que este vendedor más usa, después el
+  // resto en su orden de siempre (más productos primero).
+  function cvMarcasOrdenadas(){
+    const conteo = cvConteoMarcas();
+    // Base: más productos primero (Supabase las trae alfabéticas, no por tamaño).
+    const base = Object.keys(conteo).sort((a, b) => conteo[b] - conteo[a]);
+    const uso = cvUsoGet(CV_USO_MARCA_KEY);
+    return cvOrdenarPorUso(base, uso, m => m);
+  }
+
+  function cvRenderMarcas(){
+    const conteo = cvConteoMarcas();
+    const marcas = cvMarcasOrdenadas();
+    // Si la marca activa es una "de más" (no está entre las fijas), la
+    // dejamos igual visible entre las fijas para que no desaparezca de golpe.
+    let fijas = marcas.slice(0, CV_TOP_MARCAS_N);
+    if (cvMarcaActiva !== "TODAS" && !fijas.includes(cvMarcaActiva)) {
+      fijas = [cvMarcaActiva, ...fijas.slice(0, CV_TOP_MARCAS_N - 1)];
+    }
+    const hayMas = marcas.length > fijas.length;
+    $("cvMarcas").innerHTML =
+      `<button type="button" class="cv-chip cv-chip-ghost ${cvMarcaActiva === "TODAS" ? "active" : ""}" data-m="TODAS">Todas <span class="cv-chip-n">${CV_CATALOGO.length}</span></button>` +
+      fijas.map(m =>
+        `<button type="button" class="cv-chip ${m === cvMarcaActiva ? "active" : ""}" data-m="${escHtml(m)}">${escHtml(m)} <span class="cv-chip-n">${conteo[m]}</span></button>`
+      ).join("") +
+      (hayMas ? `<button type="button" class="cv-chip-mas" id="cvMasMarcas">Más marcas ▾</button>` : "");
+  }
+
+  function cvRenderMarcaSheet(q){
+    const conteo = cvConteoMarcas();
+    const marcas = cvMarcasOrdenadas().filter(m => !q || m.toLowerCase().includes(q));
+    const filaTodas = (!q || "todas las marcas".includes(q))
+      ? `<div class="cv-marca-row ${cvMarcaActiva === "TODAS" ? "active" : ""}" data-m="TODAS"><span>Todas las marcas</span><span class="n">${CV_CATALOGO.length}</span></div>`
+      : "";
+    $("cvMarcaLista").innerHTML = filaTodas + marcas.map(m =>
+      `<div class="cv-marca-row ${m === cvMarcaActiva ? "active" : ""}" data-m="${escHtml(m)}"><span>${escHtml(m)}</span><span class="n">${conteo[m]}</span></div>`
+    ).join("") || `<div class="cv-empty">Ninguna marca coincide.</div>`;
+  }
+  function cvAbrirMarcaSheet(){
+    $("cvMarcaSheetBuscar").value = "";
+    cvRenderMarcaSheet("");
+    $("cvMarcaOverlay").style.display = "flex";
+    $("cvMarcaSheetBuscar").focus();
+  }
+  function cvCerrarMarcaSheet(){ $("cvMarcaOverlay").style.display = "none"; }
+  function cvRenderCats(){
+    const base = cvItemsPorMarca();
+    const conteo = {};
+    base.forEach(p => { conteo[p.categoria] = (conteo[p.categoria] || 0) + 1; });
+    let cats = Object.keys(conteo).sort((a, b) => conteo[b] - conteo[a]);
+    const uso = cvUsoGet(CV_USO_CAT_KEY);
+    const marca = cvMarcaActiva;
+    cats = cvOrdenarPorUso(cats, uso, c => marca + "||" + c);
+    const limpiarHtml = cvCatActiva !== "TODAS"
+      ? `<button type="button" class="cv-chip cv-cat cv-chip-clear" data-c="TODAS">✕ Quitar categoría</button>`
+      : "";
+    $("cvCats").innerHTML = limpiarHtml +
+      `<button type="button" class="cv-chip cv-cat cv-chip-ghost ${cvCatActiva === "TODAS" ? "active" : ""}" data-c="TODAS">Todas <span class="cv-chip-n">${base.length}</span></button>` +
+      cats.map(c =>
+        `<button type="button" class="cv-chip cv-cat ${c === cvCatActiva ? "active" : ""}" data-c="${escHtml(c)}">${escHtml(c)} <span class="cv-chip-n">${conteo[c]}</span></button>`
+      ).join("");
+  }
+  function cvSetMarca(m){ cvMarcaActiva = m; cvCatActiva = "TODAS"; cvBusq = ""; $("cvBuscador").value = ""; cvRenderMarcas(); cvRenderCats(); cvRenderGrid(); }
+  function cvSetCat(c){ cvCatActiva = c; cvRenderCats(); cvRenderGrid(); }
+
+  // Busca en #productos el renglón "N DESCRIPTOR" (mismo mecanismo que Vanela).
+  function cvBuscarLinea(descriptor){
+    const lines = $("productos").value.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].trim().match(/^(\d+)\s+(.+)$/);
+      if (m && m[2].trim().toUpperCase() === descriptor) return { idx: i, cant: parseInt(m[1], 10), lines };
+    }
+    return null;
+  }
+  function cvCantidadActual(p, pres){
+    const f = cvBuscarLinea(cvDescriptor(p, pres));
+    return f ? f.cant : 0;
+  }
+  // Fija la cantidad de un producto (no suma): si ya hay renglón lo reemplaza,
+  // si la cantidad es 0 lo borra, si no existe lo agrega al final. Después
+  // guarda el borrador igual que el resto del formulario (saveDraft/autoGrow).
+  function cvSetCantidadLinea(p, pres, cant){
+    const descriptor = cvDescriptor(p, pres);
+    const ta = $("productos");
+    const f = cvBuscarLinea(descriptor);
+    const lines = f ? f.lines : ta.value.split("\n");
+    if (cant <= 0) {
+      if (f) lines.splice(f.idx, 1);
+    } else if (f) {
+      lines[f.idx] = cant + " " + descriptor;
+    } else {
+      lines.push(cant + " " + descriptor);
+    }
+    ta.value = lines.join("\n").replace(/\n{2,}/g, "\n").replace(/^\n+|\n+$/g, "");
+    if (cant > 0) cvRegistrarUso(p);
+    saveDraft();
+    autoGrowProductos();
+    actualizarBadgeRenglones();
+  }
+
+  function cvContarLineas(){
+    return $("productos").value.split("\n").map(l => l.trim()).filter(Boolean).length;
+  }
+  // El pedido en curso se muestra como contador sobre la pestaña CARGAR:
+  // se ve desde cualquier pestaña y tocarlo lleva justo a revisarlo.
+  // Reemplaza a la barra flotante (y al botón ENVIAR duplicado).
+  let _badgeAnterior = 0;
+  function actualizarBadgeRenglones(pulso){
+    const n = cvContarLineas();
+    const el = $("badgeRenglones");
+    if (el) {
+      el.textContent = n;
+      el.classList.toggle("show", n > 0);
+      if (pulso && n !== _badgeAnterior && n > 0) {
+        el.classList.remove("pulse"); void el.offsetWidth; el.classList.add("pulse");
+      }
+    }
+    const fabBadge = $("fabVerPedidoBadge");
+    if (fabBadge) fabBadge.textContent = n;
+    _badgeAnterior = n;
+  }
+
+  function cvRenderGrid(){
+    const items = cvItemsFiltrados();
+    $("cvCounter").textContent = items.length + (items.length === 1 ? " producto" : " productos");
+    $("cvGrid").innerHTML = items.length ? items.map((p, i) => {
+      // el badge muestra lo que realmente esté cargado, en la presentación que sea
+      let badge = null;
+      for (const pr of cvPresDe(p)) {
+        const c = cvCantidadActual(p, pr);
+        if (c) {
+          badge = (pr.id === "un") ? String(c)
+                : (pr.id === "caja") ? c + (c === 1 ? " caja" : " cajas")
+                : (pr.id === "paq") ? c + (c === 1 ? " paq" : " paq")
+                : c + " bulto";
+          break;
+        }
+      }
+      const precioHtml = p.mayorista
+        ? `<span class="cv-price">${cvFmt(p.mayorista)}</span>`
+        : `<span class="cv-price sin">sin precio</span>`;
+      return `
+      <button type="button" class="cv-card ${badge ? "en-pedido" : ""}" data-idx="${i}" aria-label="Ver ${escHtml(p.nombre)}">
+        <div class="cv-imgw">
+          <img class="cv-img" src="${p.foto}" loading="lazy" alt="${escHtml(p.nombre)}" onerror="this.style.opacity=0.15" />
+          <div class="cv-brand">${escHtml(p.marca)}</div>
+          ${badge ? `<div class="cv-qtybadge">${escHtml(String(badge))}</div>` : ""}
+          ${p.eventual ? `<div class="cv-eventual">⚠️ CONSULTAR STOCK</div>` : ""}
+        </div>
+        <div class="cv-info">
+          <div class="cv-name">${escHtml(p.nombre)}</div>
+          ${precioHtml}
+        </div>
+      </button>`;
+    }).join("") : `<div class="cv-empty">🔍 Sin productos para este filtro</div>`;
+  }
+
+  function cvAbrirSheet(i){
+    cvModalLista = cvItemsFiltrados();
+    cvModalIdx = i;
+    $("cvOverlay").style.display = "flex";
+    cvRenderSheet();
+  }
+  function cvCerrarSheet(){
+    $("cvOverlay").style.display = "none";
+    cvRenderGrid();
+    actualizarBadgeRenglones(true);
+  }
+  function cvModalMover(delta){
+    const next = cvModalIdx + delta;
+    if (next < 0 || next >= cvModalLista.length) return;
+    cvModalIdx = next;
+    cvRenderSheet();
+  }
+  function cvToggleHtml(p){
+    const lista = cvPresDe(p);
+    if (lista.length < 2) return "";   // una sola forma de venta: no hace falta elegir
+    const actual = cvGetPres(p);
+    return `<div class="cv-toggle">` + lista.map(pr =>
+      `<button type="button" data-u="${pr.id}" class="${pr.id === actual.id ? "active" : ""}">${escHtml(pr.label)}</button>`
+    ).join("") + `</div>`;
+  }
+  function cvNotaHtml(p){
+    const pres = cvGetPres(p);
+    const min = cvMinimo(p), paso = cvPaso(p);
+    let html = "";
+    // stock eventual (bazar): no siempre está, hay que confirmar antes de prometer
+    if (p.eventual)
+      html += `<div class="cv-nota-min" style="background:rgba(224,138,30,.16)">⚠️ Stock eventual — confirmá disponibilidad antes de prometer la entrega.</div>`;
+    if (p.venta && p.venta.estricto)
+      html += `<div class="cv-nota-min">⚠️ Este producto se vende SOLO por ${escHtml(pres.label.toLowerCase())} — 1 = ${pres.factor} unidades.</div>`;
+    else if (pres.id === "un" && min > 1)
+      html += `<div class="cv-nota-min">Se vende de a ${paso} como mínimo (${min}, ${min*2}, ${min*3}…).</div>`;
+    return html;
+  }
+  function cvQuickHtml(p){
+    const pres = cvGetPres(p);
+    const cant = cvCantidadActual(p, pres);
+    const sug = pres.sug || [1, 6, 12];
+    return sug.map(n => `<button type="button" data-n="${n}" class="${cant === n ? "active" : ""}">${n}</button>`).join("");
+  }
+  function cvRenderStepperSheet(p){
+    const pres = cvGetPres(p);
+    const cant = cvCantidadActual(p, pres);
+    // el +/- se mueve de a "paso" (docena, de a 6, etc.) solo si vendemos por unidad
+    const paso = pres.id === "un" ? cvPaso(p) : 1;
+    const sufijo = paso > 1 ? ` <span style="font-size:11px;opacity:.7">(de a ${paso})</span>` : "";
+    $("cvSheetStepper").innerHTML = cant === 0
+      ? `<div class="cv-stepper"><button type="button" id="cvStepAdd">+ Agregar</button></div>`
+      : `<div class="cv-stepper">
+          <button type="button" id="cvStepMinus">−</button>
+          <span class="qty">${cant}${sufijo}</span>
+          <button type="button" id="cvStepPlus">+</button>
+        </div>`;
+  }
+  function cvRenderSheet(){
+    const p = cvModalLista[cvModalIdx];
+    if (!p) return;
+    const pres = cvGetPres(p);
+    $("cvSheetProgress").textContent = `Producto ${cvModalIdx + 1} de ${cvModalLista.length}`;
+    $("cvSheetImg").src = p.foto; $("cvSheetImg").alt = p.nombre;
+    $("cvSheetName").textContent = p.nombre;
+    $("cvSheetBrand").textContent = p.marca;
+    $("cvSheetCode").textContent = "#" + p.codigo;
+    const factor = pres.factor || 1;
+    const precioMostrar = (p.mayorista || 0) * factor;
+    const sufijoPrecio = pres.id === "un" ? "" : " / " + pres.label.toLowerCase();
+    $("cvSheetPrice").textContent = p.mayorista ? cvFmt(precioMostrar) + sufijoPrecio : "Precio a confirmar";
+    $("cvSheetPrice").classList.toggle("sin", !p.mayorista);
+    $("cvSheetToggle").innerHTML = cvToggleHtml(p);
+    $("cvSheetNota").innerHTML = cvNotaHtml(p);
+    // Siempre se puede pedir, tenga o no precio cargado: al depósito no le
+    // viaja el precio, así que la falta de precio no puede frenar un pedido.
+    $("cvSheetQuick").innerHTML = cvQuickHtml(p);
+    cvRenderStepperSheet(p);
+    $("cvNavPrev").disabled = cvModalIdx === 0;
+    $("cvNavNext").disabled = cvModalIdx === cvModalLista.length - 1;
+    $("cvNavNext").textContent = cvModalIdx === cvModalLista.length - 1 ? "Es el último" : "Siguiente ›";
+  }
+
+  function cvWireEvents(){
+    $("cvBuscador").addEventListener("input", () => {
+      cvBusq = $("cvBuscador").value.toLowerCase().trim();
+      if (cvBusq) { cvMarcaActiva = "TODAS"; cvCatActiva = "TODAS"; cvRenderMarcas(); cvRenderCats(); }
+      cvRenderGrid();
+    });
+    $("cvMarcas").addEventListener("click", e => {
+      const b = e.target.closest(".cv-chip"); if (b) { cvSetMarca(b.dataset.m); return; }
+      if (e.target.closest("#cvMasMarcas")) cvAbrirMarcaSheet();
+    });
+    $("cvCats").addEventListener("click", e => { const b = e.target.closest(".cv-chip"); if (b) cvSetCat(b.dataset.c); });
+    $("cvMarcaSheetClose").onclick = cvCerrarMarcaSheet;
+    $("cvMarcaOverlay").addEventListener("click", e => { if (e.target.id === "cvMarcaOverlay") cvCerrarMarcaSheet(); });
+    $("cvMarcaSheetBuscar").addEventListener("input", (e) => cvRenderMarcaSheet(e.target.value.toLowerCase().trim()));
+    $("cvMarcaLista").addEventListener("click", e => {
+      const row = e.target.closest(".cv-marca-row"); if (!row) return;
+      cvSetMarca(row.dataset.m);
+      cvCerrarMarcaSheet();
+    });
+    $("cvGrid").addEventListener("click", e => { const b = e.target.closest(".cv-card"); if (b) cvAbrirSheet(+b.dataset.idx); });
+    $("cvSheetClose").onclick = cvCerrarSheet;
+    $("cvOverlay").addEventListener("click", e => { if (e.target.id === "cvOverlay") cvCerrarSheet(); });
+    $("cvNavPrev").onclick = () => cvModalMover(-1);
+    $("cvNavNext").onclick = () => cvModalMover(1);
+    document.querySelector("#cvOverlay .cv-sheet-body").addEventListener("click", (e) => {
+      const p = cvModalLista[cvModalIdx]; if (!p) return;
+      const tBtn = e.target.closest("[data-u]");
+      if (tBtn) { cvUnidadSel[p.codigo] = tBtn.dataset.u; cvRenderSheet(); return; }
+
+      const pres = cvGetPres(p);
+      // el +/- salta de a "paso" (docena, de a 6…) solo cuando vendemos por unidad
+      const paso = pres.id === "un" ? cvPaso(p) : 1;
+      const unidadTxt = n => pres.id === "un" ? (n === 1 ? " unidad" : " unidades")
+                          : pres.id === "caja" ? (n === 1 ? " caja" : " cajas")
+                          : pres.id === "paq" ? (n === 1 ? " paquete" : " paquetes")
+                          : (n === 1 ? " bulto" : " bultos");
+
+      const qBtn = e.target.closest("[data-n]");
+      if (qBtn) {
+        const n = +qBtn.dataset.n;
+        cvSetCantidadLinea(p, pres, n);
+        showToast("✔ " + p.nombre + " · " + n + unidadTxt(n));
+        cvRenderSheet();
+        return;
+      }
+      if (e.target.id === "cvStepAdd")   { cvSetCantidadLinea(p, pres, Math.max(paso, cvMinimo(p) || paso)); cvRenderSheet(); return; }
+      if (e.target.id === "cvStepPlus")  { cvSetCantidadLinea(p, pres, cvCantidadActual(p, pres) + paso); cvRenderSheet(); return; }
+      if (e.target.id === "cvStepMinus") { cvSetCantidadLinea(p, pres, Math.max(0, cvCantidadActual(p, pres) - paso)); cvRenderSheet(); return; }
+    });
+    document.addEventListener("keydown", e => {
+      if ($("cvOverlay").style.display === "flex") {
+        if (e.key === "Escape") cvCerrarSheet();
+        if (e.key === "ArrowRight") cvModalMover(1);
+        if (e.key === "ArrowLeft") cvModalMover(-1);
+      }
+    });
+  }
+
   window.onload = () => {
     loadCli();
     initVanela();
     loadHistorialVentas();
     updateConn();
     updatePendingCount();
+    setCargaModo(cargaModo);
 
     const d = JSON.parse(localStorage.getItem("draft")||"{}");
     if(d.c) { $("numeroCliente").value = d.c; updateClientUI(d.c); }
     if(d.p) $("productos").value = d.p;
     if(d.o) $("observaciones").value = d.o;
     autoGrowProductos();
+    actualizarBadgeRenglones();
     $("fechaEntrega").value = d.f || nextBusinessDay();
 
     // El color de marca es fijo (esmeralda, definido en CSS :root). Limpiamos
