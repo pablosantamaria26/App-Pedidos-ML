@@ -50,9 +50,67 @@
   /* Una clave por puesto: todas las apps comparten dominio, y una misma PC puede tener Caja y Facturación. */
   var CLAVE_TOKEN = window.QR_PUESTO === "admin" ? "qr_admin_token_v1" : "qr_token_" + window.QR_PUESTO + "_v1";
   var yaPregunto = false;
+  /* El token se pide y se corrige en un panel de la propia pantalla, que no la bloquea, y solo se guarda
+     después de comprobarlo. Una falla de conexión no se confunde con un token malo: ni pregunta ni borra nada.
+     Reemplaza al cuadro nativo del navegador (window.prompt): en algunos equipos no se veía, o quedaba
+     bloqueado tras cancelarlo una vez, sin ningún aviso (03/11/2026 — Depósito y Stock Queruclor, mismo
+     puesto "deposito"). */
+  var NOMBRE_PUESTO = { caja: "Caja", facturacion: "Facturación", deposito: "Depósito", reparto: "Reparto", admin: "Admin" };
+  var PANEL_TOKEN = PROD && window.QR_PUESTO !== "vendedor" && !!NOMBRE_PUESTO[window.QR_PUESTO];
+  var panelDejado = false;
+  function comprobarToken(t) {
+    return _fetch(ORIGEN + "/local/puesto", { cache: "no-store", headers: { "X-QR-Token": t } }).then(function (r) {
+      if (r.status === 401) return { estado: "incorrecto" };
+      if (!r.ok) return { estado: "sin_conexion" };
+      return r.json().then(function (j) { return j.puesto === window.QR_PUESTO ? { estado: "ok" } : { estado: "otro", puesto: j.puesto }; });
+    }).catch(function () { return { estado: "sin_conexion" }; });
+  }
+  function nombreMiPuesto() { return NOMBRE_PUESTO[window.QR_PUESTO] || window.QR_PUESTO; }
+  function textoToken(c, guardado) {
+    if (c.estado === "otro") return (guardado ? "El token guardado en este equipo es de " : "Ese token es de ") + (NOMBRE_PUESTO[c.puesto] || c.puesto) + ", no de " + nombreMiPuesto() + ".";
+    if (c.estado === "incorrecto") return guardado ? "El token guardado en este equipo no es correcto." : "Ese token no es correcto. Copialo de nuevo, completo y sin espacios.";
+    return "Falta el token de " + nombreMiPuesto() + " en este equipo.";
+  }
+  function panelToken(c) {
+    if (!document.body) { document.addEventListener("DOMContentLoaded", function () { panelToken(c); }); return; }
+    if (panelDejado || document.getElementById("qrPanelToken")) return;
+    var p = document.createElement("div");
+    p.id = "qrPanelToken"; p.setAttribute("role", "alert");
+    p.style.cssText = "position:fixed;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));box-sizing:border-box;z-index:2147483647;background:#fff;color:#1f2937;border:2px solid #b45309;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.25);font:14px/1.4 system-ui,sans-serif;padding:12px 14px";
+    p.innerHTML = '<b id="qrPanelTxt" style="display:block;margin-bottom:2px"></b><div style="margin-bottom:8px">Lo de Queruclor no funciona hasta cargarlo. El resto de ' + nombreMiPuesto() + ' sigue andando.</div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap"><input id="qrPanelIn" type="text" autocomplete="off" spellcheck="false" placeholder="Pegá el token de ' + nombreMiPuesto() + '" aria-label="Token de ' + nombreMiPuesto() + '" style="flex:1;min-width:180px;font:inherit;padding:7px 9px;border:1px solid #9ca3af;border-radius:8px">' +
+      '<button id="qrPanelOk" type="button" style="font:inherit;font-weight:700;padding:7px 12px;border:0;border-radius:8px;background:#b45309;color:#fff;cursor:pointer">Guardar</button>' +
+      '<button id="qrPanelNo" type="button" style="font:inherit;padding:7px 10px;border:1px solid #9ca3af;border-radius:8px;background:#fff;cursor:pointer">Ahora no</button></div>' +
+      '<div id="qrPanelMsg" style="margin-top:6px;color:#b91c1c;font-weight:600"></div>';
+    document.body.appendChild(p);
+    p.querySelector("#qrPanelTxt").textContent = textoToken(c, true);
+    var entrada = p.querySelector("#qrPanelIn"), msg = p.querySelector("#qrPanelMsg"), ok = p.querySelector("#qrPanelOk");
+    p.querySelector("#qrPanelNo").onclick = function () { panelDejado = true; p.remove(); };
+    var guardar = function () {
+      var t = entrada.value.trim();
+      if (!t) { msg.textContent = "Pegá el token de Caja."; return; }
+      ok.disabled = true; msg.textContent = "Comprobando…";
+      comprobarToken(t).then(function (r) {
+        ok.disabled = false;
+        if (r.estado === "sin_conexion") { msg.textContent = "No hay conexión para comprobarlo. No se cambió nada: probá de nuevo cuando vuelva."; return; }
+        if (r.estado !== "ok") { msg.textContent = textoToken(r, false); entrada.select(); return; }
+        try { localStorage.setItem(CLAVE_TOKEN, t); } catch (e) {}
+        cache = {};
+        p.remove();
+      });
+    };
+    ok.onclick = guardar;
+    entrada.addEventListener("keydown", function (e) { if (e.key === "Enter") guardar(); });
+  }
+  if (PANEL_TOKEN) document.addEventListener("DOMContentLoaded", function () {
+    var t = null; try { t = localStorage.getItem(CLAVE_TOKEN); } catch (e) {}
+    if (!t) return panelToken({ estado: "falta" });
+    comprobarToken(t).then(function (c) { if (c.estado === "otro" || c.estado === "incorrecto") panelToken(c); });
+  });
   function tokenPuesto() {
     if (!PROD || window.QR_PUESTO === "vendedor") return null;
     var t = null; try { t = localStorage.getItem(CLAVE_TOKEN); } catch (e) {}
+    if (PANEL_TOKEN && !t && !/[#&]puesto=/.test(location.hash)) { panelToken({ estado: "falta" }); return null; }
     /* El enlace de instalación del puesto lo trae en #puesto=…: no viaja al servidor y se saca de la barra. */
     var m = /[#&]puesto=([^&]+)/.exec(location.hash);
     if (m) {
@@ -69,7 +127,11 @@
   /* El enlace del puesto se guarda al abrir: hay pantallas que casi no consultan al arrancar. */
   if (PROD && window.QR_PUESTO !== "vendedor" && /[#&]puesto=/.test(location.hash)) tokenPuesto();
   function conToken(h) { var t = tokenPuesto(); if (t) h["X-QR-Token"] = t; return h; }
-  function vigilarToken(status) { if (PROD && status === 401) { yaPregunto = false; try { localStorage.removeItem(CLAVE_TOKEN); } catch (e) {} } }
+  function vigilarToken(status) {
+    if (!PROD || status !== 401) return;
+    if (PANEL_TOKEN) return panelToken({ estado: "incorrecto" });
+    yaPregunto = false; try { localStorage.removeItem(CLAVE_TOKEN); } catch (e) {}
+  }
   var _fetch = window.fetch.bind(window);
   var GEN = null;
 
@@ -12130,7 +12192,7 @@ body.ui2[data-v2="queruclor"]{ --v2-acento:var(--v2-mag); --v2-acento-2:var(--v2
 /* Lo de v2 no existe en escritorio */
 .v2-home,.v2-nav,.v2-head,.v2-bar,.v2-res,.v2-sheet-bg,.v2-search,.v2-quick,.v2-marcafila{ display:none; }
 
-@media (max-width:899px){
+@media (max-width:99999px){
 
   body.ui2{ background:var(--v2-fondo); color:var(--v2-tinta); -webkit-tap-highlight-color:transparent;
     padding:0 !important; margin:0; overflow-x:clip; }
@@ -12432,15 +12494,30 @@ body.ui2[data-v2="queruclor"]{ --v2-acento:var(--v2-mag); --v2-acento-2:var(--v2
   .v2-bar .v2-bar-go{ padding:13px 12px; }
 }
 
-/* ═══ TABLET (600–899): dos columnas en las listas ═════════════ */
-@media (min-width:600px) and (max-width:899px){
+/* ═══ TABLET Y ESCRITORIO (≥600px): dos columnas, centrado en una columna angosta ═
+   Antes se cortaba en 899px y de ahí para arriba quedaba la barra de siempre (ver
+   git log). Ahora sigue así en cualquier ancho: en la PC se ve igual que en el
+   celular, centrado, no estirado de punta a punta (03/11/2026). */
+@media (min-width:600px){
   body.ui2 #cvGrid, body.ui2 #qrApp .grid{ display:grid !important; grid-template-columns:1fr 1fr; }
   .v2-home, .v2-rbody{ max-width:640px; margin:0 auto; width:100%; }
 }
 
-/* ═══ ESCRITORIO: la barra de arriba se queda; solo se ordenan las filas ═ */
 @media (min-width:900px){
   body.ui2 #cvGrid{ display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+
+  /* Lo que antes iba de punta a punta de la pantalla (cabecera, barra de carrito, menú
+     de inicio, hoja de cliente, pantalla de resumen) pasa a la misma columna angosta
+     del celular, centrada. Nada de esto toca el pedido ni lo que se envía: solo dónde
+     se dibuja en una pantalla ancha. */
+  body.ui2{ background:var(--ml-surface-2); }
+  body.ui2 main{ max-width:640px !important; margin:0 auto !important; }
+  .v2-head, .v2-nav, body.ui2.v2-offline .v2-offstrip{ left:50%; right:auto; transform:translateX(-50%); width:min(640px,100vw); }
+  .v2-bar{ left:50%; right:auto; transform:translateX(-50%); width:min(620px,calc(100vw - 20px)); }
+  body.ui2 .v2-promo-pill{ left:50%; right:auto; transform:translateX(-50%); width:min(612px,calc(100vw - 28px)); }
+  .v2-res{ left:50%; right:auto; transform:translateX(-50%); width:min(640px,100vw); box-shadow:0 0 40px rgba(var(--ml-shadow-rgb),.18); }
+  .v2-sheet-bg{ justify-content:center; }
+  .v2-sheet{ width:min(640px,100vw); margin:0 auto; }
 }
 
 /* Línea de ayuda de venta arriba del total de Queruclor (qr-tarjetas.js → QR.promoInfo). */
@@ -12558,7 +12635,7 @@ body.ui2 .v2-busqaviso button{ flex:none; min-height:38px; padding:0 12px; borde
 
 /* ═══ Historial con «Repetir» (ui-v2.js · pintarHistorial) ═════════ */
 .v2-hist{ display:none; }
-@media (max-width:899px){
+@media (max-width:99999px){
   body.ui2[data-v2="historial"] .v2-head{ display:flex; }
   body.ui2[data-v2="historial"] .v2-hist{ display:block; padding:76px 14px calc(24px + var(--v2-safe)); max-width:640px; margin:0 auto; }
   body.ui2[data-v2="historial"] main, body.ui2[data-v2="historial"] #queruclorTab{ display:none !important; }
@@ -12585,7 +12662,7 @@ body.ui2 #v2CliBg .ac-toggle{ display:none !important; }
 
 /* ═══ Sin señal: franja fija debajo de la cabecera ════════════════ */
 .v2-offstrip{ display:none; }
-@media (max-width:899px){
+@media (max-width:99999px){
   body.ui2.v2-offline .v2-offstrip{ display:flex; align-items:center; justify-content:center; gap:8px; position:fixed; left:0; right:0; top:64px; z-index:790;
     padding:7px 12px; background:#fef3c7; color:#92400e; font-size:13px; font-weight:700; box-shadow:0 2px 6px rgba(var(--ml-shadow-rgb),.08); }
   body.ui2.v2-offline[data-v2="home"] .v2-offstrip{ top:0; }
@@ -12625,7 +12702,7 @@ body.ui2 .v2-sug-add:active{ transform:scale(.95); }
 body.ui2 .v2-sug-mostrar{ width:100%; min-height:46px; border:1.5px dashed var(--ml-silver); border-radius:14px; background:#fff; color:var(--ml-text); font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
 
 /* ═══ INICIO como el modelo (oct-2026) ════════════════════════════ */
-@media (max-width:899px){
+@media (max-width:99999px){
   body.ui2 .v2-home{ gap:12px; padding:14px 14px calc(88px + var(--v2-safe)); }
   body.ui2 .v2-brand .v2-red{ font-size:12px; color:var(--ml-text-secondary); }
   body.ui2 .v2-brand .v2-red em{ font-style:normal; }
@@ -12670,7 +12747,7 @@ body.ui2 .v2-sug-mostrar{ width:100%; min-height:46px; border:1.5px dashed var(-
     body.ui2 .v2-mini2 .ic{ width:28px; } body.ui2 .v2-mini2 .ic svg{ width:26px; height:26px; }
     body.ui2 .v2-mini2 b{ font-size:14px; } body.ui2 .v2-mini2 small{ font-size:11.5px; } }
 }
-@media (max-width:899px){
+@media (max-width:99999px){
   body.ui2 .v2-hola small b{ font-size:inherit; font-weight:800; color:var(--ml-text); }
   body.ui2 .v2-brand .v2-red{ white-space:nowrap; }
 }
@@ -12688,7 +12765,7 @@ body.ui2 .ac-item.v2c.sel{ background:#f0fdf4 !important; border-color:#22c55e !
 body.ui2 .ac-item.v2c.sel .v2c-ok{ width:32px; height:32px; font-size:16px; }
 
 /* ═══ Cargar como el modelo: Escribir | Catálogo ═════════════════ */
-@media (max-width:899px){
+@media (max-width:99999px){
   body.ui2 .carga-modos{ background:#fff; border:1px solid var(--ml-border); border-radius:14px; padding:4px; }
   body.ui2 .carga-modo-btn{ min-height:46px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:15px; font-weight:800; color:var(--ml-text-secondary); }
   body.ui2 .carga-modo-btn .cico{ width:19px; height:19px; flex:none; }
@@ -12701,7 +12778,7 @@ body.ui2 .ac-item.v2c.sel .v2c-ok{ width:32px; height:32px; font-size:16px; }
 }
 
 /* ═══ Catálogo de Mercado Limpio en grilla (como el modelo) ══════ */
-@media (max-width:899px){
+@media (max-width:99999px){
   body.ui2 #cvGrid.v2-grilla{ display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
   @media (min-width:600px){ body.ui2 #cvGrid.v2-grilla{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
   body.ui2 .v2-card{ display:flex !important; flex-direction:column; align-items:stretch; gap:6px; padding:8px; min-height:0; border-radius:16px; }
@@ -12734,7 +12811,7 @@ body.ui2 .v2-maslist .ic.az{ background:#dbeafe; color:var(--ml-electric); } bod
 body.ui2 .v2-maslist .ic.am{ background:#fef3c7; } body.ui2 .v2-maslist .ic.na{ background:#ffedd5; } body.ui2 .v2-maslist .ic.gr{ background:#e0e7ff; color:#4338ca; }
 body.ui2 .v2-maslist div{ flex:1; min-width:0; } body.ui2 .v2-maslist b{ display:block; font-size:15.5px; font-weight:800; }
 body.ui2 .v2-maslist small{ display:block; font-size:12.5px; color:var(--ml-text-secondary); } body.ui2 .v2-maslist i{ font-style:normal; font-size:24px; color:var(--ml-text-muted); }
-@media (max-width:899px){
+@media (max-width:99999px){
   body.ui2[data-v2="historial"] .v2-nav{ display:flex; }
   body.ui2[data-v2="historial"] .v2-hist{ padding-bottom:calc(84px + var(--v2-safe)); }
 }
@@ -13062,7 +13139,7 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
 .ml-muted{ color:var(--ml-text-secondary); }
 .ml-nav{ background:var(--ml-surface); border-top:1px solid var(--ml-border); box-shadow:0 -4px 16px rgba(var(--ml-shadow-rgb),.06); }
 
-@media (max-width:899px){
+@media (max-width:99999px){
   /* ── 3. PUENTE: lo que la app ya usaba → tokens ── */
   body.ui2{
     background:var(--ml-background) !important; color:var(--ml-text);
@@ -13187,7 +13264,7 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
    Las tarjetas que están fuera de la pantalla no se dibujan hasta que
    se acercan (el navegador las saltea). Mismo aspecto, mucho menos trabajo
    al abrir Catálogo, Queruclor e Historial y al desplazarse. */
-@media (max-width:899px){
+@media (max-width:99999px){
   body.ui2 #cvGrid .v2-row, body.ui2 #qrApp #grid .qc, body.ui2 .v2-hcard{ content-visibility:auto; contain-intrinsic-size:auto 120px; }
   body.ui2 #cvGrid.v2-grilla .v2-row, body.ui2 #qrApp #grid[data-tarjeta="compacta"] .qc{ contain-intrinsic-size:auto 300px; }
 }
@@ -13216,7 +13293,9 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
    ═══════════════════════════════════════════════════════════════════ */
 (function () {
   if (/[?&]ui=clasico\b/.test(location.search)) return;
-  const MQ = window.matchMedia("(max-width: 899px)");
+  /* Antes solo ≤899px (el celular); ahora siempre, también en la PC de la oficina —
+     mismo pedido que por celular, nada de datos ni de envío cambia (03/11/2026). */
+  const MQ = window.matchMedia("(max-width: 99999px)");
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const money = n => "$" + Math.round(n || 0).toLocaleString("es-AR");
