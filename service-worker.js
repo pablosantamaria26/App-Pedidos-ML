@@ -3,7 +3,7 @@
 // con internet, y cae al caché si no hay señal (sigue andando offline).
 // Estáticos (íconos/manifest): CACHE-FIRST (casi no cambian).
 
-const CACHE_NAME = "app-pedidos-v75";
+const CACHE_NAME = "app-pedidos-v76";
 const HTML_TIMEOUT_MS = 2500;   // si la red tarda más que esto, servimos el caché
 const OFFLINE_URLS = [
   "./",
