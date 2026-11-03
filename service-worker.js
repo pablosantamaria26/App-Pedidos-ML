@@ -3,7 +3,7 @@
 // con internet, y cae al caché si no hay señal (sigue andando offline).
 // Estáticos (íconos/manifest): CACHE-FIRST (casi no cambian).
 
-const CACHE_NAME = "pedidos-ml-v74";
+const CACHE_NAME = "app-pedidos-v75";
 const HTML_TIMEOUT_MS = 2500;   // si la red tarda más que esto, servimos el caché
 const OFFLINE_URLS = [
   "./",
@@ -27,7 +27,7 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : null))))
+      .then(keys => Promise.all(keys.map(k => (k !== CACHE_NAME && (k.startsWith("app-pedidos-") || /^pedidos-ml-v([0-9]|[1-6][0-9]|7[0-4])$/.test(k)) ? caches.delete(k) : null))))
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ type: "window" }))
       .then(clients => clients.forEach(c => c.postMessage({ type: "SW_UPDATED", version: CACHE_NAME })))
