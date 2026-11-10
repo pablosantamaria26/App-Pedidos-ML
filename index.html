@@ -1759,6 +1759,9 @@ main { max-width: 540px; }
 .card-header { font-weight: 800; }
 .modal-box { border-radius: 20px; }
 .toast { border-radius: 99px; box-shadow: var(--shadow); }
+.toast.qr-nov { border-radius: 14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; max-width:min(92vw,520px) }
+.toast.qr-nov .qr-nov-ver { border:0; background:#fff; color:#0e6b3e; font-weight:800; border-radius:8px; padding:4px 10px; cursor:pointer }
+.cit-marca { font-size:11.5px; font-weight:700; margin-top:3px } .cit-marca.mal { color:#b91c1c } .cit-marca.ojo { color:#b45309 }
 
 /* Atajo Vanela: realce de marca */
 .vanela-block {
@@ -9578,7 +9581,7 @@ function openCart(){
         '<img class="citimg" src="' + img + '" onerror="this.style.display=\'none\'">' +
         '<div class="citinfo">' +
           '<div class="citnombre">' + it.nombre + ' <span style="color:var(--gl);font-weight:400">&times;' + it.cantidad + '</span></div>' +
-          '<div class="citdet">' + det + '</div>' +
+          '<div class="citdet">' + det + '</div>' + (window.qrMarcasRenglon ? qrMarcasRenglon(it) : '') +
           citPrecioHtml +
         '</div>' +
         '<button class="citdel" onclick="QR.delItem(' + idx + ');QR.openCart()">&#10005;</button>' +
@@ -9782,7 +9785,7 @@ var _montado = false;
 function sincronizarPrecios(){
   if (typeof Catalogo === 'undefined') return 0;
   /* Primero qué se ve (el admin pudo habilitar o deshabilitar algo). */
-  var n = qrArmarCatalogo() ? 1 : 0;
+  var n = 0; qrArmarCatalogo();   // qué se ve no es un precio: lo cuentan las novedades
   CATALOGO.forEach(function(p){
     var ean = p.tipo === 'familia' ? p.imagenPrincipal : p.ean;
     var f = ean && Catalogo.buscar(ean);
@@ -9886,18 +9889,159 @@ function qrAplicarCatalogo(){
   if (n || enCarrito.length) persistir();
   if (_montado) renderGrid();
   updCartUI();
-  var quitados = qrQuitarPausados(true);
+  var quitados = qrMarcarPausados();
   var ofs = window.Ofertas ? JSON.stringify(Ofertas.vigentes()) : '';
   var ofCambio = ofs !== JSON.stringify(OFERTAS_ACTIVAS || []);
   if (ofCambio) QR.refrescarOfertas();
   return { n: n, enCarrito: enCarrito, quitados: quitados, ofertas: ofCambio };
 }
-function qrAvisar(r){
-  if (!r || r.quitados.length || !window.showToast) return;            // lo pausado ya tuvo su aviso
-  if (r.enCarrito.length) showToast('Cambió el precio de ' + r.enCarrito.slice(0,2).join(', ') + (r.enCarrito.length > 2 ? ' y ' + (r.enCarrito.length - 2) + ' más' : '') + ' en tu carrito. Revisá el total antes de enviar.', 'error');
-  else if (r.n) showToast('Precios de Queruclor actualizados (' + r.n + ')', 'info');
-  else if (r.ofertas) showToast('Se actualizaron las ofertas', 'info');
+/* avisos-queruclor 10/11/2026 */
+/* Un renglón del carrito sigue siendo vendible si todo lo que lleva se ve en el catálogo. */
+function qrRenglonVisible(it){
+  if (it.modo === 'aromas' && it.aromas) return it.aromas.every(function(a){ return qrEanVisible(a.ean); });
+  var eans = [];
+  (it.aromas || []).forEach(function(a){ if (a.ean) eans.push(a.ean); });
+  (it.mix || []).forEach(function(m){ if (m.ean) eans.push(m.ean); });
+  if (it.ean) eans.push(it.ean);
+  return eans.length ? eans.every(qrEanVisible) : CATALOGO.some(function(p){ return p.familiaKey && p.familiaKey === it.familiaKey; });
 }
+function qrPausadosEnCarrito(){ return (E.carrito || []).filter(function(it){ return !qrRenglonVisible(it); }).map(function(it){ return it.nombre; }); }
+window.qrPausadosEnCarrito = qrPausadosEnCarrito;
+/* Lo pausado queda en el carrito, marcado: se decide al enviar. */
+function qrMarcarPausados(){
+  var l = qrPausadosEnCarrito();
+  if (l.length && document.getElementById('sh-cart') && document.getElementById('sh-cart').classList.contains('open')) { try { QR.openCart(); } catch(e){} }
+  return l;
+}
+window.QR.quitarPausadosYRevisar = function(){
+  qrQuitarPausados(false);
+  var ov = document.getElementById('preConfirmOverlay');
+  if ((QR.totalCajas() || (document.getElementById('productos') || {}).value) && ov) { ov.style.display = 'flex'; if (typeof qrPintarResumen === 'function') qrPintarResumen(); }
+};
+/* Disponible = físico − reservado, por la interfaz pública de Stock. null = sin dato. */
+function qrDispEan(e){ try { var d = Stock.disponible(e); return (d.cajas || 0) + (d.unidades || 0); } catch(x){ return null; } }
+function qrDispRenglon(it){
+  if (!window.Stock) return null;
+  var eans = it.modo === 'aromas' && it.aromas ? it.aromas.map(function(a){ return a.ean; }) : (it.mix ? it.mix.map(function(m){ return m.ean; }) : (it.ean ? [it.ean] : []));
+  if (!eans.length) return null;
+  try { Stock.todos(); } catch(e){ return null; }
+  return eans.reduce(function(a, e){ return a + (qrDispEan(e) || 0); }, 0);
+}
+window.qrMarcasRenglon = function(it){
+  var out = '';
+  if (!qrRenglonVisible(it)) out += '<div class="cit-marca mal">⏸️ No disponible: se pausó. Para enviar hay que quitarlo.</div>';
+  else {
+    var v = it.resueltoVisto, a = resueltoDe(it);
+    if (v && (v.lista !== a.lista || v.pct !== a.pct || Math.abs(v.pu - a.pu) >= 0.005)) out += '<div class="cit-marca ojo">Cambió el precio: lo confirmás al enviar.</div>';
+    var d = qrDispRenglon(it);
+    if (d === 0) out += '<div class="cit-marca ojo">Sin disponible para vender ahora (puede estar reservado).</div>';
+  }
+  return out;
+};
+
+/* ── Novedades: solo lo que cambió de verdad desde lo último que vio este equipo ── */
+var QRNov = (function(){
+  var K = 'qr_aviso_ref_v1', KN = 'qr_novedades_v1';
+  var leer = function(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(e){ return null; } };
+  var guardar = function(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+  var escN = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  function visibles(){ var s = {}; CATALOGO.forEach(function(p){ (p.tipo === 'familia' ? p.variantes.map(function(v){ return v.ean; }) : [p.ean]).forEach(function(e){ s[String(e)] = 1; }); }); return s; }
+  function foto(){
+    var vis = visibles(), cat = {}, disp = null;
+    var fichas = (typeof Catalogo !== 'undefined' && Catalogo.todos) ? Catalogo.todos() : [];
+    fichas.forEach(function(f){ var e = String(f.ean); cat[e] = [vis[e] ? 1 : 0, Math.round((Number(f.precioUnit) || 0) * 100)]; });
+    if (window.Stock) {
+      try { Stock.todos(); disp = {}; Object.keys(vis).forEach(function(e){ var n = qrDispEan(e); if (n !== null) disp[e] = n > 0 ? 1 : 0; }); }
+      catch(e){ disp = null; }   // sin dato de stock no se compara disponibilidad
+    }
+    return { v: 1, cat: cat, disp: disp };
+  }
+  function nombreDe(e){
+    e = String(e);
+    for (var i = 0; i < CATALOGO.length; i++) {
+      var p = CATALOGO[i];
+      if (p.tipo === 'familia') { var v = p.variantes.filter(function(x){ return String(x.ean) === e; })[0]; if (v) return { n: p.nombre + ' · ' + v.nombre, base: p.nombre, ver: true }; }
+      else if (String(p.ean) === e) return { n: p.nombre, base: p.nombre, ver: true };
+    }
+    var f = (typeof Catalogo !== 'undefined' && Catalogo.buscar) ? Catalogo.buscar(e) : null;
+    return { n: (f && (f.nombre || f.nombreCompleto)) || e, base: '', ver: false };
+  }
+  function diff(a, b){
+    var r = { habil: [], paus: [], precio: [], agot: [], recup: [] };
+    Object.keys(b.cat).forEach(function(e){
+      var x = a.cat[e], y = b.cat[e];
+      if (!x) { if (y[0]) r.habil.push(e); return; }
+      if (x[0] !== y[0]) { (y[0] ? r.habil : r.paus).push(e); return; }
+      if (y[0] && x[1] > 0 && y[1] > 0 && x[1] !== y[1]) r.precio.push({ e: e, antes: x[1] / 100, ahora: y[1] / 100 });
+    });
+    if (a.disp && b.disp) Object.keys(b.disp).forEach(function(e){
+      if (!(e in a.disp) || r.habil.indexOf(e) >= 0) return;   // habilitar no es tener stock
+      if (a.disp[e] === 1 && b.disp[e] === 0) r.agot.push(e);
+      else if (a.disp[e] === 0 && b.disp[e] === 1) r.recup.push(e);
+    });
+    return r;
+  }
+  var pl = function(n, s, p){ return n + ' ' + (n === 1 ? s : p); };
+  function mostrar(nov){
+    var el = document.createElement('div');
+    el.className = 'toast qr-nov';
+    el.innerHTML = '🔔 ' + escN(nov.texto) + ' <button type="button" class="qr-nov-ver">Ver detalle</button>';
+    el.querySelector('button').onclick = function(){ el.remove(); QR.verNovedades(); };
+    document.body.appendChild(el);
+    setTimeout(function(){ el.remove(); }, 9000);
+  }
+  return {
+    revisar: function(r){
+      if (window.qrOculta ? qrOculta() : document.hidden) return;   // se mira cuando vuelve a estar a la vista
+      var meta = (typeof Catalogo !== 'undefined' && Catalogo.meta) ? (Catalogo.meta() || {}) : {};
+      if (!meta.publicado) return;                                  // sin catálogo del servidor no hay referencia confiable
+      var ahora = foto(), prev = leer(K);
+      if (!prev || prev.v !== 1 || !prev.cat) { guardar(K, ahora); return; }   // primera vez: solo referencia
+      if (!ahora.disp) ahora.disp = prev.disp;
+      var d = diff(prev, ahora);
+      guardar(K, ahora);
+      var partes = [];
+      if (d.habil.length) partes.push(pl(d.habil.length, 'artículo habilitado', 'artículos habilitados'));
+      if (d.paus.length) partes.push(pl(d.paus.length, 'pausado', 'pausados'));
+      if (d.precio.length) partes.push(pl(d.precio.length, 'precio modificado', 'precios modificados'));
+      if (d.agot.length) partes.push(pl(d.agot.length, 'sin disponible', 'sin disponible'));
+      if (d.recup.length) partes.push(pl(d.recup.length, 'volvió a tener disponible', 'volvieron a tener disponible'));
+      if (r && r.ofertas) partes.push('ofertas actualizadas');
+      if (!partes.length) return;
+      var enCarrito = qrPausadosEnCarrito().length + ((r && r.enCarrito) ? r.enCarrito.length : 0);
+      var nov = { texto: 'Queruclor: ' + partes.join(' · ') + (enCarrito ? ' (afecta tu carrito)' : ''), d: d, cuando: new Date().toISOString() };
+      guardar(KN, nov);
+      mostrar(nov);
+    },
+    detalle: function(){
+      var nov = leer(KN); if (!nov) return null;
+      var d = nov.d, sec = function(t, l, f){ return l.length ? '<div style="margin:10px 0 4px;font-weight:800">' + t + '</div>' + l.map(f).join('') : ''; };
+      var fila = function(e, extra){ var x = nombreDe(e); return '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;text-align:left"><span>' + escN(x.n) + (extra || '') + '</span>' + (x.ver ? '<button type="button" style="flex:none;border:1px solid #0e6b3e;color:#0e6b3e;background:#fff;border-radius:8px;padding:4px 10px;font-weight:700" onclick="QR.verArticulo(\'' + escN(e) + '\')">Ver</button>' : '') + '</div>'; };
+      return sec('Habilitados', d.habil, function(e){ return fila(e); }) +
+        sec('Pausados (no se pueden vender)', d.paus, function(e){ return fila(e); }) +
+        sec('Precio de lista modificado', d.precio, function(p){ return fila(p.e, '<br><small><s>' + fmt(p.antes) + '</s> → <b>' + fmt(p.ahora) + '</b> c/u, lista general. El precio de cada cliente se calcula al cargar.</small>'); }) +
+        sec('Sin disponible para vender', d.agot, function(e){ return fila(e, '<br><small>Puede estar reservado: no significa que no haya en depósito.</small>'); }) +
+        sec('Volvió a haber disponible', d.recup, function(e){ return fila(e); });
+    },
+  };
+})();
+window.QR.revisarNovedades = function(r){ QRNov.revisar(r || null); };
+window.QR.verNovedades = function(){
+  var html = QRNov.detalle(); if (!html) return;
+  var no = document.getElementById('confirmAppNo');
+  if (no) no.style.display = 'none';
+  confirmApp({ titulo: 'Novedades de Queruclor', mensaje: html, si: 'Entendido', no: '' }, function(){ if (no) no.style.display = ''; }, function(){ if (no) no.style.display = ''; });
+};
+window.QR.verArticulo = function(ean){
+  var ov = document.getElementById('confirmAppOverlay'); if (ov) ov.style.display = 'none';
+  var no = document.getElementById('confirmAppNo'); if (no) no.style.display = '';
+  if (typeof switchTab === 'function') { try { switchTab('queruclor'); } catch(e){} }
+  var p = CATALOGO.filter(function(x){ return String(x.ean) === String(ean) || (x.variantes || []).some(function(v){ return String(v.ean) === String(ean); }); })[0];
+  if (!p) return;
+  var s = document.getElementById('psearch'); if (s) s.value = p.nombre;
+  filtrarProd(p.nombre);
+};
+function qrAvisar(r){ if (r) QRNov.revisar(r); }
 var _ultRefresco = 0, _refrescando = null;
 function qrRefrescarComercial(forzar){
   if (_refrescando) return _refrescando;
@@ -9920,7 +10064,7 @@ var _tStock = null;
 if (window.QRSrv && QRSrv.escuchar) QRSrv.escuchar(['qr_stock', 'qr_reservas'], function(){
   if (!_montado || (window.qrOculta ? qrOculta() : document.hidden)) return;
   clearTimeout(_tStock);
-  _tStock = setTimeout(function(){ renderGrid(); updCartUI(); }, 250);
+  _tStock = setTimeout(function(){ renderGrid(); updCartUI(); QRNov.revisar(null); }, 250);
 });
 /* Catálogo (precio, margen, Pausado/Habilitado): sin este aviso, una
    pestaña que ya estaba abierta no se entera de un Pausado hasta que
@@ -11938,10 +12082,13 @@ const _origConfirm = $("btnConfirmYes").onclick;
 $("btnConfirmYes").onclick = function () {
   /* Un artículo pausado no sale como vendible: se saca del carrito con
      aviso y el vendedor vuelve a mirar el resumen antes de mandar. */
-  const pausados = QR.quitarPausados ? QR.quitarPausados(true) : [];
+  /* Un pausado no sale: queda marcado en el carrito y se ofrece quitarlo. */
+  const pausados = window.qrPausadosEnCarrito ? qrPausadosEnCarrito() : [];
   if (pausados.length) {
-    if (QR.totalCajas() || $("productos").value.trim()) qrPintarResumen();
-    else $("preConfirmOverlay").style.display = "none";
+    $("preConfirmOverlay").style.display = "none";
+    showModal({ type:'warn', icon:'⏸️', title:'Hay artículos no disponibles',
+      msg:'No se pueden enviar porque se pausaron: ' + pausados.join(', ') + '. Quedaron marcados en tu carrito, con sus cantidades.',
+      btn:'Quitarlos y revisar', btn2:'Volver al carrito', onBtn:'QR.quitarPausadosYRevisar', onBtn2:'QR.openCart' });
     return;
   }
   const carrito = QR.getCarrito();
