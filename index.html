@@ -8322,8 +8322,7 @@ if (typeof window !== "undefined" && window.QR_LOCAL) { /* nada */ } else
     "7791905023258",  // Insecticida Moscas/Mosq. Ultra    · caja x 12
     "7791905023784",  // Repelente Mosquitos 143ml         · caja x 12
     "7791905024897",  // Repelente Mosquitos 165ml         · caja x 12
-    "7791905002345",  // Tableta Mata Mosquitos x12        · caja x 20
-    "7791905002352",  // Tableta Mata Mosquitos x24        · caja x 20
+    /* 16/11/2026: las tabletas Mata Mosquitos (x12 y x24) se venden SOLO por caja completa de 20 (Pablo). */
     "7791905004424",  // Talco Pédico 100g                 · caja x 12
     "7791905004431",  // Talco Pédico 200g                 · caja x 12
   ];
@@ -8351,6 +8350,11 @@ if (typeof window !== "undefined" && window.QR_LOCAL) { /* nada */ } else
     "limpiapisos-odex-4l",
   ];
 
+  /* 16/11/2026 — De a cuántas unidades se venden (Pablo): insecticidas aerosol de a 6 (media caja), espirales y cebo de a 12.
+     Lo que no está acá se vende de a una. La caja entera conviene cargarla como caja cerrada. */
+  const PASO_SUELTO = { "7791905002390": 6, "7791905023265": 6, "7791905002376": 6, "7791905023258": 6,
+                        "7791905002383": 12, "7791905002338": 12, "7791905002413": 12 };
+  function pasoSuelto(ean) { return PASO_SUELTO[String(ean)] || 1; }
   const setSuelto = new Set(SUELTO);
   const setSoloCaja = new Set(SOLO_CAJA);
   const setSurtida = new Set(Object.keys(SURTIDA));
@@ -8379,7 +8383,7 @@ if (typeof window !== "undefined" && window.QR_LOCAL) { /* nada */ } else
     return null;
   }
   global.Formatos = {
-    SUELTO, SURTIDA, SOLO_CAJA, admiteUnidades, seVendeSuelto, admiteSurtida, soloCajaCerrada, familiaDeVariante,
+    SUELTO, SURTIDA, SOLO_CAJA, admiteUnidades, seVendeSuelto, admiteSurtida, soloCajaCerrada, familiaDeVariante, pasoSuelto, PASO_SUELTO,
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = global.Formatos;
@@ -10681,11 +10685,15 @@ window.QR.chgSuelto = function(ean, d){
   /* El tope se chequea ANTES de tocar el carrito: si se rechaza, no
      puede quedar un renglón fantasma con 0 unidades — eso se mandaría
      igual en el pedido como "0 unidades sueltas de...". */
-  var nu = (it ? it.unidades : 0) + d;
+  /* 16/11/2026: se suma y se resta de a «paso» (6 en insecticidas, 12 en espirales y cebo); si había una cantidad suelta que no
+     es múltiplo (carrito viejo), el próximo toque la lleva al múltiplo más cercano en esa dirección. */
+  var paso = (window.Formatos && Formatos.pasoSuelto) ? Formatos.pasoSuelto(ean) : 1;
+  var actual = it ? it.unidades : 0;
+  var nu = paso <= 1 ? actual + d : (d > 0 ? (Math.floor(actual / paso) + 1) * paso : (Math.ceil(actual / paso) - 1) * paso);
   var tope = sueltasDisponibles(ean);
   if (nu > tope) {
     showModal({ type:'warn', icon:'📦', title:'No hay tantas unidades',
-      msg:'Se pueden vender hasta ' + tope + ' unidad' + (tope===1?'':'es') + ' de este artículo.',
+      msg:'Se pueden vender hasta ' + tope + ' unidad' + (tope===1?'':'es') + ' de este artículo' + (paso > 1 ? ' (se vende de a ' + paso + ')' : '') + '.',
       btn:'Entendido' });
     return;
   }
@@ -10723,8 +10731,9 @@ function pintarUnSuelto(ean){
   var lblEl = document.getElementById('sl-' + ean);
   if (qtyEl) qtyEl.textContent = n;
   if (menosEl) menosEl.disabled = n <= 0;
-  if (masEl) masEl.disabled = hay <= n;
-  if (lblEl) lblEl.innerHTML = n > 0 ? n + ' un. &middot; ' + fmt(n * p.precioUnit) : 'sueltas, de a una';
+  var pasoU = (window.Formatos && Formatos.pasoSuelto) ? Formatos.pasoSuelto(ean) : 1;
+  if (masEl) masEl.disabled = hay < n + pasoU;
+  if (lblEl) lblEl.innerHTML = n > 0 ? n + ' un. &middot; ' + fmt(n * p.precioUnit) : (pasoU > 1 ? 'de a ' + pasoU + ' unidades' : 'sueltas, de a una');
   /* Distintivo «ya pedido»: cajas O sueltas, lo que haya. */
   var cardSuelto = qtyEl && qtyEl.closest('.card');
   if (cardSuelto) cardSuelto.classList.toggle('en-pedido', n > 0 || getCarritoQty(ean) > 0);
@@ -10752,14 +10761,15 @@ function pintarSueltos(){
 
     var n = qtySuelto(ean);
     var hay = sueltasDisponibles(ean);
+    var paso = Formatos.pasoSuelto ? Formatos.pasoSuelto(ean) : 1;
     var html =
-      '<div class="qr-fila-lbl suelto">UNIDADES SUELTAS</div>' +
+      '<div class="qr-fila-lbl suelto">' + (paso > 1 ? 'DE A ' + paso + ' UNIDADES' + (paso * 2 === Number(p.uc) ? ' (MEDIA CAJA)' : '') : 'UNIDADES SUELTAS') + '</div>' +
       '<div class="stepper qr-suelto">' +
         '<button class="sbtn" id="sm-' + ean + '" onclick="QR.chgSuelto(' + _q + ean + _q + ',-1)" ' + (n <= 0 ? 'disabled' : '') + '>&#8722;</button>' +
         '<span class="sqty" id="su-' + ean + '">' + n + '</span>' +
-        '<button class="sbtn" id="sp-' + ean + '" onclick="QR.chgSuelto(' + _q + ean + _q + ',1)" ' + (hay <= n ? 'disabled' : '') + '>+</button>' +
+        '<button class="sbtn" id="sp-' + ean + '" onclick="QR.chgSuelto(' + _q + ean + _q + ',1)" ' + (hay < n + paso ? 'disabled' : '') + '>+</button>' +
       '</div>' +
-      '<div class="slabel" id="sl-' + ean + '">' + (n > 0 ? n + ' un. &middot; ' + fmt(n * p.precioUnit) : 'sueltas, de a una') + '</div>';
+      '<div class="slabel" id="sl-' + ean + '">' + (n > 0 ? n + ' un. &middot; ' + fmt(n * p.precioUnit) : (paso > 1 ? 'de a ' + paso + ' unidades' : 'sueltas, de a una')) + '</div>';
     card.querySelector('.cbody').insertAdjacentHTML('beforeend', html);
     /* Al montar: si ya había sueltas cargadas (carrito restaurado), el
        distintivo tiene que salir marcado desde el vamos. */
@@ -10944,13 +10954,14 @@ function qcSueltasHTML(p) {
   if (!qcVendeSuelto(p)) return "";
   var n = qcSueltas(p);
   var hay = typeof sueltasDisponibles === "function" ? sueltasDisponibles(p.ean) : 0;
+  var paso = (window.Formatos && Formatos.pasoSuelto) ? Formatos.pasoSuelto(p.ean) : 1;
   var q = "'" + p.ean + "'";
   return '<div class="qc-sueltas qr-suelto">' +
-    '<span class="qc-s-lbl">Unidades sueltas' + (n > 0 ? ' · <b>' + fmt(n * p.precioUnit) + '</b>' : '') + '</span>' +
+    '<span class="qc-s-lbl">' + (paso > 1 ? 'De a ' + paso + ' unidades' + (paso * 2 === Number(p.uc) ? ' (media caja)' : '') : 'Unidades sueltas') + (n > 0 ? ' · <b>' + fmt(n * p.precioUnit) + '</b>' : '') + '</span>' +
     '<div class="qc-step chico">' +
       '<button type="button" class="qc-menos" onclick="QR.chgSuelto(' + q + ',-1)" ' + (n <= 0 ? "disabled" : "") + ' aria-label="Una unidad menos">−</button>' +
       '<span class="qc-n"><b>' + n + '</b> un.</span>' +
-      '<button type="button" class="qc-mas" onclick="QR.chgSuelto(' + q + ',1)" ' + (hay <= n ? "disabled" : "") + ' aria-label="Una unidad más">+</button>' +
+      '<button type="button" class="qc-mas" onclick="QR.chgSuelto(' + q + ',1)" ' + (hay < n + paso ? "disabled" : "") + ' aria-label="' + (paso > 1 ? paso + ' unidades más' : 'Una unidad más') + '">+</button>' +
     '</div></div>';
 }
 
