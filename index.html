@@ -41,8 +41,20 @@
   var CADA = PROD ? 10000 : 1500;
   /* Una pestaña del contenedor Cartera/Pedidos sigue abierta en un iframe sin mostrarse, y
      document.hidden no se entera: tampoco cuenta como visible. */
+  /* 19/11/2026 · Sin tocar la pantalla por 15 min, las LECTURAS automáticas (novedades, catálogo, vendedores, salud) se pausan,
+     igual que en Depósito y Facturación: una app abierta toda la noche ya no consulta cada 10 s. Al primer toque vuelven
+     (y se refresca al instante). No afecta envíos: las colas de pedidos, recibos y rendiciones no pasan por acá. */
+  var ultimaActividadQR = Date.now(), INACTIVO_QR = 15 * 60 * 1000;
+  function tocarQR() {
+    var dormia = Date.now() - ultimaActividadQR > INACTIVO_QR;
+    ultimaActividadQR = Date.now();
+    if (dormia) setTimeout(function () { try { if (window.qrRefrescarComercial) window.qrRefrescarComercial(true); } catch (e) {} }, 0);
+  }
+  ["pointerdown", "keydown", "touchstart", "wheel"].forEach(function (ev) { window.addEventListener(ev, tocarQR, { passive: true, capture: true }); });
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) tocarQR(); });
   function oculta() {
     if (document.hidden) return true;
+    if (PROD && Date.now() - ultimaActividadQR > INACTIVO_QR) return true;
     try { var f = window.frameElement; return !!(f && f.getClientRects().length === 0); } catch (e) { return false; }
   }
   window.qrOculta = oculta;
