@@ -2124,6 +2124,55 @@ main { max-width: 540px; }
 })(typeof window !== "undefined" ? window : globalThis);
 
 </script>
+<style id="qrAltaClienteCss">
+/* ── Cargar cliente nuevo desde Pedidos (19/11/2026) ─────────────────────────────────────────────────────── */
+.alc-bg{ position:fixed; inset:0; z-index:2147482000; background:rgba(10,20,40,.55); display:flex; align-items:flex-end; justify-content:center; animation:alcFade .2s ease }
+@media (min-width:720px){ .alc-bg{ align-items:center } }
+@keyframes alcFade{ from{ opacity:0 } to{ opacity:1 } }
+@keyframes alcUp{ from{ transform:translateY(24px); opacity:0 } to{ transform:none; opacity:1 } }
+.alc{ background:var(--ml-bg, var(--bg, #fff)); color:var(--ml-text, var(--text, #0f172a)); width:100%; max-width:560px; max-height:94vh; overflow:auto; border-radius:22px 22px 0 0; padding:14px 16px 18px; box-shadow:0 -10px 40px rgba(0,0,0,.25); animation:alcUp .26s ease; font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif }
+@media (min-width:720px){ .alc{ border-radius:20px } }
+@media (prefers-reduced-motion:reduce){ .alc, .alc-bg{ animation:none } }
+.alc-asa{ width:44px; height:5px; border-radius:99px; background:rgba(127,127,127,.35); margin:0 auto 10px }
+.alc-h{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px }
+.alc-h h3{ margin:0; font-size:1.15rem; font-weight:800 }
+.alc-x{ width:36px; height:36px; border-radius:10px; border:1px solid rgba(127,127,127,.3); background:transparent; color:inherit; font-size:1rem; cursor:pointer }
+.alc-num{ display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; padding:12px 14px; border-radius:14px; background:rgba(37,99,235,.08); border:1px solid rgba(37,99,235,.25); margin-bottom:12px }
+.alc-num .ic{ font-size:1.6rem } .alc-num b{ font-size:1.5rem; display:block; line-height:1.1 } .alc-num small{ color:#64748b; display:block; font-size:.82rem }
+.alc-num.esp{ background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.35) } .alc-num.mal{ background:rgba(220,38,38,.08); border-color:rgba(220,38,38,.3) }
+.alc-sub{ font-weight:800; margin:10px 0 8px; font-size:.95rem }
+.alc-op{ width:100%; display:grid; grid-template-columns:40px 1fr auto; gap:12px; align-items:center; text-align:left; padding:14px; border-radius:14px; border:1.5px solid rgba(127,127,127,.3); background:transparent; color:inherit; font:inherit; cursor:pointer; margin-bottom:10px; min-height:64px }
+.alc-op:active, .alc-op:focus-visible{ border-color:#2563eb; outline:0 } .alc-op b{ display:block; font-size:1rem } .alc-op small{ color:#64748b; display:block; font-size:.82rem; margin-top:2px } .alc-op .ic{ font-size:1.5rem; text-align:center } .alc-op i{ font-style:normal; color:#94a3b8 }
+.alc-info{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:12px; background:rgba(37,99,235,.06); font-size:.86rem; color:#334155; margin:4px 0 12px }
+.alc-f{ display:grid; gap:10px }
+.alc-f label{ display:grid; gap:4px; font-size:.82rem; font-weight:700; color:#475569 }
+.alc-f input{ width:100%; padding:12px 14px; border-radius:12px; border:1.5px solid rgba(127,127,127,.35); background:var(--ml-card, #fff); color:inherit; font:inherit; font-size:1rem; min-height:46px }
+.alc-f input:focus{ border-color:#2563eb; outline:0; box-shadow:0 0 0 4px rgba(37,99,235,.15) }
+.alc-f input[aria-invalid="true"]{ border-color:#dc2626 }
+.alc-f .err{ color:#dc2626; font-size:.78rem; font-weight:600; min-height:1em }
+.alc-ro{ background:rgba(127,127,127,.08); color:#475569 }
+.alc-desc{ display:grid; grid-template-columns:1fr 1fr; gap:0; border:1.5px solid rgba(127,127,127,.35); border-radius:12px; overflow:hidden }
+.alc-desc button{ padding:12px; border:0; background:transparent; color:inherit; font:inherit; font-weight:700; min-height:46px; cursor:pointer }
+.alc-desc button[aria-pressed="true"]{ background:rgba(37,99,235,.12); color:#1d4ed8 }
+.alc-desc button + button{ border-left:1.5px solid rgba(127,127,127,.35) }
+.alc-nota{ font-size:.78rem; color:#64748b }
+.alc-b{ width:100%; min-height:50px; border-radius:14px; border:0; font:inherit; font-weight:800; font-size:1rem; cursor:pointer; margin-top:10px }
+.alc-b.prim{ background:#2563eb; color:#fff } .alc-b.sec{ background:transparent; border:1.5px solid rgba(127,127,127,.35); color:inherit } .alc-b.ok{ background:#16a34a; color:#fff } .alc-b.wa{ background:#fff; color:#15803d; border:2px solid #16a34a }
+.alc-b:disabled{ opacity:.55; cursor:not-allowed }
+.alc-est{ font-size:.84rem; color:#475569; min-height:1.2em; margin-top:6px; display:flex; gap:8px; align-items:center }
+.alc-spin{ width:14px; height:14px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; animation:alcGira .8s linear infinite; flex:none }
+@keyframes alcGira{ to{ transform:rotate(360deg) } }
+.alc-dup{ padding:10px 12px; border-radius:12px; background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.4); font-size:.86rem; display:grid; gap:6px }
+.alc-dup button{ padding:8px 10px; border-radius:10px; border:1px solid rgba(127,127,127,.35); background:#fff; color:#0f172a; font:inherit; font-weight:700; cursor:pointer }
+.alc-ok{ text-align:center; padding:8px 0 4px } .alc-ok .tick{ font-size:2.2rem; color:#16a34a } .alc-ok h3{ margin:4px 0 0 } .alc-ok p{ margin:2px 0 10px; color:#64748b }
+.alc-card{ display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; padding:12px 14px; border-radius:14px; border:1.5px solid rgba(127,127,127,.3); text-align:left }
+.alc-card .ic{ font-size:1.8rem } .alc-card b{ font-size:1.3rem; display:block } .alc-card span{ display:block; font-size:.86rem; color:#475569 }
+.alc-pend{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:99px; background:rgba(245,158,11,.14); color:#92400e; font-size:.84rem; font-weight:700; margin:12px 0 8px }
+.alc-tel{ font-size:.8rem; color:#64748b; text-align:center; margin:-4px 0 8px }
+.alc-link{ display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:8px 12px; border-radius:10px; border:1.5px dashed rgba(37,99,235,.5); background:transparent; color:#1d4ed8; font:inherit; font-weight:700; font-size:.88rem; cursor:pointer }
+.alc-pendiente-chip{ display:inline-block; padding:2px 8px; border-radius:99px; background:rgba(245,158,11,.16); color:#92400e; font-size:.74rem; font-weight:800; margin-left:6px }
+
+</style>
 </head>
 <body>
 
@@ -14949,6 +14998,259 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
   setInterval(revisar, CADA_MS);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) revisar(); });
   window.qrRevisarActualizacion = revisar;
+})();
+
+</script>
+<script id="qrAltaClienteMod">
+/* ═══════════════════════════════════════════════════════════════════
+   CARGAR CLIENTE NUEVO desde la app de Pedidos (19/11/2026, petitorio del 18/11)
+
+   Dos entradas (Más → «Cargar cliente nuevo» y el selector de cliente), el mismo proceso:
+     1. Reservar número en el SERVIDOR (menor libre entre 10450 y 10600; operación idempotente: dos toques o una respuesta
+        perdida devuelven la misma reserva). Sin reserva confirmada no se promete ningún número.
+     2. «Completar datos ahora» (ficha → guardar → cliente elegido) o «Armar pedido primero» (el borrador queda asociado a la
+        reserva; al intentar enviar se abre la misma ficha; se guarda y se vuelve a la revisión del pedido).
+     3. «Cliente creado»: ya se puede usar en todo el ecosistema; queda «Pendiente de alta en E-PyME». Avisar a Laura por
+        WhatsApp (abre el chat preparado; no manda solo ni marca nada), Copiar datos, Armar/Continuar pedido.
+   Identidad: la estable del vendedor (Vendedores.yoId()); la base la valida en cada operación. Descuento 0 o 5 explícito.
+   Reserva + borrador + ficha quedan en el teléfono (localStorage) para retomar tras cerrar o perder conexión.
+   ═══════════════════════════════════════════════════════════════════ */
+(function () {
+  "use strict";
+  if (window.__qrAltaCliente) return;
+  window.__qrAltaCliente = true;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const K = "qr_alta_cliente_v1", LAURA = "5491133395487";
+  const toast = (m, tipo) => { try { if (window.showToast) return showToast(m, tipo === "warn" ? "error" : "info"); } catch (e) {} console.log("[alta]", m); };
+  /* `clientNames` es un `let` global de la app (no es window.clientNames): se lee y se REASIGNA por nombre. */
+  const cn = () => { try { return typeof clientNames !== "undefined" ? clientNames : null; } catch (e) { return null; } };
+  const leer = () => { try { return JSON.parse(localStorage.getItem(K) || "null"); } catch (e) { return null; } };
+  const guardar = s => { try { if (s) localStorage.setItem(K, JSON.stringify(s)); else localStorage.removeItem(K); } catch (e) {} return s; };
+  const yoId = () => { try { return (window.Vendedores && Vendedores.yoId && Vendedores.yoId()) || null; } catch (e) { return null; } };
+  const yoNombre = () => { try { const n = (window.Vendedores && Vendedores.yo && Vendedores.yo()) || ($("nombreVendedor") || {}).value || ""; return String(n).trim().toUpperCase(); } catch (e) { return ""; } };
+  const cuitLimpio = v => String(v || "").replace(/\D/g, "");
+  const cuitValido = c => { c = cuitLimpio(c); if (c.length !== 11) return false; const p = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2]; let s = 0; for (let i = 0; i < 10; i++) s += Number(c[i]) * p[i]; let v = 11 - (s % 11); if (v === 11) v = 0; if (v === 10) v = 9; return v === Number(c[10]); };
+  const cuitFmt = c => { c = cuitLimpio(c); return c.length === 11 ? c.slice(0, 2) + "-" + c.slice(2, 10) + "-" + c.slice(10) : c; };
+  const api = async (acc, body) => {
+    const r = await fetch("/api/clientes/" + acc, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok && !j.motivo) throw new Error(j.message || j.error || ("HTTP " + r.status));
+    return j;
+  };
+  const nombreVisible = f => (String(f.nombre || "").trim() + " " + String(f.apellido || "").trim()).trim();
+
+  /* ── El cliente en las listas de ESTA app (clientNames + la caché), sin esperar la próxima descarga ── */
+  function asegurarLocal(numero, f, provisional) {
+    const yo = yoNombre();
+    const entry = { name: provisional ? "Cliente nuevo · Datos pendientes" : nombreVisible(f), desc: provisional ? "N.º reservado para vos" : (String(f.domicilio || "") + ", " + String(f.localidad || "")).replace(/, *$/, "").trim(),
+      diaEntrega: null, vendedor: yo, descuento: provisional ? null : Number(f.descuento || 0), esInactivo: false, reactivacionPendiente: false, corrupted: false, provisional: !!provisional, altaReciente: true };
+    /* La caché del teléfono (1 h) también lo lleva: al recargar, el cliente sigue estando aunque la lista no se vuelva a bajar. */
+    if (!provisional) { try { if (typeof getCachedClients === "function" && typeof saveCachedClients === "function") { const c = getCachedClients() || {}; c[numero] = entry; saveCachedClients(c); } } catch (e) {} }
+    /* El filtro de cartera descarta lo que no estaba en la última lista recibida: se le entrega una lista NUEVA (objeto nuevo)
+       con el cliente adentro, con el vendedor de este teléfono, y se vuelve a aplicar. */
+    try { const actual = cn(); if (actual) { clientNames = Object.assign({}, actual, { [numero]: entry }); } } catch (e) {}
+    try { if (window.carteraAplicar) carteraAplicar(); } catch (e) {}
+    try { if (typeof updateClientBadge === "function") updateClientBadge(); } catch (e) {}
+    return entry;
+  }
+  const quitarLocal = numero => { try { const actual = cn(); if (actual && actual[numero] && actual[numero].provisional) { const c = Object.assign({}, actual); delete c[numero]; clientNames = c; } } catch (e) {} };
+  function elegir(numero) {
+    try { if (typeof selectCliente === "function") selectCliente(String(numero)); else { const i = $("numeroCliente"); if (i) { i.value = numero; i.dispatchEvent(new Event("input", { bubbles: true })); } } } catch (e) {}
+    try { if (typeof cerrarCliente === "function") cerrarCliente(); } catch (e) {}
+  }
+  const clienteActual = () => String(($("numeroCliente") || {}).value || "").trim();
+
+  /* ── Pantalla ── */
+  let despues = null;   // qué hacer al terminar la ficha: "pedido" | "enviar" | null
+  function cerrar() { const m = $("alcBg"); if (m) m.remove(); }
+  function abrir(html) {
+    cerrar();
+    const m = document.createElement("div"); m.id = "alcBg"; m.className = "alc-bg"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); m.setAttribute("aria-labelledby", "alcT");
+    m.innerHTML = `<div class="alc"><div class="alc-asa"></div>${html}</div>`;
+    m.addEventListener("click", e => { if (e.target === m) cerrar(); });
+    m.addEventListener("keydown", e => { if (e.key === "Escape") cerrar(); });
+    document.body.appendChild(m);
+    return m;
+  }
+  const cab = (titulo, sub) => `<div class="alc-h"><div><h3 id="alcT">${esc(titulo)}</h3>${sub ? `<div class="alc-nota">${esc(sub)}</div>` : ""}</div><button type="button" class="alc-x" aria-label="Cerrar" onclick="qrAltaCerrar()">✕</button></div>`;
+  const tarjetaNum = (s, cls) => `<div class="alc-num ${cls || ""}"><span class="ic">🔑</span><div><b>${s && s.numero ? "N.º " + esc(s.numero) : "N.º —"}</b><small>${s && s.numero ? "Reservado para vos" : "Reservando número…"}</small><small>Vendedor: <b>${esc(s && s.vendedor || yoNombre())}</b></small></div></div>`;
+
+  window.qrAltaCerrar = cerrar;
+  window.qrAltaAbrir = async function (origen) {
+    const vid = yoId();
+    if (!vid) { toast("Primero elegí tu nombre de vendedor", "warn"); try { if (window.Vendedores && Vendedores.setYo) {} } catch (e) {} return; }
+    let s = leer();
+    if (s && s.estado === "creada") { return pantallaCreado(s); }
+    if (s && s.vendedor_id && s.vendedor_id !== vid) { guardar(null); s = null; }   /* otra persona en este teléfono: no se mezclan reservas */
+    if (!s) s = guardar({ op: "alta|" + vid + "|" + Date.now().toString(36) + "|" + Math.random().toString(36).slice(2, 7), vendedor_id: vid, vendedor: yoNombre(), estado: "reservando", modo: null, ficha: { descuento: 0 }, creado: new Date().toISOString() });
+    pantallaInicio(s);
+    if (s.estado !== "reservada") reservar(s);
+    else if (s.modo === "datos") pantallaFicha(s);
+  };
+  async function reservar(s) {
+    const est = $("alcEst"); if (est) est.innerHTML = '<span class="alc-spin" aria-hidden="true"></span> Reservando número…';
+    try {
+      const r = await api("reservar", { op: s.op, vendedor_id: s.vendedor_id, vendedor: s.vendedor });
+      if (!r.ok) { s.estado = "sin_numero"; s.error = r.motivo || "No se pudo reservar."; guardar(s); return pantallaInicio(s); }
+      s.numero = r.numero; s.estado = "reservada"; s.error = null; guardar(s);
+      pantallaInicio(s);
+    } catch (e) { s.error = "Sin conexión: no se pudo reservar un número. Lo que escribas se guarda en el teléfono; volvé a intentar con señal."; guardar(s); pantallaInicio(s); }
+  }
+  function pantallaInicio(s) {
+    const m = abrir(cab("Cargar cliente nuevo", "Mismo cliente en todo el sistema") + tarjetaNum(s, s.error ? "mal" : s.estado === "reservada" ? "" : "esp") +
+      (s.error ? `<div class="alc-info" role="alert">⚠️ ${esc(s.error)}</div><button type="button" class="alc-b sec" onclick="qrAltaReintentar()">Reintentar</button>` : "") +
+      `<div class="alc-sub">Elegí cómo querés empezar</div>
+       <button type="button" class="alc-op" id="alcOpDatos" ${s.estado === "reservada" ? "" : "disabled"}><span class="ic">👤</span><div><b>Completar datos ahora</b><small>Lo registrás y después armás el pedido.</small></div><i>›</i></button>
+       <button type="button" class="alc-op" id="alcOpPedido" ${s.estado === "reservada" ? "" : "disabled"}><span class="ic">🧺</span><div><b>Armar pedido primero</b><small>Completás los datos antes de enviarlo.</small></div><i>›</i></button>
+       <div class="alc-info">ℹ️ El número queda reservado para este borrador.</div>
+       <div class="alc-est" id="alcEst" role="status" aria-live="polite"></div>
+       <button type="button" class="alc-b sec" onclick="qrAltaCerrar()">Volver</button>
+       ${s.estado === "reservada" && s.modo !== "pedido" ? `<button type="button" class="alc-b sec" style="border-style:dashed;color:#64748b" onclick="qrAltaLiberar()">No lo necesito: liberar el número</button>` : ""}`);
+    $("alcOpDatos").onclick = () => { s.modo = "datos"; guardar(s); despues = "pedido"; pantallaFicha(s); };
+    $("alcOpPedido").onclick = () => { s.modo = "pedido"; guardar(s); asegurarLocal(s.numero, s.ficha, true); elegir(s.numero); cerrar(); toast("Cliente nuevo · N.º " + s.numero + " · Datos pendientes. Al enviar te pedimos la ficha.", "ok"); try { pintarChipPendiente(); } catch (e) {} };
+  }
+  window.qrAltaReintentar = () => { const s = leer(); if (!s) return qrAltaAbrir(); s.error = null; s.estado = s.numero ? "reservada" : "reservando"; guardar(s); pantallaInicio(s); if (!s.numero) reservar(s); };
+  window.qrAltaLiberar = async () => {
+    const s = leer(); if (!s || s.estado !== "reservada") { guardar(null); return cerrar(); }
+    try { const r = await api("liberar", { op: s.op, vendedor_id: s.vendedor_id, motivo: "el vendedor no lo necesitó" }); if (!r.ok) return toast(r.motivo || "No se pudo liberar", "warn"); } catch (e) { return toast("Sin conexión: no se pudo liberar ahora", "warn"); }
+    quitarLocal(s.numero);
+    if (clienteActual() === String(s.numero)) { const i = $("numeroCliente"); if (i) { i.value = ""; i.dispatchEvent(new Event("input", { bubbles: true })); } }
+    guardar(null); cerrar(); toast("Número liberado", "ok");
+  };
+
+  /* ── Ficha ── */
+  const campo = (id, et, val, attrs) => `<label>${et}<input id="${id}" value="${esc(val || "")}" ${attrs || ""}><span class="err" id="${id}Err"></span></label>`;
+  function pantallaFicha(s) {
+    const f = s.ficha || {};
+    abrir(cab("Datos del cliente", "Pedimos los datos antes de confirmar el alta") +
+      `<div class="alc-num"><span class="ic">🔑</span><div><b>N.º ${esc(s.numero)}</b><small>Tu cartera · ${esc(s.vendedor)}</small></div></div>
+       <div class="alc-f">
+         ${campo("alcApe", "Apellido (o nombre del comercio, como en E-PyME)", f.apellido, 'autocomplete="off" autocapitalize="words"')}
+         ${campo("alcNom", "Nombre *", f.nombre, 'autocomplete="off" autocapitalize="words" required')}
+         ${campo("alcCuit", "CUIT (opcional, con o sin guiones)", f.cuit, 'inputmode="numeric" autocomplete="off" placeholder="XX-XXXXXXXX-X"')}
+         ${campo("alcDom", "Domicilio de entrega *", f.domicilio, 'autocomplete="street-address" required')}
+         ${campo("alcLoc", "Localidad *", f.localidad, 'autocomplete="address-level2" required')}
+         <div><div class="alc-nota" style="font-weight:700;color:#475569;margin-bottom:4px">Descuento en Habituales</div>
+           <div class="alc-desc" role="group" aria-label="Descuento en Habituales"><button type="button" data-d="0" aria-pressed="${Number(f.descuento || 0) === 0}">Sin descuento</button><button type="button" data-d="5" aria-pressed="${Number(f.descuento) === 5}">✓ 5 %</button></div>
+           <div class="alc-nota">Queruclor conserva sus propios precios.</div></div>
+         <div id="alcDup"></div>
+       </div>
+       <div class="alc-est" id="alcEst" role="status" aria-live="polite"></div>
+       <button type="button" class="alc-b prim" id="alcGuardar">Guardar cliente</button>
+       <button type="button" class="alc-b sec" id="alcVolver">Volver sin perder datos</button>`);
+    const sync = () => { s.ficha = { apellido: $("alcApe").value.trim(), nombre: $("alcNom").value.trim(), cuit: $("alcCuit").value.trim(), domicilio: $("alcDom").value.trim(), localidad: $("alcLoc").value.trim(), descuento: Number(($("alcBg").querySelector(".alc-desc [aria-pressed='true']") || {}).dataset?.d || 0) }; guardar(s); };
+    ["alcApe", "alcNom", "alcCuit", "alcDom", "alcLoc"].forEach(id => $(id).addEventListener("input", sync));
+    $("alcBg").querySelectorAll(".alc-desc button").forEach(b => b.onclick = () => { $("alcBg").querySelectorAll(".alc-desc button").forEach(x => x.setAttribute("aria-pressed", x === b)); sync(); });
+    $("alcCuit").addEventListener("blur", () => { const c = $("alcCuit").value.trim(); if (c && cuitValido(c)) $("alcCuit").value = cuitFmt(c); buscarDuplicados(s); });
+    $("alcDom").addEventListener("blur", () => buscarDuplicados(s)); $("alcLoc").addEventListener("blur", () => buscarDuplicados(s));
+    $("alcVolver").onclick = () => { sync(); cerrar(); toast("Datos guardados en el teléfono. Podés seguir después.", "ok"); };
+    $("alcGuardar").onclick = () => guardarCliente(s);
+    setTimeout(() => { try { ($("alcNom").value ? $("alcDom") : $("alcApe")).focus(); } catch (e) {} }, 60);
+  }
+  let dupT = null;
+  function buscarDuplicados(s) {
+    clearTimeout(dupT);
+    dupT = setTimeout(async () => {
+      const f = s.ficha || {}; const box = $("alcDup"); if (!box) return;
+      if (!(f.cuit && cuitValido(f.cuit)) && !(f.domicilio && f.localidad)) { box.innerHTML = ""; return; }
+      try {
+        const l = await api("duplicados", { cuit: f.cuit || "", domicilio: f.domicilio || "", localidad: f.localidad || "" });
+        if (!Array.isArray(l) || !l.length) { box.innerHTML = ""; return; }
+        const yo = yoNombre();
+        box.innerHTML = `<div class="alc-dup"><b>⚠️ Puede que ya exista</b>${l.map(c => `<div>N.º ${esc(c.id)} · ${esc(c.nombre)} · ${esc(c.domicilio || "")}, ${esc(c.localidad || "")} <small>(${c.por === "cuit" ? "mismo CUIT" : "mismo domicilio"} · ${esc(c.vendedor || "sin vendedor")})</small>
+            ${String(c.vendedor || "").toUpperCase() === yo && c.activo ? `<br><button type="button" onclick="qrAltaUsarExistente('${esc(c.id)}')">Usar el cliente N.º ${esc(c.id)}</button>` : `<br><span class="alc-nota">Si es el mismo comercio, revisalo con la oficina antes de crear otro. Un CUIT compartido por sucursales no siempre es el mismo punto de entrega.</span>`}</div>`).join("")}</div>`;
+      } catch (e) { box.innerHTML = ""; }
+    }, 250);
+  }
+  window.qrAltaUsarExistente = async function (id) {
+    const s = leer(); if (s && s.estado === "reservada") { try { await api("liberar", { op: s.op, vendedor_id: s.vendedor_id, motivo: "usó el cliente existente " + id }); } catch (e) {} }
+    if (s) quitarLocal(s.numero);
+    guardar(null); cerrar(); elegir(id); toast("Elegido el cliente N.º " + id, "ok");
+  };
+  function marcar(id, msg) { const i = $(id); if (!i) return; i.setAttribute("aria-invalid", msg ? "true" : "false"); const e = $(id + "Err"); if (e) e.textContent = msg || ""; if (msg) i.focus(); }
+  async function guardarCliente(s) {
+    const b = $("alcGuardar"); if (!b || b.disabled) return;
+    const f = s.ficha = { apellido: $("alcApe").value.trim(), nombre: $("alcNom").value.trim(), cuit: $("alcCuit").value.trim(), domicilio: $("alcDom").value.trim(), localidad: $("alcLoc").value.trim(), descuento: Number(($("alcBg").querySelector(".alc-desc [aria-pressed='true']") || {}).dataset?.d || 0) };
+    guardar(s);
+    ["alcApe", "alcNom", "alcCuit", "alcDom", "alcLoc"].forEach(id => marcar(id, ""));
+    if (!f.nombre) return marcar("alcNom", "Falta el nombre (del comercio o de la persona).");
+    if (f.cuit && !cuitValido(f.cuit)) return marcar("alcCuit", "El CUIT no es válido (11 dígitos con dígito verificador).");
+    if (!f.domicilio) return marcar("alcDom", "Falta el domicilio de entrega.");
+    if (!f.localidad) return marcar("alcLoc", "Falta la localidad.");
+    b.disabled = true; b.textContent = "Guardando cliente…"; const est = $("alcEst"); est.innerHTML = '<span class="alc-spin" aria-hidden="true"></span> Guardando cliente…';
+    try {
+      const r = await api("alta", { op_alta: s.op + "|alta", numero: s.numero, vendedor_id: s.vendedor_id, apellido: f.apellido, nombre: f.nombre, cuit: cuitLimpio(f.cuit), domicilio: f.domicilio, localidad: f.localidad, descuento: f.descuento });
+      if (!r.ok && r.ya_creado && r.cliente) { s.estado = "creada"; s.cliente = r.cliente; guardar(s); asegurarLocal(s.numero, s.ficha, false); return pantallaCreado(s); }
+      if (!r.ok) { b.disabled = false; b.textContent = "Guardar cliente"; est.textContent = ""; toast(r.motivo || "No se pudo guardar", "warn"); if (/nombre/i.test(r.motivo || "")) marcar("alcNom", r.motivo); else if (/CUIT/i.test(r.motivo || "")) marcar("alcCuit", r.motivo); else if (/domicilio/i.test(r.motivo || "")) marcar("alcDom", r.motivo); else if (/localidad/i.test(r.motivo || "")) marcar("alcLoc", r.motivo); else est.textContent = r.motivo || ""; return; }
+      s.estado = "creada"; s.cliente = r.cliente; guardar(s);
+      asegurarLocal(s.numero, s.ficha, false);
+      pantallaCreado(s);
+    } catch (e) { b.disabled = false; b.textContent = "Guardar cliente"; est.textContent = "Sin conexión: no se guardó. Tus datos quedan en el teléfono; volvé a intentar con señal."; }
+  }
+
+  /* ── Creado ── */
+  const textoWA = s => { const f = s.ficha || {}; return `Hola Laura 👋 Te paso un cliente nuevo para dar de alta en E-PyME.\n\n🆕 Cliente N.º ${s.numero}\nApellido: ${f.apellido || "—"}\nNombre: ${f.nombre || "—"}\nCUIT: ${f.cuit ? cuitFmt(f.cuit) : "—"}\n📍 Entrega: ${f.domicilio || "—"}\nLocalidad: ${f.localidad || "—"}\n💲 Descuento Habituales: ${Number(f.descuento) === 5 ? "5 %" : "0 % — sin descuento"}\n👤 Vendedor: ${s.vendedor || yoNombre()}\n\nYa está registrado en las apps con ese número. Por favor, usá el mismo en E-PyME. ¡Gracias!`; };
+  function pantallaCreado(s) {
+    const f = s.ficha || {}; const continuar = s.modo === "pedido" || despues === "enviar";
+    abrir(cab("") +
+      `<div class="alc-ok"><div class="tick">✅</div><h3 id="alcT">Cliente creado</h3><p>Ya podés tomarle pedidos</p></div>
+       <div class="alc-card"><span class="ic">👤</span><div><b>N.º ${esc(s.numero)}</b><span>${esc(nombreVisible(f))}</span><span>${esc(f.domicilio || "")} · ${esc(f.localidad || "")}</span><span>${esc(s.vendedor || yoNombre())} · Habituales: ${Number(f.descuento) === 5 ? "5 %" : "sin descuento"}${f.cuit ? " · CUIT " + esc(cuitFmt(f.cuit)) : ""}</span></div></div>
+       <div style="text-align:center"><span class="alc-pend">🕒 Pendiente de alta en E-PyME</span></div>
+       <div class="alc-nota" style="text-align:center;margin-bottom:8px">Avisale a Laura para que lo cargue con el mismo número.</div>
+       <a class="alc-b wa" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none" href="https://wa.me/${LAURA}?text=${encodeURIComponent(textoWA(s))}" target="_blank" rel="noopener">💬 Avisar a Laura por WhatsApp</a>
+       <div class="alc-tel">+54 9 11 3339-5487 · WhatsApp abre el mensaje para que vos lo envíes</div>
+       <button type="button" class="alc-b sec" id="alcCopiar">📋 Copiar datos</button>
+       <button type="button" class="alc-b prim" id="alcIr">${continuar ? "Continuar pedido" : "Armar pedido"}</button>`);
+    $("alcCopiar").onclick = async () => { try { await navigator.clipboard.writeText(textoWA(s)); toast("Datos copiados", "ok"); } catch (e) { toast("No se pudo copiar", "warn"); } };
+    $("alcIr").onclick = () => { asegurarLocal(s.numero, f, false); elegir(s.numero); const d = despues; despues = null; guardar(null); cerrar(); try { pintarChipPendiente(); } catch (e) {} if (d === "enviar") setTimeout(() => { const b = $("v2Enviar") || $("btnEnviar"); if (b) b.click(); }, 350); };
+  }
+
+  /* ── Enviar con un cliente reservado y sin ficha: se abre la ficha y después se continúa ── */
+  function interceptarEnvio(e) {
+    const s = leer(); if (!s || s.estado === "creada" || !s.numero) return;
+    if (clienteActual() !== String(s.numero)) return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    despues = "enviar"; s.modo = "pedido"; guardar(s);
+    toast("Completá los datos del cliente nuevo antes de enviar", "warn");
+    pantallaFicha(s);
+  }
+  const engancharEnvio = () => ["v2Enviar", "btnEnviar"].forEach(id => { const b = $(id); if (b && !b.__alc) { b.__alc = true; b.addEventListener("click", interceptarEnvio, true); } });
+
+  /* ── Entradas: menú Más y selector de cliente ── */
+  function enganchar() {
+    engancharEnvio();
+    const mas = document.querySelector('#v2MasBg [data-m="clientes"]');
+    if (mas && !mas.__alc) {
+      mas.__alc = true; mas.innerHTML = '<span class="ic vi">👤＋</span><div><b>Cargar cliente nuevo</b><small>Número reservado para vos · ficha o pedido primero</small></div><i>›</i>';
+      mas.addEventListener("click", e => { e.stopImmediatePropagation(); e.preventDefault(); try { $("v2MasBg").classList.remove("abierto"); } catch (x) {} qrAltaAbrir("mas"); }, true);
+    }
+    const slot = $("v2CliSlot") || ($("numeroCliente") && $("numeroCliente").parentElement);
+    if (slot && !document.getElementById("alcLinkSel")) {
+      const b = document.createElement("button"); b.type = "button"; b.id = "alcLinkSel"; b.className = "alc-link"; b.textContent = "＋ Cargar cliente nuevo";
+      b.onclick = () => qrAltaAbrir("selector"); slot.insertAdjacentElement("afterend", b);
+    }
+    pintarChipPendiente();
+  }
+  function pintarChipPendiente() {
+    const s = leer(); const i = $("numeroCliente"); if (!i) return;
+    let chip = document.getElementById("alcChip");
+    const mostrar = s && s.numero && s.estado !== "creada" && clienteActual() === String(s.numero);
+    if (!mostrar) { if (chip) chip.remove(); return; }
+    if (!chip) { chip = document.createElement("span"); chip.id = "alcChip"; chip.className = "alc-pendiente-chip"; i.insertAdjacentElement("afterend", chip); }
+    chip.textContent = "Cliente nuevo · N.º " + s.numero + " · Datos pendientes"; chip.onclick = () => qrAltaAbrir("chip");
+  }
+  /* Al volver a abrir la app con una reserva en curso en modo pedido, el cliente provisorio vuelve a las listas. */
+  function retomar() {
+    const s = leer(); if (!s || !s.numero) return;
+    if (s.estado === "reservada" && s.modo === "pedido") asegurarLocal(s.numero, s.ficha, true);
+    if (s.estado === "creada") asegurarLocal(s.numero, s.ficha, false);
+  }
+  let obsT = null;
+  try { new MutationObserver(() => { if (obsT) return; obsT = setTimeout(() => { obsT = null; enganchar(); }, 120); }).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+  document.addEventListener("input", e => { if (e.target && e.target.id === "numeroCliente") setTimeout(pintarChipPendiente, 0); }, true);
+  setTimeout(() => { retomar(); enganchar(); }, 1200); setTimeout(() => { retomar(); enganchar(); }, 4000);
+  window.qrAltaEstado = leer;
 })();
 
 </script>
