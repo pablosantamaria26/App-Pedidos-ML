@@ -2172,6 +2172,15 @@ main { max-width: 540px; }
 .alc-link{ display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:8px 12px; border-radius:10px; border:1.5px dashed rgba(37,99,235,.5); background:transparent; color:#1d4ed8; font:inherit; font-weight:700; font-size:.88rem; cursor:pointer }
 .alc-pendiente-chip{ display:inline-block; padding:2px 8px; border-radius:99px; background:rgba(245,158,11,.16); color:#92400e; font-size:.74rem; font-weight:800; margin-left:6px }
 
+/* 21/11/2026: email en la ficha y recordatorio de altas pendientes de E-PyME (aviso a Laura que no se pierde). */
+.alc-check{display:flex;align-items:flex-start;gap:8px;font-size:.84rem;color:#475569;margin:2px 0 6px}
+.alc-check input{width:18px;height:18px;margin:1px 0 0;flex-shrink:0}
+.alc-pend-box{margin:8px 0 4px;display:grid;gap:8px}
+.alc-pend-item{border:1px solid #fcd34d;background:#fffbeb;border-radius:12px;padding:10px 12px;display:grid;gap:8px}
+.alc-pend-t{font-weight:700;font-size:.9rem;color:#92400e}.alc-pend-t small{display:block;font-weight:500;color:#78350f;font-size:.78rem;margin-top:2px}
+.alc-pend-acc{display:flex;flex-wrap:wrap;gap:6px}
+.alc-b.chico{min-height:36px;padding:6px 10px;font-size:.84rem;width:auto;flex:1 1 auto;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+
 </style>
 </head>
 <body>
@@ -15129,6 +15138,9 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
          ${campo("alcApe", "Apellido (o nombre del comercio, como en E-PyME)", f.apellido, 'autocomplete="off" autocapitalize="words"')}
          ${campo("alcNom", "Nombre *", f.nombre, 'autocomplete="off" autocapitalize="words" required')}
          ${campo("alcCuit", "CUIT (opcional, con o sin guiones)", f.cuit, 'inputmode="numeric" autocomplete="off" placeholder="XX-XXXXXXXX-X"')}
+         ${campo("alcMail", "Email del cliente *", f.email, 'type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="nombre@dominio.com"')}
+         <div class="alc-nota" style="margin-top:-6px">El email es necesario para enviarle la factura electrónica y avisarle cuando se despacha su pedido.</div>
+         <label class="alc-check"><input type="checkbox" id="alcSinMail" ${f.sinEmail ? "checked" : ""}> El cliente no tiene email por ahora (se lo pedimos después)</label>
          ${campo("alcDom", "Domicilio de entrega *", f.domicilio, 'autocomplete="street-address" required')}
          ${campo("alcLoc", "Localidad *", f.localidad, 'autocomplete="address-level2" required')}
          <div><div class="alc-nota" style="font-weight:700;color:#475569;margin-bottom:4px">Descuento en Habituales</div>
@@ -15139,8 +15151,9 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
        <div class="alc-est" id="alcEst" role="status" aria-live="polite"></div>
        <button type="button" class="alc-b prim" id="alcGuardar">Guardar cliente</button>
        <button type="button" class="alc-b sec" id="alcVolver">Volver sin perder datos</button>`);
-    const sync = () => { s.ficha = { apellido: $("alcApe").value.trim(), nombre: $("alcNom").value.trim(), cuit: $("alcCuit").value.trim(), domicilio: $("alcDom").value.trim(), localidad: $("alcLoc").value.trim(), descuento: Number(($("alcBg").querySelector(".alc-desc [aria-pressed='true']") || {}).dataset?.d || 0) }; guardar(s); };
-    ["alcApe", "alcNom", "alcCuit", "alcDom", "alcLoc"].forEach(id => $(id).addEventListener("input", sync));
+    const sync = () => { s.ficha = { apellido: $("alcApe").value.trim(), nombre: $("alcNom").value.trim(), cuit: $("alcCuit").value.trim(), email: $("alcMail").value.trim().toLowerCase(), sinEmail: !!$("alcSinMail").checked, domicilio: $("alcDom").value.trim(), localidad: $("alcLoc").value.trim(), descuento: Number(($("alcBg").querySelector(".alc-desc [aria-pressed='true']") || {}).dataset?.d || 0) }; guardar(s); };
+    ["alcApe", "alcNom", "alcCuit", "alcMail", "alcDom", "alcLoc"].forEach(id => $(id).addEventListener("input", sync));
+    $("alcSinMail").addEventListener("change", sync);
     $("alcBg").querySelectorAll(".alc-desc button").forEach(b => b.onclick = () => { $("alcBg").querySelectorAll(".alc-desc button").forEach(x => x.setAttribute("aria-pressed", x === b)); sync(); });
     $("alcCuit").addEventListener("blur", () => { const c = $("alcCuit").value.trim(); if (c && cuitValido(c)) $("alcCuit").value = cuitFmt(c); buscarDuplicados(s); });
     $("alcDom").addEventListener("blur", () => buscarDuplicados(s)); $("alcLoc").addEventListener("blur", () => buscarDuplicados(s));
@@ -15171,31 +15184,70 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
   function marcar(id, msg) { const i = $(id); if (!i) return; i.setAttribute("aria-invalid", msg ? "true" : "false"); const e = $(id + "Err"); if (e) e.textContent = msg || ""; if (msg) i.focus(); }
   async function guardarCliente(s) {
     const b = $("alcGuardar"); if (!b || b.disabled) return;
-    const f = s.ficha = { apellido: $("alcApe").value.trim(), nombre: $("alcNom").value.trim(), cuit: $("alcCuit").value.trim(), domicilio: $("alcDom").value.trim(), localidad: $("alcLoc").value.trim(), descuento: Number(($("alcBg").querySelector(".alc-desc [aria-pressed='true']") || {}).dataset?.d || 0) };
+    const f = s.ficha = { apellido: $("alcApe").value.trim(), nombre: $("alcNom").value.trim(), cuit: $("alcCuit").value.trim(), email: $("alcMail").value.trim().toLowerCase(), sinEmail: !!$("alcSinMail").checked, domicilio: $("alcDom").value.trim(), localidad: $("alcLoc").value.trim(), descuento: Number(($("alcBg").querySelector(".alc-desc [aria-pressed='true']") || {}).dataset?.d || 0) };
     guardar(s);
-    ["alcApe", "alcNom", "alcCuit", "alcDom", "alcLoc"].forEach(id => marcar(id, ""));
+    ["alcApe", "alcNom", "alcCuit", "alcMail", "alcDom", "alcLoc"].forEach(id => marcar(id, ""));
     if (!f.nombre) return marcar("alcNom", "Falta el nombre (del comercio o de la persona).");
     if (f.cuit && !cuitValido(f.cuit)) return marcar("alcCuit", "El CUIT no es válido (11 dígitos con dígito verificador).");
+    if (f.email && !emailValido(f.email)) return marcar("alcMail", "El email no tiene un formato válido (nombre@dominio).");
+    if (!f.email && !f.sinEmail) return marcar("alcMail", "Falta el email del cliente (para la factura electrónica y el aviso de despacho). Si no tiene, marcá la casilla.");
     if (!f.domicilio) return marcar("alcDom", "Falta el domicilio de entrega.");
     if (!f.localidad) return marcar("alcLoc", "Falta la localidad.");
     b.disabled = true; b.textContent = "Guardando cliente…"; const est = $("alcEst"); est.innerHTML = '<span class="alc-spin" aria-hidden="true"></span> Guardando cliente…';
     try {
-      const r = await api("alta", { op_alta: s.op + "|alta", numero: s.numero, vendedor_id: s.vendedor_id, apellido: f.apellido, nombre: f.nombre, cuit: cuitLimpio(f.cuit), domicilio: f.domicilio, localidad: f.localidad, descuento: f.descuento });
-      if (!r.ok && r.ya_creado && r.cliente) { s.estado = "creada"; s.cliente = r.cliente; guardar(s); asegurarLocal(s.numero, s.ficha, false); return pantallaCreado(s); }
+      const r = await api("alta", { op_alta: s.op + "|alta", numero: s.numero, vendedor_id: s.vendedor_id, apellido: f.apellido, nombre: f.nombre, cuit: cuitLimpio(f.cuit), email: f.email || "", domicilio: f.domicilio, localidad: f.localidad, descuento: f.descuento });
+      if (!r.ok && r.ya_creado && r.cliente) { s.estado = "creada"; s.cliente = r.cliente; guardar(s); asegurarLocal(s.numero, s.ficha, false); registrarPendiente(s); return pantallaCreado(s); }
       if (!r.ok) { b.disabled = false; b.textContent = "Guardar cliente"; est.textContent = ""; toast(r.motivo || "No se pudo guardar", "warn"); if (/nombre/i.test(r.motivo || "")) marcar("alcNom", r.motivo); else if (/CUIT/i.test(r.motivo || "")) marcar("alcCuit", r.motivo); else if (/domicilio/i.test(r.motivo || "")) marcar("alcDom", r.motivo); else if (/localidad/i.test(r.motivo || "")) marcar("alcLoc", r.motivo); else est.textContent = r.motivo || ""; return; }
       s.estado = "creada"; s.cliente = r.cliente; guardar(s);
       asegurarLocal(s.numero, s.ficha, false);
+      registrarPendiente(s);
       pantallaCreado(s);
     } catch (e) { b.disabled = false; b.textContent = "Guardar cliente"; est.textContent = "Sin conexión: no se guardó. Tus datos quedan en el teléfono; volvé a intentar con señal."; }
   }
 
   /* ── Creado ── */
-  const textoWA = s => { const f = s.ficha || {}; return `Hola Laura 👋 Te paso un cliente nuevo para dar de alta en E-PyME.\n\n🆕 Cliente N.º ${s.numero}\nApellido: ${f.apellido || "—"}\nNombre: ${f.nombre || "—"}\nCUIT: ${f.cuit ? cuitFmt(f.cuit) : "—"}\n📍 Entrega: ${f.domicilio || "—"}\nLocalidad: ${f.localidad || "—"}\n💲 Descuento Habituales: ${Number(f.descuento) === 5 ? "5 %" : "0 % — sin descuento"}\n👤 Vendedor: ${s.vendedor || yoNombre()}\n\nYa está registrado en las apps con ese número. Por favor, usá el mismo en E-PyME. ¡Gracias!`; };
+  const textoWA = s => { const f = s.ficha || {}; return `Hola Laura 👋 Te paso un cliente nuevo para dar de alta en E-PyME.\n\n🆕 Cliente N.º ${s.numero}\nApellido: ${f.apellido || "—"}\nNombre: ${f.nombre || "—"}\nCUIT: ${f.cuit ? cuitFmt(f.cuit) : "—"}\n📧 Email: ${f.email || "— (no tiene por ahora)"}\n📍 Entrega: ${f.domicilio || "—"}\nLocalidad: ${f.localidad || "—"}\n💲 Descuento Habituales: ${Number(f.descuento) === 5 ? "5 %" : "0 % — sin descuento"}\n👤 Vendedor: ${s.vendedor || yoNombre()}\n\nYa está registrado en las apps con ese número. Por favor, usá el mismo en E-PyME. ¡Gracias!`; };
+  const emailValido = e => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(e || "").trim());
+
+  /* ── Altas pendientes de E-PyME de este vendedor: el aviso a Laura no se pierde (21/11/2026) ───────────────────────
+     Antes, si el vendedor tocaba «Armar pedido» sin mandar el WhatsApp, no había forma de volver a avisar. Ahora cada alta
+     creada queda en una lista del teléfono y, al abrir la app, se completa con las que el servidor tiene pendientes de este
+     vendedor (qr_altas_mias). Se muestra un recordatorio con «Avisar a Laura» hasta que Laura confirme la carga en E-PyME. */
+  const KP = "qr_altas_pendientes_v1";
+  const leerPend = () => { try { return JSON.parse(localStorage.getItem(KP) || "{}") || {}; } catch (e) { return {}; } };
+  const guardarPend = o => { try { localStorage.setItem(KP, JSON.stringify(o)); } catch (e) {} };
+  function registrarPendiente(s) { if (!s || !s.numero) return; const o = leerPend(); o[s.numero] = Object.assign({}, o[s.numero] || {}, { numero: s.numero, ficha: s.ficha || {}, vendedor: s.vendedor || yoNombre(), vendedor_id: s.vendedor_id, creado: s.creado || Date.now(), avisado: (o[s.numero] || {}).avisado || false }); guardarPend(o); pintarPendientes(); }
+  async function refrescarPendientesServidor() {
+    const vid = yoId(); if (!vid) return;
+    try {
+      const l = await api("mias", { vendedor_id: vid }); if (!Array.isArray(l)) return;
+      const o = leerPend(); const vivos = new Set(l.map(a => String(a.numero)));
+      for (const a of l) o[a.numero] = Object.assign({}, o[a.numero] || {}, { numero: String(a.numero), vendedor_id: vid, creado: (o[a.numero] || {}).creado || Date.parse(a.creado) || Date.now(), avisado: (o[a.numero] || {}).avisado || false,
+        ficha: Object.assign({}, (o[a.numero] || {}).ficha || {}, { apellido: a.apellido, nombre: a.nombre, cuit: a.cuit || "", email: a.email || "", domicilio: a.domicilio, localidad: a.localidad, descuento: a.descuento }) });
+      for (const n of Object.keys(o)) if (!vivos.has(n) && o[n].vendedor_id === vid) delete o[n];   // ya confirmadas por Laura (o de otro vendedor en este teléfono: no se tocan)
+      guardarPend(o); pintarPendientes();
+    } catch (e) {}
+  }
+  const hoyClave = () => new Date().toISOString().slice(0, 10);
+  function pintarPendientes() {
+    const ancla = $("alcLinkSel"); let box = $("alcPend");
+    const o = leerPend(); const vid = yoId();
+    const lista = Object.values(o).filter(p => (!vid || !p.vendedor_id || p.vendedor_id === vid) && p.ocultoHasta !== hoyClave()).sort((a, b) => (b.creado || 0) - (a.creado || 0)).slice(0, 3);
+    if (!ancla || !lista.length) { if (box) box.remove(); return; }
+    if (!box) { box = document.createElement("div"); box.id = "alcPend"; box.className = "alc-pend-box"; ancla.insertAdjacentElement("afterend", box); }
+    box.innerHTML = lista.map(p => { const f = p.ficha || {}; const s = { numero: p.numero, ficha: f, vendedor: p.vendedor };
+      return `<div class="alc-pend-item" data-n="${esc(p.numero)}"><div class="alc-pend-t">🕒 Cliente nuevo N.º ${esc(p.numero)} · ${esc(nombreVisible(f) || "sin nombre")}<small>Falta que Laura lo cargue en E-PyME${f.email ? "" : " · sin email"}${p.avisado ? " · ya le avisaste" : ""}</small></div>
+        <div class="alc-pend-acc"><a class="alc-b wa chico" href="https://wa.me/${LAURA}?text=${encodeURIComponent(textoWA(s))}" target="_blank" rel="noopener" data-wa="${esc(p.numero)}">💬 ${p.avisado ? "Avisar de nuevo" : "Avisar a Laura"}</a><button type="button" class="alc-b sec chico" data-copiar="${esc(p.numero)}">📋 Copiar</button><button type="button" class="alc-b sec chico" data-ocultar="${esc(p.numero)}">Ocultar hoy</button></div></div>`; }).join("");
+    box.querySelectorAll("[data-wa]").forEach(a => a.addEventListener("click", () => { const o2 = leerPend(); if (o2[a.dataset.wa]) { o2[a.dataset.wa].avisado = true; guardarPend(o2); setTimeout(pintarPendientes, 400); } }));
+    box.querySelectorAll("[data-copiar]").forEach(b => b.onclick = async () => { const p = leerPend()[b.dataset.copiar]; if (!p) return; try { await navigator.clipboard.writeText(textoWA({ numero: p.numero, ficha: p.ficha, vendedor: p.vendedor })); toast("Datos copiados", "ok"); } catch (e) { toast("No se pudo copiar", "warn"); } });
+    box.querySelectorAll("[data-ocultar]").forEach(b => b.onclick = () => { const o2 = leerPend(); if (o2[b.dataset.ocultar]) { o2[b.dataset.ocultar].ocultoHasta = hoyClave(); guardarPend(o2); pintarPendientes(); } });
+  }
+  window.qrAltaPendientes = { leer: leerPend, refrescar: refrescarPendientesServidor, pintar: pintarPendientes };
   function pantallaCreado(s) {
     const f = s.ficha || {}; const continuar = s.modo === "pedido" || despues === "enviar";
     abrir(cab("") +
       `<div class="alc-ok"><div class="tick">✅</div><h3 id="alcT">Cliente creado</h3><p>Ya podés tomarle pedidos</p></div>
-       <div class="alc-card"><span class="ic">👤</span><div><b>N.º ${esc(s.numero)}</b><span>${esc(nombreVisible(f))}</span><span>${esc(f.domicilio || "")} · ${esc(f.localidad || "")}</span><span>${esc(s.vendedor || yoNombre())} · Habituales: ${Number(f.descuento) === 5 ? "5 %" : "sin descuento"}${f.cuit ? " · CUIT " + esc(cuitFmt(f.cuit)) : ""}</span></div></div>
+       <div class="alc-card"><span class="ic">👤</span><div><b>N.º ${esc(s.numero)}</b><span>${esc(nombreVisible(f))}</span><span>${esc(f.domicilio || "")} · ${esc(f.localidad || "")}</span><span>${esc(s.vendedor || yoNombre())} · Habituales: ${Number(f.descuento) === 5 ? "5 %" : "sin descuento"}${f.cuit ? " · CUIT " + esc(cuitFmt(f.cuit)) : ""}</span><span>${f.email ? "📧 " + esc(f.email) : "📧 Sin email por ahora: Laura lo va a pedir para la factura"}</span></div></div>
        <div style="text-align:center"><span class="alc-pend">🕒 Pendiente de alta en E-PyME</span></div>
        <div class="alc-nota" style="text-align:center;margin-bottom:8px">Avisale a Laura para que lo cargue con el mismo número.</div>
        <a class="alc-b wa" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none" href="https://wa.me/${LAURA}?text=${encodeURIComponent(textoWA(s))}" target="_blank" rel="noopener">💬 Avisar a Laura por WhatsApp</a>
@@ -15231,6 +15283,7 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
       b.onclick = () => qrAltaAbrir("selector"); slot.insertAdjacentElement("afterend", b);
     }
     pintarChipPendiente();
+    pintarPendientes();
   }
   function pintarChipPendiente() {
     const s = leer(); const i = $("numeroCliente"); if (!i) return;
@@ -15249,7 +15302,8 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
   let obsT = null;
   try { new MutationObserver(() => { if (obsT) return; obsT = setTimeout(() => { obsT = null; enganchar(); }, 120); }).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
   document.addEventListener("input", e => { if (e.target && e.target.id === "numeroCliente") setTimeout(pintarChipPendiente, 0); }, true);
-  setTimeout(() => { retomar(); enganchar(); }, 1200); setTimeout(() => { retomar(); enganchar(); }, 4000);
+  setTimeout(() => { retomar(); enganchar(); }, 1200); setTimeout(() => { retomar(); enganchar(); refrescarPendientesServidor(); }, 4000);
+  setInterval(() => { if (!document.hidden) refrescarPendientesServidor(); }, 10 * 60 * 1000);   // cada 10 min: saca del recordatorio lo que Laura ya confirmó
   window.qrAltaEstado = leer;
 })();
 
