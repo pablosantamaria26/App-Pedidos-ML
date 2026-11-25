@@ -8393,7 +8393,7 @@ if (typeof window !== "undefined" && window.QR_LOCAL) { /* nada */ } else
     "7791905023784",  // Repelente Mosquitos 143ml         · caja x 12
     "7791905024897",  // Repelente Mosquitos 165ml         · caja x 12
     /* 16/11/2026: las tabletas Mata Mosquitos (x12 y x24) se venden SOLO por caja completa de 20 (Pablo). */
-    "7791905004424",  // Talco Pédico 100g                 · caja x 12
+    /* 25/11/2026: el Talco Pédico 100 g (7791905004424) se vende SOLO por caja de 12 (Pablo): las sueltas no llevan etiqueta de caja en Depósito. */
     "7791905004431",  // Talco Pédico 200g                 · caja x 12
   ];
 
@@ -10187,6 +10187,8 @@ try { E.carrito = JSON.parse(localStorage.getItem(CARRITO_KEY) || '[]'); } catch
       }
     }
     if (it.modo === 'surtida' && window.Formatos && Formatos.soloCajaCerrada(it.familiaKey)) { cambios++; return; }
+    /* 25/11/2026: sueltas de un artículo que ya no se vende por unidad (talco 100 g): salen del carrito guardado (si no, viajarían como SUELTAS). */
+    if (it.modo === 'sueltas' && window.Formatos && Formatos.seVendeSuelto && !Formatos.seVendeSuelto(it.ean)) { cambios++; return; }
     out.push(it);
   });
   if (cambios) { E.carrito = out; try { localStorage.setItem(CARRITO_KEY, JSON.stringify(out)); } catch(e){} console.warn('[Queruclor] carrito guardado adaptado a las reglas de venta nuevas (' + cambios + ')'); }
