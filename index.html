@@ -11045,13 +11045,20 @@ function qcStockHTML(p) {
 function qcImg(p) { var c = p.tipo === "familia" ? p.imagenPrincipal : p.ean; return (window.qrFotoUrl ? qrFotoUrl(c) : c + ".jpg"); }
 
 /* ── La tarjeta ────────────────────────────────────────────────── */
+/* 25/11/2026: el texto que escribió el Admin en «Texto del ribbon» («Solo por HOY») va en la etiqueta de la oferta.
+   Sin texto propio (el Admin guarda «N% OFF» por defecto) queda el de siempre: el porcentaje ya está en la línea de al lado. */
+function qcRibbon(o, detalle) {
+  var r = o && o.of ? String(o.of.ribbon || "").trim() : "";
+  if (r && !/^-?\d+([.,]\d+)?\s*%\s*(OFF)?$/i.test(r)) return r;
+  return o && o.vol ? (detalle ? "Oferta por volumen" : "OFERTA POR VOLUMEN") : (detalle ? "Oferta" : "OFERTA");
+}
 function qcCard(p) {
   var id = qcKey(p), o = qcOferta(p);
   var n = qcCajas(p) + qcSueltas(p);
   var enPedido = n > 0 || (p.tipo === "familia" && !!getFamItemCarrito(p.familiaKey));
   var ns = getStockProd(p) === 0;
   var cls = "qc" + (o ? " oferta" : "") + (enPedido ? " en-pedido" : "") + (ns ? " ns" : "");
-  var cab = o ? '<div class="qc-of"><span class="qc-badge">🔥 ' + (o.vol ? "OFERTA POR VOLUMEN" : "OFERTA") + '</span>' +
+  var cab = o ? '<div class="qc-of"><span class="qc-badge">🔥 ' + qcEsc(qcRibbon(o)) + '</span>' +
     '<span class="qc-cond">' + o.pct + '% OFF' + (o.vol ? ' llevando ' + o.min + '+ cajas' : '') + '</span></div>' : "";
   var sub = "";
   if (enPedido && p.tipo !== "familia") {
@@ -11209,7 +11216,7 @@ function qcDetalleHTML(p) {
   var o = qcOferta(p);
   var ofBox = "";
   if (o) {
-    ofBox = '<div class="qcd-of"><div class="qcd-of-t">🔥 ' + (o.vol ? "Oferta por volumen" : "Oferta") + ' · ' + o.pct + '% OFF</div>' +
+    ofBox = '<div class="qcd-of"><div class="qcd-of-t">🔥 ' + qcEsc(qcRibbon(o, true)) + ' · ' + o.pct + '% OFF</div>' +
       '<div class="qcd-of-d">' + (o.vol
         ? (o.aplica && qcCajas(p) > 0 ? "Activada: estas cajas van a " + fmt(o.puPromo) + " c/u." :
            "Llevando <b>" + o.min + " cajas o más</b>, cada unidad queda en <b>" + fmt(o.puPromo) + "</b> (en vez de " + fmt(p.precioUnit) + ").")
