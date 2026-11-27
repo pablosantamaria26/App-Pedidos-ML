@@ -13038,6 +13038,52 @@ body.ui2 .ac-item.v2c.sel .v2c-ok{ width:32px; height:32px; font-size:16px; }
   body.ui2 .v2-vista{ margin-left:8px; min-height:38px; padding:0 12px; border:1.5px solid var(--ml-border); border-radius:12px; background:#fff; color:var(--ml-text); font:inherit; font-size:13px; font-weight:800; cursor:pointer; white-space:nowrap; }
 }
 
+/* ═══ Más opciones — rediseño 27/11/2026 (produccion/app-pedidos-mas-opciones-parche.js) ═══ */
+html.v2-mas-abierto, html.v2-mas-abierto body{ overflow:hidden; }
+body.ui2 #v2MasBg{ height:100vh; height:100dvh; background:rgba(15,23,42,.45); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+body.ui2 #v2MasBg .v2-sheet{ box-sizing:border-box; width:100%; max-width:500px; margin:0 auto; max-height:calc(100vh - 16px); max-height:calc(100dvh - 16px); overflow-y:auto; overscroll-behavior:contain;
+  padding:10px 16px calc(20px + env(safe-area-inset-bottom, 0px)); background:#FFFFFF; border-radius:24px 24px 0 0; box-shadow:0 -8px 32px rgba(15,23,42,.18); }
+body.ui2 #v2MasBg .asa{ width:38px; height:4px; border-radius:999px; background:#CBD5E1; margin:2px auto 14px; }
+body.ui2 #v2MasBg .v2-sh-h{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+body.ui2 #v2MasBg .v2-sh-h h3{ margin:0; min-width:0; font-size:clamp(19px, 5.4vw, 22px); font-weight:800; line-height:1.2; color:#0F172A; letter-spacing:0; }
+body.ui2 #v2MasBg .v2-sh-acc{ display:flex; align-items:center; gap:8px; flex:none; }
+body.ui2 #v2MasBg button{ touch-action:manipulation; -webkit-tap-highlight-color:transparent; font-family:inherit; cursor:pointer; box-sizing:border-box; transition:transform .08s, background-color .08s; }
+body.ui2 #v2MasBg button:active{ transform:scale(.98); background-color:#F8FAFC; }
+body.ui2 #v2MasBg .v2-sh-ayuda{ position:relative; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 13px 0 9px; border:1px solid #E2E8F0; border-radius:999px; background:#F1F5F9; color:#0F172A; font-size:13.5px; font-weight:700; }
+body.ui2 #v2MasBg .v2-sh-ayuda svg{ width:19px; height:19px; flex:none; }
+body.ui2 #v2MasBg .v2-sh-x{ position:relative; display:grid; place-items:center; flex:none; width:34px; height:34px; padding:0; border:0; border-radius:50%; background:#F1F5F9; color:#0F172A; font-size:0; }
+body.ui2 #v2MasBg .v2-sh-x svg{ width:18px; height:18px; }
+body.ui2 #v2MasBg .v2-sh-ayuda::after, body.ui2 #v2MasBg .v2-sh-x::after{ content:""; position:absolute; inset:-4px -3px; }   /* zona táctil de 44 px */
+body.ui2 #v2MasBg .v2-mas-top{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-top:14px; }
+body.ui2 #v2MasBg .v2-mas-fil{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+body.ui2 #v2MasBg .v2-mc, body.ui2 #v2MasBg .v2-mr{ min-width:0; min-height:44px; margin:0; border:1px solid #E2E8F0; border-radius:16px; background:#FFFFFF; box-shadow:none; color:#0F172A; text-align:left; font-size:14px; }
+body.ui2 #v2MasBg .v2-mc{ display:flex; flex-direction:column; align-items:stretch; justify-content:space-between; gap:12px; width:100%; padding:14px 12px; }
+/* Si el badge no entra al lado del ícono (pantallas muy angostas o números grandes), baja debajo: nunca se corta. */
+body.ui2 #v2MasBg .v2-mc-top{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px; min-width:0; }
+body.ui2 #v2MasBg .v2-mr{ display:flex; align-items:center; gap:12px; width:100%; min-height:64px; padding:10px 12px; }
+body.ui2 #v2MasBg .v2-mc-ic{ flex:none; display:grid; place-items:center; width:40px; height:40px; border-radius:12px; font-size:0; }
+body.ui2 #v2MasBg .v2-mc-ic svg{ width:22px; height:22px; }
+body.ui2 #v2MasBg .v2-mc-ic.vi{ background:#EDE9FE; color:#4F46E5; } body.ui2 #v2MasBg .v2-mc-ic.az{ background:#E0F2FE; color:#0284C7; }
+body.ui2 #v2MasBg .v2-mc-ic.am{ background:#FEF3C7; color:#D97706; } body.ui2 #v2MasBg .v2-mc-ic.gr{ background:#F1F5F9; color:#334155; }
+body.ui2 #v2MasBg .v2-mc-t{ display:block; flex:1; min-width:0; }
+body.ui2 #v2MasBg .v2-mc-t b{ display:block; font-size:clamp(14px, 3.8vw, 15.5px); font-weight:800; line-height:1.2; color:#0F172A; overflow-wrap:anywhere; }
+body.ui2 #v2MasBg .v2-mc-t small{ display:block; margin-top:2px; font-size:clamp(11.5px, 3.1vw, 13px); font-weight:500; line-height:1.3; color:#475569; overflow-wrap:anywhere; }
+body.ui2 #v2MasBg .v2-mc-n, body.ui2 #v2MasBg .v2-mr-n{ flex:none; padding:3px 8px; border-radius:999px; font-size:clamp(10.5px, 2.9vw, 11.5px); font-weight:800; line-height:1.3; white-space:nowrap; }
+body.ui2 #v2MasBg .v2-mc-n{ background:#0284C7; color:#FFFFFF; }
+body.ui2 #v2MasBg .v2-mr-n{ background:#F1F5F9; color:#0F172A; }
+body.ui2 #v2MasBg .v2-mc-n[hidden], body.ui2 #v2MasBg .v2-mr-n[hidden]{ display:none !important; }
+body.ui2 #v2MasBg .v2-mr-chev{ flex:none; display:grid; place-items:center; color:#94A3B8; }
+body.ui2 #v2MasBg .v2-mr-chev svg{ width:18px; height:18px; }
+@media (max-width:360px){
+  body.ui2 #v2MasBg .v2-sheet{ padding-left:12px; padding-right:12px; }
+  body.ui2 #v2MasBg .v2-mas-top{ gap:8px; }
+  body.ui2 #v2MasBg .v2-mc{ padding:12px 10px; gap:10px; }
+  body.ui2 #v2MasBg .v2-mr{ gap:8px; padding:10px; }
+  body.ui2 #v2MasBg .v2-mc-top{ gap:5px 4px; }
+  body.ui2 #v2MasBg .v2-mc-n, body.ui2 #v2MasBg .v2-mr-n{ padding:2px 6px; font-size:10px; }
+  body.ui2 #v2MasBg .v2-mc-ic{ width:36px; height:36px; }
+  body.ui2 #v2MasBg .v2-sh-ayuda{ padding:0 10px 0 7px; font-size:13px; }
+}
 /* ═══ Más opciones (lista) y barra de abajo en Historial ═════════ */
 body.ui2 .v2-maslist{ display:flex; flex-direction:column; gap:8px; margin-top:12px; }
 body.ui2 .v2-maslist button{ display:flex; align-items:center; gap:12px; min-height:66px; padding:10px 12px; border:1px solid var(--ml-border); border-radius:16px; background:#fff;
@@ -13696,19 +13742,50 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
         <div class="asa"></div><div class="v2-sh-h"><h3>Elegí el cliente</h3><button type="button" class="v2-sh-x" id="v2CliCerrar" aria-label="Cerrar">✕</button></div><p class="sub">Tus clientes: buscá por número, nombre o dirección.</p><div id="v2CliSlot"></div>
       </div></div>
 
-      <div class="v2-sheet-bg" id="v2MasBg"><div class="v2-sheet" role="dialog" aria-label="Más">
-        <div class="asa"></div><div class="v2-sh-h"><h3>Más opciones</h3><button type="button" class="v2-sh-x" data-m="cerrar" aria-label="Cerrar">✕</button></div>
-        <div class="v2-maslist">
-          <button type="button" data-m="historial"><span class="ic az">${I.cola}</span><div><b>Pedidos activos e historial</b><small>Lo que falta mandar y lo que ya salió</small></div><i>›</i></button>
-          <button type="button" data-m="clientes"><span class="ic vi">${I.cli}</span><div><b>Clientes</b><small>Ver y buscar tus clientes</small></div><i>›</i></button>
-          <button type="button" data-m="ideas"><span class="ic am">💡</span><div><b>Ideas</b><small>Clientes que hace días no compran</small></div><i>›</i></button>
-          <button type="button" data-m="stats"><span class="ic na">📊</span><div><b>Estadísticas</b><small>Tus pedidos y tus números</small></div><i>›</i></button>
-          <button type="button" data-m="ayuda"><span class="ic gr">?</span><div><b>Ayuda</b><small>Cómo se usa la app</small></div><i>›</i></button>
+      <div class="v2-sheet-bg" id="v2MasBg"><div class="v2-sheet" role="dialog" aria-label="Más opciones">
+        <div class="asa"></div>
+        <div class="v2-sh-h"><h3>Más opciones</h3><div class="v2-sh-acc">
+          <button type="button" class="v2-sh-ayuda" data-m="ayuda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1.1 1-1.1 1.8"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg><span>Ayuda</span></button>
+          <button type="button" class="v2-sh-x" data-m="cerrar" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
+        <div class="v2-mas-top">
+          <button type="button" class="v2-mc" data-m="clientes"><span class="v2-mc-top"><span class="v2-mc-ic vi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M19 8v6M16 11h6"/></svg></span></span><span class="v2-mc-t"><b>Cliente nuevo</b><small>Ficha o pedido directo</small></span></button>
+          <button type="button" class="v2-mc" data-m="historial"><span class="v2-mc-top"><span class="v2-mc-ic az">${I.cola}</span><span class="v2-mc-n" id="v2MasPend" hidden></span></span><span class="v2-mc-t"><b>Pedidos e historial</b><small>En curso y entregados</small></span></button>
+        </div>
+        <div class="v2-mas-fil">
+          <button type="button" class="v2-mr" data-m="ideas"><span class="v2-mc-ic am"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></span><span class="v2-mc-t"><b>Ideas de venta</b><small>Clientes que hace días no compran</small></span><span class="v2-mr-n" id="v2MasIdeas" hidden></span><span class="v2-mr-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
+          <button type="button" class="v2-mr" data-m="stats"><span class="v2-mc-ic gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-9M12 20V4M19 20v-6"/></svg></span><span class="v2-mc-t"><b>Estadísticas</b><small>Tus pedidos y números del mes</small></span><span class="v2-mr-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
         </div>
       </div></div>`;
     while (raiz.firstChild) document.body.appendChild(raiz.firstChild);
     /* La cabecera va PRIMERA en el body: si no, el sticky queda al final de la página. */
     document.body.insertBefore($("v2Head"), document.body.firstChild);
+    /* mas-opciones 27/11/2026 */
+    /* «Más opciones»: contadores calculados al abrir (cola local e historial, ya en memoria: sin consultas) y fondo quieto. */
+    seguro(() => {
+      const bg = $("v2MasBg"); if (!bg) return;
+      const pintarMas = () => {
+        let n = 0; seguro(() => { n = getQueue().length; });
+        const p = $("v2MasPend");
+        if (p) { p.hidden = !n; p.textContent = n ? (n > 99 ? "99+" : n) + (n === 1 ? " pendiente" : " pendientes") : ""; }
+        let k = 0;
+        seguro(() => {
+          const yo = (($("nombreVendedor") || {}).value || "").trim();
+          const h = yo ? globalHistorial.filter(x => vendedorMatch(x.vendedor, yo)) : globalHistorial;
+          const ultima = {};
+          h.forEach(x => { if (x.cliente && x.fecha && (!ultima[x.cliente] || x.fecha > ultima[x.cliente])) ultima[x.cliente] = x.fecha; });
+          const hoy = new Date();
+          Object.keys(ultima).forEach(c => { const d = Math.floor((hoy - new Date(ultima[c] + "T12:00:00")) / 86400000); if (d >= 7 && d <= 90) k++; });
+          k = Math.min(k, 15);   // como la lista «Para visitar»
+        });
+        const i = $("v2MasIdeas");
+        if (i) { i.hidden = !k; i.textContent = k ? k + " sin compra" : ""; }
+      };
+      new MutationObserver(() => {
+        const ab = bg.classList.contains("abierto");
+        document.documentElement.classList.toggle("v2-mas-abierto", ab);
+        if (ab) pintarMas();
+      }).observe(bg, { attributes: true, attributeFilter: ["class"] });
+    });
 
     /* Buscador grande + chips + filas + pedido anterior, dentro de CARGAR */
     const nuevo = $("nuevoPedido");
@@ -15283,7 +15360,7 @@ body.ui2[data-v2="queruclor"] .v2-promo.on{ display:flex; }
     engancharEnvio();
     const mas = document.querySelector('#v2MasBg [data-m="clientes"]');
     if (mas && !mas.__alc) {
-      mas.__alc = true; mas.innerHTML = '<span class="ic vi">👤＋</span><div><b>Cargar cliente nuevo</b><small>Número reservado para vos · ficha o pedido primero</small></div><i>›</i>';
+      mas.__alc = true; mas.innerHTML = '<span class="v2-mc-top"><span class="v2-mc-ic vi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M19 8v6M16 11h6"/></svg></span></span><span class="v2-mc-t"><b>Cliente nuevo</b><small>Ficha o pedido directo</small></span>';
       mas.addEventListener("click", e => { e.stopImmediatePropagation(); e.preventDefault(); try { $("v2MasBg").classList.remove("abierto"); } catch (x) {} qrAltaAbrir("mas"); }, true);
     }
     const slot = $("v2CliSlot") || ($("numeroCliente") && $("numeroCliente").parentElement);
